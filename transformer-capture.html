@@ -1,0 +1,288 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Transformer Capture App</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    body {
+      font-family: Arial;
+      padding: 20px;
+      background: #f4f4f4;
+    }
+
+    h2 {
+      text-align: center;
+    }
+
+    form {
+      background: white;
+      padding: 20px;
+      max-width: 400px;
+      margin: auto;
+      border-radius: 10px;
+      box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+    }
+
+    input, select, button {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+
+    input[readonly] {
+      background: #eee;
+      cursor: not-allowed;
+    }
+
+    button {
+      background: #007BFF;
+      color: white;
+      border: none;
+      font-size: 16px;
+    }
+
+    button:hover {
+      background: #0056b3;
+    }
+
+    #response {
+      text-align: center;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+
+    #locationStatus {
+      text-align: center;
+      font-size: 14px;
+      color: gray;
+    }
+
+    #latitude,
+    #longitude {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+
+<h2>Transformer Data Capture</h2>
+
+<form id="form">
+
+  <select id="voltageLevel" onchange="updateFeeders()" required>
+    <option value="">Select Voltage Level</option>
+    <option value="11kv">11kV</option>
+    <option value="33kv">33kV</option>
+  </select>
+
+  <select id="feederName" required>
+    <option value="">Select Feeder</option>
+  </select>
+
+  <input type="text" id="name" placeholder="Transformer Name" required>
+
+  <select id="capacity" required>
+    <option value="">Select DTR Capacity</option>
+    <option value="50kVA">50kVA</option>
+    <option value="100kVA">100kVA</option>
+    <option value="200kVA">200kVA</option>
+    <option value="300kVA">300kVA</option>
+    <option value="500kVA">500kVA</option>
+    <option value="750kVA">750kVA</option>
+    <option value="1000kVA">1000kVA</option>
+    <option value="1500kVA">1500kVA</option>
+    <option value="2000kVA">2000kVA</option>
+    <option value="2500kVA">2500kVA</option>
+  </select>
+	
+	<select id="status">
+    <option value="Active">Active</option>
+    <option value="Faulty">Faulty</option>
+    <option value="Maintenance">Maintenance</option>
+  </select>
+
+  <button style="background-color: darkgreen" type="button" onclick="getLocation()">📍 Capture Location</button>
+
+  <p id="locationStatus">Location not captured</p>
+
+  <input type="text" id="latitude" placeholder="Latitude" readonly>
+  <input type="text" id="longitude" placeholder="Longitude" readonly>
+
+  
+
+  <button type="submit">Submit</button>
+
+</form>
+
+<p id="response"></p>
+
+<script>
+
+const scriptURL =
+"https://script.google.com/macros/s/AKfycbznUF7E6GSv2zdh-kdpTUmSlW-x1yTXfrZUR144OpEQySXmqIDfSdmnU4NIpYA/exec";
+
+// Update feeder list
+function updateFeeders() {
+
+  const voltage = document.getElementById("voltageLevel").value;
+  const feederSelect = document.getElementById("feederName");
+
+  feederSelect.innerHTML =
+    '<option value="">Select Feeder</option>';
+
+  let feeders = [];
+
+  if (voltage === "11kv") {
+    feeders = [
+      "Unical",
+      "Cameroon",
+      "Anantigha",
+      "8miles"
+    ];
+  }
+  else if (voltage === "33kv") {
+    feeders = [
+      "Waterboard",
+      "Diamond",
+      "Akamkpa"
+    ];
+  }
+
+  feeders.forEach(feeder => {
+    const option = document.createElement("option");
+    option.value = feeder;
+    option.text = feeder;
+    feederSelect.appendChild(option);
+  });
+}
+
+// Capture GPS location
+function getLocation() {
+
+  const status =
+    document.getElementById("locationStatus");
+
+  if (navigator.geolocation) {
+
+    status.innerText =
+      "📡 Capturing location...";
+
+    navigator.geolocation.getCurrentPosition(
+
+      function(position) {
+
+        document.getElementById("latitude").value =
+          position.coords.latitude;
+
+        document.getElementById("longitude").value =
+          position.coords.longitude;
+
+        document.getElementById("latitude").style.display =
+          "block";
+
+        document.getElementById("longitude").style.display =
+          "block";
+
+        status.innerText =
+          "✅ Location captured";
+      },
+
+      function() {
+        alert("Unable to retrieve location");
+        status.innerText =
+          "❌ Failed to get location";
+      }
+
+    );
+
+  } else {
+    alert("Geolocation not supported");
+  }
+}
+
+// Submit form
+document.getElementById("form")
+.addEventListener("submit", function(e) {
+
+  e.preventDefault();
+
+  const data = {
+
+    name:
+      document.getElementById("name").value,
+
+    capacity:
+      document.getElementById("capacity").value,
+
+    voltage:
+      document.getElementById("voltageLevel").value,
+
+    feeder:
+      document.getElementById("feederName").value,
+
+    latitude:
+      document.getElementById("latitude").value,
+
+    longitude:
+      document.getElementById("longitude").value,
+
+    status:
+      document.getElementById("status").value
+  };
+
+  if (!data.latitude || !data.longitude) {
+
+    document.getElementById("response").innerText =
+      "⚠️ Please capture location first";
+
+    return;
+  }
+
+  document.getElementById("response").innerText =
+    "⏳ Submitting...";
+
+  fetch(scriptURL, {
+    method: "POST",
+    body: JSON.stringify(data),
+    headers: {
+      "Content-Type": "application/json"
+    },
+    mode: "no-cors"
+  })
+
+  .then(() => {
+
+    document.getElementById("response").innerText =
+      "✅ Submitted successfully!";
+
+    document.getElementById("form").reset();
+
+    document.getElementById("latitude").style.display =
+      "none";
+
+    document.getElementById("longitude").style.display =
+      "none";
+
+    document.getElementById("locationStatus").innerText =
+      "Location not captured";
+  })
+
+  .catch(() => {
+
+    document.getElementById("response").innerText =
+      "❌ Submission failed";
+  });
+
+});
+
+</script>
+
+</body>
+</html>
+```
