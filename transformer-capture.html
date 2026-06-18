@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -7,36 +6,67 @@
 
   <style>
     body {
-      font-family: Arial;
+      font-family: Arial, sans-serif;
       padding: 20px;
       background: #f4f4f4;
     }
 
     h2 {
       text-align: center;
+      color: #333;
+      margin-bottom: 20px;
     }
 
     form {
       background: white;
-      padding: 20px;
-      max-width: 400px;
+      padding: 25px;
+      max-width: 420px;
       margin: auto;
       border-radius: 10px;
-      box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+      box-shadow: 0px 4px 15px rgba(0,0,0,0.1);
     }
 
-    input, select, button {
+    /* External Placeholder / Label Group Container */
+    .input-group {
+      margin-bottom: 15px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Style for External Placeholder Labels */
+    .input-group label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #555;
+      margin-bottom: 5px;
+      transition: color 0.2s ease;
+    }
+
+    /* Highlight label when the input is focused */
+    .input-group:focus-within label {
+      color: #007BFF;
+    }
+
+    input, select, button, .btn-link {
       width: 100%;
-      padding: 10px;
-      margin: 8px 0;
-      border-radius: 5px;
+      padding: 10px 12px;
+      border-radius: 6px;
       border: 1px solid #ccc;
       box-sizing: border-box;
+      font-size: 14px;
+      background-color: #fff;
+    }
+
+    input:focus, select:focus {
+      border-color: #007BFF;
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15);
     }
 
     input[readonly] {
-      background: #eee;
+      background: #f0f0f0;
       cursor: not-allowed;
+      border-color: #ddd;
     }
 
     button {
@@ -44,10 +74,31 @@
       color: white;
       border: none;
       font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: background 0.2s ease;
     }
 
     button:hover {
       background: #0056b3;
+    }
+
+    /* Style for the View Report button */
+    .btn-link {
+      display: block;
+      text-align: center;
+      background: #6c757d;
+      color: white;
+      text-decoration: none;
+      font-size: 16px;
+      font-weight: bold;
+      margin-top: 10px;
+      transition: background 0.2s ease;
+    }
+
+    .btn-link:hover {
+      background: #5a6268;
     }
 
     #response {
@@ -60,6 +111,7 @@
       text-align: center;
       font-size: 14px;
       color: gray;
+      margin: 5px 0;
     }
 
     #latitude,
@@ -75,37 +127,120 @@
 
 <form id="form">
 
-  <select id="voltageLevel" onchange="updateFeeders()" required>
-    <option value="">Select Voltage Level</option>
-    <option value="11kv">11kV</option>
-    <option value="33kv">33kV</option>
-  </select>
+  <div class="input-group">
+    <label for="voltageLevel">Voltage Level</label>
+    <select id="voltageLevel" onchange="updateFeeders()" required>
+      <option value="">Select Voltage Level</option>
+      <option value="11kv">11kV</option>
+      <option value="33kv">33kV</option>
+    </select>
+  </div>
 
-  <select id="feederName" required>
-    <option value="">Select Feeder</option>
-  </select>
+  <div class="input-group">
+    <label for="feederName">Feeder Name</label>
+    <select id="feederName" onchange="populateFeederId()" required>
+      <option value="">Select Feeder</option>
+    </select>
+  </div>
 
-  <input type="text" id="name" placeholder="Transformer Name" required>
+  <div class="input-group">
+    <label for="feederId">Feeder ID</label>
+    <input type="text" id="feederId" placeholder="Autopopulated ID" readonly required>
+  </div>
 
-  <select id="capacity" required>
-    <option value="">Select DTR Capacity</option>
-    <option value="50kVA">50kVA</option>
-    <option value="100kVA">100kVA</option>
-    <option value="200kVA">200kVA</option>
-    <option value="300kVA">300kVA</option>
-    <option value="500kVA">500kVA</option>
-    <option value="750kVA">750kVA</option>
-    <option value="1000kVA">1000kVA</option>
-    <option value="1500kVA">1500kVA</option>
-    <option value="2000kVA">2000kVA</option>
-    <option value="2500kVA">2500kVA</option>
-  </select>
-	
-	<select id="status">
-    <option value="Active">Active</option>
-    <option value="Faulty">Faulty</option>
-    <option value="Maintenance">Maintenance</option>
-  </select>
+  <div class="input-group">
+    <label for="dtrId">DTR ID</label>
+    <input type="text" id="dtrId" placeholder="Enter DTR ID" required>
+  </div>
+
+  <div class="input-group">
+    <label for="name">Transformer Name</label>
+    <input type="text" id="name" placeholder="Enter Transformer Name" required>
+  </div>
+
+  <div class="input-group">
+    <label for="townArea">Town Area</label>
+    <input type="text" id="townArea" placeholder="Enter Town Area" required>
+  </div>
+
+  <div class="input-group">
+    <label for="capacity">DTR Capacity</label>
+    <select id="capacity" required>
+      <option value="">Select DTR Capacity</option>
+      <option value="50kVA">50kVA</option>
+      <option value="100kVA">100kVA</option>
+      <option value="200kVA">200kVA</option>
+      <option value="300kVA">300kVA</option>
+      <option value="500kVA">500kVA</option>
+      <option value="750kVA">750kVA</option>
+      <option value="1000kVA">1000kVA</option>
+      <option value="1500kVA">1500kVA</option>
+      <option value="2000kVA">2000kVA</option>
+      <option value="2500kVA">2500kVA</option>
+    </select>
+  </div>
+
+  <div class="input-group">
+    <label for="dtrType">DTR Type</label>
+    <select id="dtrType" required>
+      <option value="">Select DTR Type</option>
+      <option value="Public">Public</option>
+      <option value="Private">Private</option>
+    </select>
+  </div>
+
+  <div class="input-group">
+    <label for="mounting">Mounting Type</label>
+    <select id="mounting" required>
+      <option value="">Select Mounting</option>
+      <option value="Plinth">Plinth</option>
+      <option value="Pole">Pole</option>
+    </select>
+  </div>
+
+  <div class="input-group">
+    <label for="dtrManufacture">DTR Manufacturer</label>
+    <input type="text" id="dtrManufacture" placeholder="Enter Manufacturer" >
+  </div>
+
+  <div class="input-group">
+    <label for="serialNumber">Serial Number</label>
+    <input type="text" id="serialNumber" placeholder="Enter Serial Number" >
+  </div>
+  
+  <div class="input-group">
+    <label for="dtrStatus">DTR Status</label>
+    <select id="dtrStatus" required>
+      <option value="">Select DTR Status</option>
+      <option value="Active">Active</option>
+      <option value="Inactive">Inactive</option>
+      <option value="New plinth">New plinth</option>
+    </select>
+  </div>
+
+  <div class="input-group">
+    <label for="numUprisers">Number of Uprisers</label>
+    <input type="number" id="numUprisers" placeholder="Enter count" min="0" required>
+  </div>
+
+  <div class="input-group">
+    <label for="metered">Is It Metered?</label>
+    <select id="metered" onchange="toggleMeteringType()" required>
+      <option value="">Select Yes/No</option>
+      <option value="Yes">Yes</option>
+      <option value="No">No</option>
+    </select>
+  </div>
+
+  <div class="input-group">
+    <label for="meteringType">Metering Type</label>
+    <select id="meteringType" required>
+      <option value="">Select Metering Type</option>
+      <option value="Primary">Primary</option>
+      <option value="Secondary">Secondary</option>
+      <option value="N/A">Not Applicable</option>
+    </select>
+  </div>
 
   <button style="background-color: darkgreen" type="button" onclick="getLocation()">📍 Capture Location</button>
 
@@ -114,9 +249,11 @@
   <input type="text" id="latitude" placeholder="Latitude" readonly>
   <input type="text" id="longitude" placeholder="Longitude" readonly>
 
-  
+  <button type="submit">Submit Data</button>
 
-  <button type="submit">Submit</button>
+  <a href="https://docs.google.com/spreadsheets/d/1qVCLY2fMHe39hW693jzoUBLTk9vBVMocfOdCkPnWIL4/edit?usp=drivesdk" 
+     target="_blank" 
+     class="btn-link">📊 View Report</a>
 
 </form>
 
@@ -124,128 +261,129 @@
 
 <script>
 
-const scriptURL =
-"https://script.google.com/macros/s/AKfycbznUF7E6GSv2zdh-kdpTUmSlW-x1yTXfrZUR144OpEQySXmqIDfSdmnU4NIpYA/exec";
+const scriptURL = "https://script.google.com/macros/s/AKfycbxXkNEdJzkqDB0KMORSb_hr0jj__QIiFYeiy6-xgG-eo31MIZ4p0Ib2HVDmApyt6Q/exec";
 
-// Update feeder list
+const feederDatabase = {
+  "11kv": [
+    { name: "Unical-A", id: "1165" },
+    { name: "Unical-B", id: "1194" },
+    { name: "Cameroun", id: "1195" },
+    { name: "Anantigha", id: "8982" },
+    { name: "8miles", id: "1188" }
+  ],
+  "33kv": [
+    { name: "Waterboard-A", id: "200" },
+    { name: "Waterboard-B", id: "182" },
+    { name: "Diamond Hills", id: "162" },
+    { name: "Akamkpa", id: "157" }
+  ]
+};
+
 function updateFeeders() {
-
   const voltage = document.getElementById("voltageLevel").value;
   const feederSelect = document.getElementById("feederName");
+  
+  feederSelect.innerHTML = '<option value="">Select Feeder</option>';
+  document.getElementById("feederId").value = "";
 
-  feederSelect.innerHTML =
-    '<option value="">Select Feeder</option>';
-
-  let feeders = [];
-
-  if (voltage === "11kv") {
-    feeders = [
-      "Unical",
-      "Cameroon",
-      "Anantigha",
-      "8miles"
-    ];
+  if (voltage && feederDatabase[voltage]) {
+    feederDatabase[voltage].forEach(feeder => {
+      const option = document.createElement("option");
+      option.value = feeder.name;
+      option.text = feeder.name;
+      feederSelect.appendChild(option);
+    });
   }
-  else if (voltage === "33kv") {
-    feeders = [
-      "Waterboard",
-      "Diamond",
-      "Akamkpa"
-    ];
-  }
-
-  feeders.forEach(feeder => {
-    const option = document.createElement("option");
-    option.value = feeder;
-    option.text = feeder;
-    feederSelect.appendChild(option);
-  });
 }
 
-// Capture GPS location
-function getLocation() {
+function populateFeederId() {
+  const voltage = document.getElementById("voltageLevel").value;
+  const selectedFeederName = document.getElementById("feederName").value;
+  const feederIdInput = document.getElementById("feederId");
 
-  const status =
-    document.getElementById("locationStatus");
+  if (!selectedFeederName || !voltage) {
+    feederIdInput.value = "";
+    return;
+  }
+
+  const currentFeeders = feederDatabase[voltage];
+  const matchedFeeder = currentFeeders.find(f => f.name === selectedFeederName);
+
+  if (matchedFeeder) {
+    feederIdInput.value = matchedFeeder.id;
+  } else {
+    feederIdInput.value = "";
+  }
+}
+
+function toggleMeteringType() {
+  const meteredValue = document.getElementById("metered").value;
+  const meteringTypeSelect = document.getElementById("meteringType");
+  
+  if (meteredValue === "No") {
+    meteringTypeSelect.value = "N/A";
+    meteringTypeSelect.disabled = true;
+  } else {
+    meteringTypeSelect.value = "";
+    meteringTypeSelect.disabled = false;
+  }
+}
+
+function getLocation() {
+  const status = document.getElementById("locationStatus");
 
   if (navigator.geolocation) {
-
-    status.innerText =
-      "📡 Capturing location...";
+    status.innerText = "📡 Capturing location...";
 
     navigator.geolocation.getCurrentPosition(
-
       function(position) {
+        document.getElementById("latitude").value = position.coords.latitude;
+        document.getElementById("longitude").value = position.coords.longitude;
 
-        document.getElementById("latitude").value =
-          position.coords.latitude;
+        document.getElementById("latitude").style.display = "block";
+        document.getElementById("longitude").style.display = "block";
 
-        document.getElementById("longitude").value =
-          position.coords.longitude;
-
-        document.getElementById("latitude").style.display =
-          "block";
-
-        document.getElementById("longitude").style.display =
-          "block";
-
-        status.innerText =
-          "✅ Location captured";
+        status.innerText = "✅ Location captured";
       },
-
       function() {
         alert("Unable to retrieve location");
-        status.innerText =
-          "❌ Failed to get location";
+        status.innerText = "❌ Failed to get location";
       }
-
     );
-
   } else {
     alert("Geolocation not supported");
   }
 }
 
-// Submit form
-document.getElementById("form")
-.addEventListener("submit", function(e) {
-
+document.getElementById("form").addEventListener("submit", function(e) {
   e.preventDefault();
 
   const data = {
-
-    name:
-      document.getElementById("name").value,
-
-    capacity:
-      document.getElementById("capacity").value,
-
-    voltage:
-      document.getElementById("voltageLevel").value,
-
-    feeder:
-      document.getElementById("feederName").value,
-
-    latitude:
-      document.getElementById("latitude").value,
-
-    longitude:
-      document.getElementById("longitude").value,
-
-    status:
-      document.getElementById("status").value
+    voltage: document.getElementById("voltageLevel").value,
+    feeder: document.getElementById("feederName").value,
+    feederId: document.getElementById("feederId").value,
+    dtrId: document.getElementById("dtrId").value,
+    name: document.getElementById("name").value,
+    townArea: document.getElementById("townArea").value,
+    capacity: document.getElementById("capacity").value,
+    dtrType: document.getElementById("dtrType").value,
+    mounting: document.getElementById("mounting").value,
+    dtrManufacture: document.getElementById("dtrManufacture").value,
+    serialNumber: document.getElementById("serialNumber").value,
+    dtrStatus: document.getElementById("dtrStatus").value,
+    numUprisers: document.getElementById("numUprisers").value,
+    metered: document.getElementById("metered").value,
+    meteringType: document.getElementById("meteringType").value,
+    latitude: document.getElementById("latitude").value,
+    longitude: document.getElementById("longitude").value
   };
 
   if (!data.latitude || !data.longitude) {
-
-    document.getElementById("response").innerText =
-      "⚠️ Please capture location first";
-
+    document.getElementById("response").innerText = "⚠️ Please capture location first";
     return;
   }
 
-  document.getElementById("response").innerText =
-    "⏳ Submitting...";
+  document.getElementById("response").innerText = "⏳ Submitting...";
 
   fetch(scriptURL, {
     method: "POST",
@@ -255,34 +393,21 @@ document.getElementById("form")
     },
     mode: "no-cors"
   })
-
   .then(() => {
-
-    document.getElementById("response").innerText =
-      "✅ Submitted successfully!";
-
+    document.getElementById("response").innerText = "✅ Submitted successfully!";
     document.getElementById("form").reset();
-
-    document.getElementById("latitude").style.display =
-      "none";
-
-    document.getElementById("longitude").style.display =
-      "none";
-
-    document.getElementById("locationStatus").innerText =
-      "Location not captured";
+    document.getElementById("latitude").style.display = "none";
+    document.getElementById("longitude").style.display = "none";
+    document.getElementById("meteringType").disabled = false;
+    document.getElementById("locationStatus").innerText = "Location not captured";
   })
-
   .catch(() => {
-
-    document.getElementById("response").innerText =
-      "❌ Submission failed";
+    document.getElementById("response").innerText = "❌ Submission failed";
   });
-
 });
 
 </script>
 
 </body>
 </html>
-```
+
