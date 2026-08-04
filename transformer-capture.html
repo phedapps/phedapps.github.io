@@ -218,7 +218,7 @@
     .mt-1 { margin-top: 8px; }
     .btn-outline {
       background: transparent;
-      border: 1.5px solid #d0d8e3;
+      border: 1.5px solid #d0d8d3;
       color: #1f2a44;
       padding: 12px;
     }
@@ -229,6 +229,20 @@
     select { appearance: auto; }
     .inline-icon { font-size: 1.2rem; }
     hr { border: none; border-top: 1px solid #e2e9f3; margin: 12px 0; }
+    /* Loading overlay for search */
+    .search-loading {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 0.8rem;
+      color: #2d8f4a;
+      font-weight: 500;
+      display: none;
+    }
+    .search-loading.active {
+      display: block;
+    }
   </style>
 </head>
 <body>
@@ -245,9 +259,10 @@
         placeholder="type to search …" 
         autocomplete="off"
         spellcheck="false"
+        disabled
       >
+      <div class="search-loading" id="searchLoading">Loading...</div>
       <div id="suggestions" class="suggestions-box"></div>
-      <!-- no search button – automatic as you type -->
     </div>
 
     <div class="input-group">
@@ -409,24 +424,63 @@
   };
 
   // --------------------------------------------------------------
-  // LOAD TRANSFORMER DATA
-  let transformers = [];
-  fetch(sheetURL)
-    .then(res => res.json())
-    .then(data => { transformers = data; })
-    .catch(err => console.warn("Transformer data load error:", err));
-
-  // --------------------------------------------------------------
   // DOM REFS
   const searchInput = document.getElementById('transformerSearch');
   const suggestionsBox = document.getElementById('suggestions');
   const form = document.getElementById('form');
   const submitBtn = document.getElementById('submitBtn');
   const responseEl = document.getElementById('response');
+  const searchLoading = document.getElementById('searchLoading');
 
   // --------------------------------------------------------------
-  // AUTO SEARCH (as you type) – NO search button
+  // LOAD TRANSFORMER DATA - PRELOAD BEFORE SEARCH IS ENABLED
+  let transformers = [];
+  let isDataLoaded = false;
+
+  function loadTransformerData() {
+    searchLoading.classList.add('active');
+    searchInput.disabled = true;
+    searchInput.placeholder = 'Loading data...';
+
+    fetch(sheetURL)
+      .then(res => {
+        if (!res.ok) throw new Error('Network response was not ok');
+        return res.json();
+      })
+      .then(data => {
+        transformers = data;
+        isDataLoaded = true;
+        // Enable search input
+        searchInput.disabled = false;
+        searchInput.placeholder = 'type to search …';
+        searchLoading.classList.remove('active');
+        console.log(`✅ Loaded ${transformers.length} transformer records`);
+      })
+      .catch(err => {
+        console.warn("Transformer data load error:", err);
+        searchInput.disabled = false;
+        searchInput.placeholder = 'Search unavailable';
+        searchLoading.classList.remove('active');
+        // Optionally show error message
+        const statusMsg = document.createElement('div');
+        statusMsg.style.cssText = 'color: #c72a2a; font-size: 0.8rem; margin-top: 4px;';
+        statusMsg.textContent = '⚠️ Could not load transformer data';
+        searchInput.parentNode.appendChild(statusMsg);
+        setTimeout(() => statusMsg.remove(), 5000);
+      });
+  }
+
+  // Start loading immediately
+  loadTransformerData();
+
+  // --------------------------------------------------------------
+  // AUTO SEARCH (as you type) – ONLY WORKS AFTER DATA IS LOADED
   function performAutoSearch() {
+    if (!isDataLoaded) {
+      suggestionsBox.style.display = 'none';
+      return;
+    }
+
     const keyword = searchInput.value.trim().toLowerCase();
     suggestionsBox.innerHTML = '';
     if (keyword.length < 1) {
@@ -513,7 +567,7 @@
   // ---- attach events ----
   searchInput.addEventListener('input', performAutoSearch);
   searchInput.addEventListener('focus', function() {
-    if (this.value.trim().length > 0) performAutoSearch();
+    if (this.value.trim().length > 0 && isDataLoaded) performAutoSearch();
   });
 
   // hide on outside click
