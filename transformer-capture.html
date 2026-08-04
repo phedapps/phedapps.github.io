@@ -1,721 +1,817 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Transformer Data Capture</title>
+  <title>Transformer Capture App</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
   <style>
-    * { box-sizing: border-box; margin: 0; }
     body {
-      font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
-      padding: 24px 16px;
-      background: #f2f5f9;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f4f4f4;
     }
-    .container {
-      max-width: 480px;
-      width: 100%;
-      background: white;
-      border-radius: 24px;
-      padding: 24px 20px 32px;
-      box-shadow: 0 12px 30px rgba(0,0,0,0.08);
-    }
+
     h2 {
       text-align: center;
-      font-weight: 600;
-      font-size: 1.7rem;
-      letter-spacing: -0.3px;
-      color: #0b1a33;
-      margin-bottom: 24px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
+      color: #333;
+      margin-bottom: 20px;
     }
-    h2 small {
-      font-size: 0.9rem;
-      font-weight: 400;
-      color: #3b6cb7;
-      background: #e8f0fe;
-      padding: 0 12px;
-      border-radius: 40px;
-      line-height: 1.6;
+
+    form {
+      background: white;
+      padding: 25px;
+      max-width: 420px;
+      margin: auto;
+      border-radius: 10px;
+      box-shadow: 0px 4px 15px rgba(0,0,0,0.1);
     }
+
     .input-group {
-      margin-bottom: 18px;
+      margin-bottom: 15px;
       display: flex;
       flex-direction: column;
       position: relative;
     }
+
     .input-group label {
-      font-size: 0.8rem;
+      font-size: 13px;
       font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.3px;
-      color: #2c3e66;
-      margin-bottom: 4px;
-      transition: color 0.2s;
+      color: #555;
+      margin-bottom: 5px;
+      transition: color 0.2s ease;
     }
+
     .input-group:focus-within label {
-      color: #1a6bff;
+      color: #007BFF;
     }
-    input, select, .btn-link {
+
+    input, select, button, .btn-link {
       width: 100%;
-      padding: 12px 14px;
-      border-radius: 14px;
-      border: 1px solid #d9e0eb;
-      background: #fbfdff;
-      font-size: 0.95rem;
-      transition: 0.2s;
-      outline: none;
+      padding: 10px 12px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+      font-size: 14px;
+      background-color: #fff;
     }
+
     input:focus, select:focus {
-      border-color: #1a6bff;
-      box-shadow: 0 0 0 3px rgba(26,107,255,0.15);
-      background: white;
+      border-color: #007BFF;
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15);
     }
+
     input[readonly] {
-      background: #eef2f7;
-      border-color: #d0d8e3;
-      cursor: default;
+      background: #f0f0f0;
+      cursor: not-allowed;
+      border-color: #ddd;
     }
-    .btn-link {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      background: #eef2f7;
-      color: #1f2a44;
-      text-decoration: none;
-      font-weight: 600;
-      border: none;
-      padding: 12px;
-      border-radius: 40px;
-      transition: 0.15s;
-      margin-top: 6px;
-    }
-    .btn-link:hover {
-      background: #dce3ef;
-      color: #0b1a33;
-    }
-    button, .search-btn {
-      background: #1a6bff;
+
+    button {
+      background: #007BFF;
       color: white;
       border: none;
-      border-radius: 40px;
-      padding: 14px 18px;
-      font-weight: 600;
-      font-size: 1rem;
+      font-size: 16px;
+      font-weight: bold;
       cursor: pointer;
-      transition: 0.2s;
-      width: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      margin-top: 4px;
+      margin-top: 10px;
+      transition: background 0.2s ease;
+      position: relative;
     }
-    button:hover:not(:disabled), .search-btn:hover {
-      background: #0d4fc7;
+
+    button:hover:not(:disabled) {
+      background: #0056b3;
     }
+
     button:disabled {
-      opacity: 0.6;
+      opacity: 0.7;
       cursor: not-allowed;
     }
-    /* ----- GREEN SEARCH BAR ----- */
-    #transformerSearch {
-      border: 2px solid #2d8f4a;
-      background: #f6fcf8;
-      padding-left: 40px;
-      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="%232d8f4a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>');
-      background-repeat: no-repeat;
-      background-position: 14px center;
-      background-size: 18px;
+
+    .btn-link {
+      display: block;
+      text-align: center;
+      background: #6c757d;
+      color: white;
+      text-decoration: none;
+      font-size: 16px;
+      font-weight: bold;
+      margin-top: 10px;
+      transition: background 0.2s ease;
     }
-    #transformerSearch:focus {
-      border-color: #1a6bff;
-      box-shadow: 0 0 0 4px rgba(45, 143, 74, 0.25);
-      background-color: white;
+
+    .btn-link:hover {
+      background: #5a6268;
     }
-    /* suggestions stay clean */
+
+    #response {
+      text-align: center;
+      margin-top: 15px;
+      font-weight: bold;
+      min-height: 24px;
+    }
+
+    #locationStatus {
+      text-align: center;
+      font-size: 14px;
+      color: gray;
+      margin: 5px 0;
+    }
+
+    #latitude,
+    #longitude {
+      display: none;
+    }
+
+    /* Transformer Search Suggestions */
     .suggestions-box {
       position: absolute;
-      top: calc(100% + 4px);
+      top: 100%;
       left: 0;
       width: 100%;
       background: white;
-      border: 1px solid #d0d8e3;
-      border-radius: 16px;
+      border: 1px solid #ccc;
+      border-top: none;
+      border-radius: 0 0 6px 6px;
       max-height: 250px;
       overflow-y: auto;
-      z-index: 100;
-      box-shadow: 0 12px 28px rgba(0,0,0,0.08);
+      z-index: 1000;
       display: none;
-      padding: 4px 0;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     }
+
     .suggestion-item {
-      padding: 12px 16px;
+      padding: 10px 12px;
       cursor: pointer;
-      border-bottom: 1px solid #f0f4fc;
-      font-size: 0.95rem;
-      transition: 0.1s;
+      border-bottom: 1px solid #eee;
+      font-size: 14px;
     }
+
     .suggestion-item:hover {
       background: #f0f7ff;
     }
+
     .suggestion-item .suggestion-sub {
-      font-size: 0.78rem;
-      color: #4a5c7a;
-      margin-left: 6px;
+      font-size: 12px;
+      color: #666;
     }
-    .suggestion-item strong {
-      color: #0b1a33;
+
+    .suggestion-item:last-child {
+      border-bottom: none;
     }
-    #locationStatus {
-      text-align: center;
-      font-size: 0.85rem;
-      color: #4d627a;
-      margin: 10px 0 6px;
-      background: #f4f8ff;
-      padding: 8px;
-      border-radius: 40px;
+
+    /* Search button styling */
+    .search-btn {
+      background: #28a745;
+      margin-top: 5px;
+      padding: 10px 12px;
+      font-size: 14px;
+      width: 100%;
     }
-    #latitude, #longitude {
-      display: none;
-      margin-top: 6px;
-      background: #f4f8ff;
+
+    .search-btn:hover {
+      background: #218838;
     }
-    #response {
-      text-align: center;
-      margin: 16px 0 6px;
-      font-weight: 500;
-      min-height: 28px;
-      font-size: 0.95rem;
-    }
-    .success { color: #1e7e34; }
-    .error { color: #c72a2a; }
+
+    /* Spinner Styles */
     .spinner {
       display: inline-block;
       width: 20px;
       height: 20px;
-      border: 3px solid rgba(255,255,255,0.25);
+      border: 3px solid rgba(255,255,255,0.3);
       border-radius: 50%;
-      border-top-color: white;
-      animation: spin 0.7s linear infinite;
+      border-top-color: #fff;
+      animation: spin 0.8s ease-in-out infinite;
       vertical-align: middle;
       margin-right: 8px;
     }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .hidden { display: none !important; }
-    .flex-row {
-      display: flex;
-      gap: 8px;
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
     }
-    .flex-row .input-group { flex: 1; }
-    .mt-1 { margin-top: 8px; }
-    .btn-outline {
-      background: transparent;
-      border: 1.5px solid #d0d8d3;
-      color: #1f2a44;
-      padding: 12px;
+
+    .btn-text {
+      display: inline-block;
+      vertical-align: middle;
     }
-    .btn-outline:hover {
-      background: #eef2f7;
-      border-color: #b0bed0;
+
+    .hidden {
+      display: none !important;
     }
-    select { appearance: auto; }
-    .inline-icon { font-size: 1.2rem; }
-    hr { border: none; border-top: 1px solid #e2e9f3; margin: 12px 0; }
-    /* Loading overlay for search */
-    .search-loading {
-      position: absolute;
-      right: 12px;
-      top: 50%;
-      transform: translateY(-50%);
-      font-size: 0.8rem;
-      color: #2d8f4a;
-      font-weight: 500;
-      display: none;
+
+    /* Success and Error message colors */
+    .success {
+      color: #28a745;
     }
-    .search-loading.active {
-      display: block;
+
+    .error {
+      color: #dc3545;
+    }
+
+    /* DTR ID validation styling */
+    .input-error {
+      border-color: #dc3545 !important;
+      box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.15) !important;
+    }
+
+    .input-success {
+      border-color: #28a745 !important;
+      box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.15) !important;
+    }
+
+    .validation-message {
+      font-size: 12px;
+      margin-top: 4px;
+      font-weight: 600;
+    }
+
+    .validation-message.error {
+      color: #dc3545;
+    }
+
+    .validation-message.success {
+      color: #28a745;
     }
   </style>
 </head>
+
 <body>
-<div class="container">
-  <h2>⚡ Transformer Data Capture</h2>
 
-  <form id="form" autocomplete="off">
-    <!-- SEARCH with live suggestions – GREEN search bar -->
-    <div class="input-group">
-      <label for="transformerSearch">🔍 Search transformer (name, ID, feeder)</label>
-      <input 
-        type="text" 
-        id="transformerSearch" 
-        placeholder="type to search …" 
-        autocomplete="off"
-        spellcheck="false"
-        disabled
-      >
-      <div class="search-loading" id="searchLoading">Loading...</div>
-      <div id="suggestions" class="suggestions-box"></div>
-    </div>
+<h2>Transformer Data Capture</h2>
 
-    <div class="input-group">
-      <label for="voltageLevel">Voltage Level</label>
-      <select id="voltageLevel" onchange="updateFeeders()" required>
-        <option value="">Select</option>
-        <option value="11kv">11 kV</option>
-        <option value="33kv">33 kV</option>
-      </select>
-    </div>
+<form id="form">
 
-    <div class="input-group">
-      <label for="feederName">Feeder Name</label>
-      <select id="feederName" onchange="populateFeederId()" required>
-        <option value="">Select Feeder</option>
-      </select>
-    </div>
+  <!-- Transformer Search Section -->
+  <div class="input-group">
+    <label for="transformerSearch">Search Transformer</label>
+    <input 
+      type="text" 
+      id="transformerSearch" 
+      placeholder="Search by name, ID, or feeder" 
+      autocomplete="off">
+    <button type="button" class="search-btn" onclick="searchTransformer()">🔍 Search Transformer</button>
+    <div id="suggestions" class="suggestions-box"></div>
+  </div>
 
-    <div class="input-group">
-      <label for="feederId">Feeder ID</label>
-      <input type="text" id="feederId" placeholder="autofilled" readonly required>
-    </div>
+  <div class="input-group">
+    <label for="voltageLevel">Voltage Level</label>
+    <select id="voltageLevel" onchange="updateFeeders()" required>
+      <option value="">Select Voltage Level</option>
+      <option value="11kv">11kV</option>
+      <option value="33kv">33kV</option>
+    </select>
+  </div>
 
-    <div class="input-group">
-      <label for="dtrId">DTR ID</label>
-      <input type="text" id="dtrId" placeholder="e.g. DTR-123" required>
-    </div>
+  <div class="input-group">
+    <label for="feederName">Feeder Name</label>
+    <select id="feederName" onchange="populateFeederId()" required>
+      <option value="">Select Feeder</option>
+    </select>
+  </div>
 
-    <div class="input-group">
-      <label for="name">Transformer Name</label>
-      <input type="text" id="name" placeholder="e.g. Unical-A" required>
-    </div>
+  <div class="input-group">
+    <label for="feederId">Feeder ID</label>
+    <input type="text" id="feederId" placeholder="Autopopulated ID" readonly required>
+  </div>
 
-    <div class="input-group">
-      <label for="townArea">Town Area</label>
-      <input type="text" id="townArea" placeholder="e.g. Anantigha" required>
-    </div>
+  <div class="input-group">
+    <label for="dtrId">DTR ID</label>
+    <input type="text" id="dtrId" placeholder="Enter DTR ID" required>
+    <div id="dtrIdValidation" class="validation-message"></div>
+  </div>
 
-    <div class="input-group">
-      <label for="capacity">DTR Capacity</label>
-      <select id="capacity" required>
-        <option value="">Select</option>
-        <option value="50kVA">50 kVA</option><option value="100kVA">100 kVA</option>
-        <option value="200kVA">200 kVA</option><option value="300kVA">300 kVA</option>
-        <option value="500kVA">500 kVA</option><option value="750kVA">750 kVA</option>
-        <option value="1000kVA">1000 kVA</option><option value="1350kVA">1350 kVA</option>
-        <option value="1500kVA">1500 kVA</option><option value="2000kVA">2000 kVA</option>
-        <option value="2500kVA">2500 kVA</option>
-      </select>
-    </div>
+  <div class="input-group">
+    <label for="name">Transformer Name</label>
+    <input type="text" id="name" placeholder="Enter Transformer Name" required>
+  </div>
 
-    <div class="input-group">
-      <label for="dtrType">DTR Type</label>
-      <select id="dtrType" required>
-        <option value="">Select</option>
-        <option value="Public">Public</option>
-        <option value="Private">Private</option>
-      </select>
-    </div>
+  <div class="input-group">
+    <label for="townArea">Town Area</label>
+    <input type="text" id="townArea" placeholder="Enter Town Area" required>
+  </div>
 
-    <div class="input-group">
-      <label for="mounting">Mounting Type</label>
-      <select id="mounting" required>
-        <option value="">Select</option>
-        <option value="Plinth">Plinth</option>
-        <option value="Pole">Pole</option>
-      </select>
-    </div>
+  <div class="input-group">
+    <label for="capacity">DTR Capacity</label>
+    <select id="capacity" required>
+      <option value="">Select DTR Capacity</option>
+      <option value="50kVA">50kVA</option>
+      <option value="100kVA">100kVA</option>
+      <option value="200kVA">200kVA</option>
+      <option value="300kVA">300kVA</option>
+      <option value="500kVA">500kVA</option>
+      <option value="750kVA">750kVA</option>
+      <option value="1000kVA">1000kVA</option>
+      <option value="1350kVA">1350kVA</option>
+      <option value="1500kVA">1500kVA</option>
+      <option value="2000kVA">2000kVA</option>
+      <option value="2500kVA">2500kVA</option>
+    </select>
+  </div>
 
-    <div class="input-group">
-      <label for="dtrManufacture">Manufacturer</label>
-      <input type="text" id="dtrManufacture" placeholder="e.g. ABB">
-    </div>
+  <div class="input-group">
+    <label for="dtrType">DTR Type</label>
+    <select id="dtrType" required>
+      <option value="">Select DTR Type</option>
+      <option value="Public">Public</option>
+      <option value="Private">Private</option>
+    </select>
+  </div>
 
-    <div class="input-group">
-      <label for="serialNumber">Serial Number</label>
-      <input type="text" id="serialNumber" placeholder="SN-2024">
-    </div>
+  <div class="input-group">
+    <label for="mounting">Mounting Type</label>
+    <select id="mounting" required>
+      <option value="">Select Mounting</option>
+      <option value="Plinth">Plinth</option>
+      <option value="Pole">Pole</option>
+    </select>
+  </div>
 
-    <div class="input-group">
-      <label for="manufacturingDate">Manufacturing Date</label>
-      <input type="date" id="manufacturingDate">
-    </div>
+  <div class="input-group">
+    <label for="dtrManufacture">DTR Manufacturer</label>
+    <input type="text" id="dtrManufacture" placeholder="Enter Manufacturer" >
+  </div>
 
-    <div class="input-group">
-      <label for="dtrStatus">DTR Status</label>
-      <select id="dtrStatus" required>
-        <option value="">Select</option>
-        <option value="Active">Active</option>
-        <option value="Inactive">Inactive</option>
-        <option value="New plinth">New plinth</option>
-      </select>
-    </div>
+  <div class="input-group">
+    <label for="serialNumber">Serial Number</label>
+    <input type="text" id="serialNumber" placeholder="Enter Serial Number" >
+  </div>
+  
+  <div class="input-group">
+    <label for="manufacturingDate">Manufacturing Date</label>
+    <input type="date" id="manufacturingDate">
+  </div>
 
-    <div class="input-group">
-      <label for="numUprisers">Number of Uprisers</label>
-      <input type="number" id="numUprisers" placeholder="0" min="0" required>
-    </div>
+  <div class="input-group">
+    <label for="dtrStatus">DTR Status</label>
+    <select id="dtrStatus" required>
+      <option value="">Select DTR Status</option>
+      <option value="Active">Active</option>
+      <option value="Inactive">Inactive</option>
+      <option value="New plinth">New plinth</option>
+    </select>
+  </div>
 
-    <div class="input-group">
-      <label for="metered">Is It Metered?</label>
-      <select id="metered" onchange="toggleMeteringType()" required>
-        <option value="">Select</option>
-        <option value="Yes">Yes</option>
-        <option value="No">No</option>
-      </select>
-    </div>
+  <div class="input-group">
+    <label for="numUprisers">Number of Uprisers</label>
+    <input type="number" id="numUprisers" placeholder="Enter count" min="0" required>
+  </div>
 
-    <div class="input-group">
-      <label for="meteringType">Metering Type</label>
-      <select id="meteringType" required>
-        <option value="">Select</option>
-        <option value="Primary">Primary</option>
-        <option value="Secondary">Secondary</option>
-        <option value="N/A">Not Applicable</option>
-      </select>
-    </div>
+  <div class="input-group">
+    <label for="metered">Is It Metered?</label>
+    <select id="metered" onchange="toggleMeteringType()" required>
+      <option value="">Select Yes/No</option>
+      <option value="Yes">Yes</option>
+      <option value="No">No</option>
+    </select>
+  </div>
 
-    <div style="display: flex; gap: 8px; margin: 8px 0;">
-      <button type="button" onclick="getLocation()" style="background: #1f7b4d; padding: 12px;">📍 Capture Location</button>
-    </div>
-    <p id="locationStatus">📍 Location not captured</p>
-    <input type="text" id="latitude" placeholder="Latitude" readonly>
-    <input type="text" id="longitude" placeholder="Longitude" readonly>
+  <div class="input-group">
+    <label for="meteringType">Metering Type</label>
+    <select id="meteringType" required>
+      <option value="">Select Metering Type</option>
+      <option value="Primary">Primary</option>
+      <option value="Secondary">Secondary</option>
+      <option value="N/A">Not Applicable</option>
+    </select>
+  </div>
 
-    <button type="submit" id="submitBtn" style="margin-top: 18px; background: #0b2b5c;">
-      <span class="btn-text">✅ Submit Data</span>
-    </button>
+  <button style="background-color: darkgreen" type="button" onclick="getLocation()">📍 Capture Location</button>
 
-    <a href="https://docs.google.com/spreadsheets/d/1qVCLY2fMHe39hW693jzoUBLTk9vBVMocfOdCkPnWIL4/edit?usp=drivesdk" 
-       target="_blank" class="btn-link" style="margin-top: 12px;">
-       📊 View Report
-    </a>
-  </form>
-  <p id="response"></p>
-</div>
+  <p id="locationStatus">Location not captured</p>
+
+  <input type="text" id="latitude" placeholder="Latitude" readonly>
+  <input type="text" id="longitude" placeholder="Longitude" readonly>
+
+  <button type="submit" id="submitBtn">
+    <span class="btn-text">Submit Data</span>
+  </button>
+
+  <a href="https://docs.google.com/spreadsheets/d/1qVCLY2fMHe39hW693jzoUBLTk9vBVMocfOdCkPnWIL4/edit?usp=drivesdk" 
+     target="_blank" 
+     class="btn-link">📊 View Report</a>
+
+</form>
+
+<p id="response"></p>
 
 <script>
-  // --------------------------------------------------------------
-  // CONFIG
-  const scriptURL = "https://script.google.com/macros/s/AKfycbzGAWIjluH14yOFK5PcXWAdUSZ-0LdA_OGSt-2VwEojo2Pb5KNgD7VwmgUaSPosBQ/exec";
-  const sheetURL = "https://script.google.com/macros/s/AKfycbxHY_PYmo4wwzmasQAKtO73hHofXJF0ms9olsZBVbw4UDFPUg5TywlqiySPlHfy28oc/exec";
 
-  // --------------------------------------------------------------
-  // FEEDER DATABASE
-  const feederDatabase = {
-    "11kv": [
-      { name: "Unical-A", id: "1165" }, { name: "Unical-B", id: "1194" },
-      { name: "Cameroun", id: "1195" }, { name: "Anantigha", id: "8982" },
-      { name: "8miles", id: "1188" }
-    ],
-    "33kv": [
-      { name: "Waterboard-A", id: "200" }, { name: "Waterboard-B", id: "182" },
-      { name: "Diamond Hills", id: "162" }, { name: "Amika", id: "163" },
-      { name: "Amika Gamma", id: "999" }, { name: "Amika Urban A", id: "989" },
-      { name: "Amika Urban B", id: "989" }, { name: "Tinapa Road", id: "195" },
-      { name: "Akamkpa Urban", id: "195" }, { name: "Akamkpa", id: "157" }
-    ]
-  };
+const scriptURL = "https://script.google.com/macros/s/AKfycbxXkNEdJzkqDB0KMORSb_hr0jj__QIiFYeiy6-xgG-eo31MIZ4p0Ib2HVDmApyt6Q/exec";
 
-  // --------------------------------------------------------------
-  // DOM REFS
-  const searchInput = document.getElementById('transformerSearch');
-  const suggestionsBox = document.getElementById('suggestions');
-  const form = document.getElementById('form');
-  const submitBtn = document.getElementById('submitBtn');
-  const responseEl = document.getElementById('response');
-  const searchLoading = document.getElementById('searchLoading');
+// Submission sheet URL for checking duplicates
+const submissionSheetURL = "https://script.google.com/macros/s/AKfycbxXkNEdJzkqDB0KMORSb_hr0jj__QIiFYeiy6-xgG-eo31MIZ4p0Ib2HVDmApyt6Q/exec?action=getData";
 
-  // --------------------------------------------------------------
-  // LOAD TRANSFORMER DATA - PRELOAD BEFORE SEARCH IS ENABLED
-  let transformers = [];
-  let isDataLoaded = false;
+// Transformer database for search (different from submission sheet)
+const searchSheetURL = "https://script.google.com/macros/s/AKfycbxHY_PYmo4wwzmasQAKtO73hHofXJF0ms9olsZBVbw4UDFPUg5TywlqiySPlHfy28oc/exec";
+let transformers = [];
 
-  function loadTransformerData() {
-    searchLoading.classList.add('active');
-    searchInput.disabled = true;
-    searchInput.placeholder = 'Loading data...';
+// Load transformer data for search
+fetch(searchSheetURL)
+  .then(response => response.json())
+  .then(data => {
+    transformers = data;
+    console.log("Loaded transformer search data:", transformers.length);
+  })
+  .catch(error => {
+    console.error("Error loading transformer search data:", error);
+  });
 
-    fetch(sheetURL)
-      .then(res => {
-        if (!res.ok) throw new Error('Network response was not ok');
-        return res.json();
-      })
+// Feeder database
+const feederDatabase = {
+  "11kv": [
+    { name: "Unical-A", id: "1165" },
+    { name: "Unical-B", id: "1194" },
+    { name: "Cameroun", id: "1195" },
+    { name: "Anantigha", id: "8982" },
+    { name: "8miles", id: "1188" }
+  ],
+  "33kv": [
+    { name: "Waterboard-A", id: "200" },
+    { name: "Waterboard-B", id: "182" },
+    { name: "Diamond Hills", id: "162" },
+    { name: "Amika", id: "163" },
+    { name: "Amika Gamma", id: "999" },
+    { name: "Amika Urban A", id: "989" },
+    { name: "Amika Urban B", id: "989" },
+    { name: "Tinapa Road", id: "195" },
+    { name: "Akamkpa Urban", id: "195" },
+    { name: "Akamkpa", id: "157" }
+  ]
+};
+
+// ============ DTR ID DUPLICATE CHECK IN SUBMISSION SHEET ============
+
+function checkDTRIdInSubmissionSheet(dtrId) {
+  return new Promise((resolve, reject) => {
+    if (!dtrId || dtrId.trim() === "") {
+      resolve({ exists: false, message: "" });
+      return;
+    }
+    
+    const trimmedId = String(dtrId).trim();
+    
+    // Fetch data from submission sheet to check for duplicates
+    fetch(submissionSheetURL)
+      .then(response => response.json())
       .then(data => {
-        transformers = data;
-        isDataLoaded = true;
-        // Enable search input
-        searchInput.disabled = false;
-        searchInput.placeholder = 'type to search …';
-        searchLoading.classList.remove('active');
-        console.log(`✅ Loaded ${transformers.length} transformer records`);
-      })
-      .catch(err => {
-        console.warn("Transformer data load error:", err);
-        searchInput.disabled = false;
-        searchInput.placeholder = 'Search unavailable';
-        searchLoading.classList.remove('active');
-        // Optionally show error message
-        const statusMsg = document.createElement('div');
-        statusMsg.style.cssText = 'color: #c72a2a; font-size: 0.8rem; margin-top: 4px;';
-        statusMsg.textContent = '⚠️ Could not load transformer data';
-        searchInput.parentNode.appendChild(statusMsg);
-        setTimeout(() => statusMsg.remove(), 5000);
-      });
-  }
-
-  // Start loading immediately
-  loadTransformerData();
-
-  // --------------------------------------------------------------
-  // AUTO SEARCH (as you type) – ONLY WORKS AFTER DATA IS LOADED
-  function performAutoSearch() {
-    if (!isDataLoaded) {
-      suggestionsBox.style.display = 'none';
-      return;
-    }
-
-    const keyword = searchInput.value.trim().toLowerCase();
-    suggestionsBox.innerHTML = '';
-    if (keyword.length < 1) {
-      suggestionsBox.style.display = 'none';
-      return;
-    }
-
-    // filter
-    const matches = transformers.filter(item => {
-      const name = String(item.DTR_NAME || '').toLowerCase();
-      const dtrId = String(item.DTRID || '').toLowerCase();
-      const f11 = String(item.FEEDER11NAME || '').toLowerCase();
-      const f33 = String(item.FEEDER33NAME || '').toLowerCase();
-      const f11id = String(item.FEEDER11ID || '').toLowerCase();
-      const f33id = String(item.FEEDER33ID || '').toLowerCase();
-      return name.includes(keyword) || dtrId.includes(keyword) ||
-             f11.includes(keyword) || f33.includes(keyword) ||
-             f11id.includes(keyword) || f33id.includes(keyword);
-    }).slice(0, 8);
-
-    if (matches.length === 0) {
-      suggestionsBox.style.display = 'none';
-      return;
-    }
-
-    matches.forEach(item => {
-      const div = document.createElement('div');
-      div.className = 'suggestion-item';
-      const feederName = item.FEEDER11NAME || item.FEEDER33NAME || 'N/A';
-      div.innerHTML = `
-        <strong>${item.DTR_NAME || 'Unnamed'}</strong>
-        <span class="suggestion-sub">ID: ${item.DTRID || '—'}</span><br>
-        <span class="suggestion-sub">Feeder: ${feederName}</span>
-      `;
-      div.addEventListener('click', () => {
-        // populate fields
-        document.getElementById('name').value = item.DTR_NAME || '';
-        document.getElementById('dtrId').value = item.DTRID || '';
-        searchInput.value = item.DTR_NAME || '';
-
-        // auto-select voltage & feeder
-        const f11 = item.FEEDER11NAME || '';
-        const f33 = item.FEEDER33NAME || '';
-        let voltage = '';
-        let feederNameMatch = '';
-        if (f11) { voltage = '11kv'; feederNameMatch = f11; }
-        else if (f33) { voltage = '33kv'; feederNameMatch = f33; }
-
-        if (voltage) {
-          const vSelect = document.getElementById('voltageLevel');
-          vSelect.value = voltage;
-          updateFeeders();
-          const fSelect = document.getElementById('feederName');
-          // try exact match
-          let found = false;
-          for (let opt of fSelect.options) {
-            if (opt.value === feederNameMatch) {
-              fSelect.value = feederNameMatch;
-              found = true;
-              break;
-            }
-          }
-          if (!found) {
-            // fuzzy match
-            const list = feederDatabase[voltage] || [];
-            const matched = list.find(f => 
-              f.name.toLowerCase() === feederNameMatch.toLowerCase() ||
-              feederNameMatch.toLowerCase().includes(f.name.toLowerCase()) ||
-              f.name.toLowerCase().includes(feederNameMatch.toLowerCase())
-            );
-            if (matched) {
-              fSelect.value = matched.name;
-            }
-          }
-          populateFeederId();
+        // Check if the DTR ID exists in the submission sheet data
+        const exists = data.some(item => {
+          const itemId = String(item.DTR_ID || item.DTRID || "").trim();
+          return itemId === trimmedId;
+        });
+        
+        if (exists) {
+          resolve({ 
+            exists: true, 
+            message: "❌ This DTR ID already exists in the submission sheet" 
+          });
+        } else {
+          resolve({ exists: false, message: "" });
         }
-        suggestionsBox.style.display = 'none';
+      })
+      .catch(error => {
+        console.error("Error checking submission sheet:", error);
+        reject(error);
       });
-      suggestionsBox.appendChild(div);
-    });
-    suggestionsBox.style.display = 'block';
-  }
-
-  // ---- attach events ----
-  searchInput.addEventListener('input', performAutoSearch);
-  searchInput.addEventListener('focus', function() {
-    if (this.value.trim().length > 0 && isDataLoaded) performAutoSearch();
   });
+}
 
-  // hide on outside click
-  document.addEventListener('click', (e) => {
-    if (!e.target.closest('.input-group')) {
-      suggestionsBox.style.display = 'none';
-    }
-  });
+// ============ TRANSFORMER SEARCH FUNCTIONALITY ============
 
-  // --------------------------------------------------------------
-  // EXISTING FUNCTIONS (updateFeeders, populateFeederId, toggleMeteringType, getLocation)
-  function updateFeeders() {
-    const voltage = document.getElementById('voltageLevel').value;
-    const feederSelect = document.getElementById('feederName');
-    feederSelect.innerHTML = '<option value="">Select Feeder</option>';
-    document.getElementById('feederId').value = '';
-    if (voltage && feederDatabase[voltage]) {
-      feederDatabase[voltage].forEach(f => {
-        const opt = document.createElement('option');
-        opt.value = f.name;
-        opt.textContent = f.name;
-        feederSelect.appendChild(opt);
-      });
-    }
+function searchTransformer() {
+  const keyword = document.getElementById("transformerSearch").value.trim().toLowerCase();
+  
+  if (!keyword) {
+    document.getElementById("suggestions").style.display = "none";
+    return;
   }
 
-  function populateFeederId() {
-    const voltage = document.getElementById('voltageLevel').value;
-    const selected = document.getElementById('feederName').value;
-    const idInput = document.getElementById('feederId');
-    if (!selected || !voltage) { idInput.value = ''; return; }
-    const list = feederDatabase[voltage] || [];
-    const match = list.find(f => f.name === selected);
-    idInput.value = match ? match.id : '';
+  const matches = transformers.filter(item =>
+    String(item.DTR_NAME || "").toLowerCase().includes(keyword) ||
+    String(item.DTRID || "").toLowerCase().includes(keyword) ||
+    String(item.FEEDER11NAME || "").toLowerCase().includes(keyword) ||
+    String(item.FEEDER11ID || "").toLowerCase().includes(keyword) ||
+    String(item.FEEDER33NAME || "").toLowerCase().includes(keyword) ||
+    String(item.FEEDER33ID || "").toLowerCase().includes(keyword)
+  ).slice(0, 10);
+
+  const suggestionBox = document.getElementById("suggestions");
+  suggestionBox.innerHTML = "";
+
+  if (matches.length === 0) {
+    suggestionBox.style.display = "none";
+    return;
   }
 
-  function toggleMeteringType() {
-    const metered = document.getElementById('metered').value;
-    const mt = document.getElementById('meteringType');
-    if (metered === 'No') {
-      mt.value = 'N/A';
-      mt.disabled = true;
-    } else {
-      mt.value = '';
-      mt.disabled = false;
-    }
-  }
+  matches.forEach(item => {
+    const div = document.createElement("div");
+    div.className = "suggestion-item";
+    div.innerHTML = `
+      <strong>${item.DTR_NAME || "Unknown"}</strong>
+      <span class="suggestion-sub"> | ID: ${item.DTRID || "N/A"}</span>
+      <br>
+      <span class="suggestion-sub">Feeder: ${item.FEEDER11NAME || item.FEEDER33NAME || "N/A"}</span>
+    `;
 
-  function getLocation() {
-    const status = document.getElementById('locationStatus');
-    if (!navigator.geolocation) {
-      alert('Geolocation not supported');
-      return;
-    }
-    status.innerText = '⏳ Capturing location...';
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        document.getElementById('latitude').value = pos.coords.latitude;
-        document.getElementById('longitude').value = pos.coords.longitude;
-        document.getElementById('latitude').style.display = 'block';
-        document.getElementById('longitude').style.display = 'block';
-        status.innerText = '✅ Location captured';
-      },
-      () => {
-        alert('Unable to retrieve location');
-        status.innerText = '❌ Failed to get location';
+    div.onclick = function() {
+      // Populate the form fields
+      document.getElementById("transformerSearch").value = item.DTR_NAME || "";
+      document.getElementById("name").value = item.DTR_NAME || "";
+      document.getElementById("dtrId").value = item.DTRID || "";
+      
+      // Auto-populate feeder if matching
+      const feederName = item.FEEDER11NAME || item.FEEDER33NAME || "";
+      const voltageLevel = item.FEEDER11NAME ? "11kv" : (item.FEEDER33NAME ? "33kv" : "");
+      
+      if (feederName && voltageLevel) {
+        // Try to match feeder in our database
+        const feederSelect = document.getElementById("feederName");
+        const voltageSelect = document.getElementById("voltageLevel");
+        
+        // Set voltage level
+        voltageSelect.value = voltageLevel;
+        updateFeeders(); // Update feeder dropdown
+        
+        // Try to select the matching feeder
+        let found = false;
+        for (let option of feederSelect.options) {
+          if (option.value === feederName) {
+            feederSelect.value = feederName;
+            found = true;
+            break;
+          }
+        }
+        
+        if (found) {
+          populateFeederId();
+        } else {
+          // If not found in dropdown, check if we can map it
+          const matchedFeeder = feederDatabase[voltageLevel]?.find(f => 
+            f.name.toLowerCase() === feederName.toLowerCase() ||
+            feederName.toLowerCase().includes(f.name.toLowerCase()) ||
+            f.name.toLowerCase().includes(feederName.toLowerCase())
+          );
+          
+          if (matchedFeeder) {
+            feederSelect.value = matchedFeeder.name;
+            populateFeederId();
+          }
+        }
       }
-    );
-  }
 
-  // --------------------------------------------------------------
-  // SUBMIT with spinner
-  function showSpinner() {
-    const btnText = submitBtn.querySelector('.btn-text');
-    submitBtn.disabled = true;
-    btnText.innerHTML = '<span class="spinner"></span> Submitting...';
-  }
-  function hideSpinner() {
-    const btnText = submitBtn.querySelector('.btn-text');
-    submitBtn.disabled = false;
-    btnText.textContent = '✅ Submit Data';
-  }
-
-  form.addEventListener('submit', function(e) {
-    e.preventDefault();
-    if (submitBtn.disabled) return;
-
-    const lat = document.getElementById('latitude').value;
-    const lng = document.getElementById('longitude').value;
-    if (!lat || !lng) {
-      responseEl.textContent = '⚠️ Please capture location first';
-      responseEl.className = 'error';
-      return;
-    }
-
-    const data = {
-      voltage: document.getElementById('voltageLevel').value,
-      feeder: document.getElementById('feederName').value,
-      feederId: document.getElementById('feederId').value,
-      dtrId: document.getElementById('dtrId').value,
-      name: document.getElementById('name').value,
-      townArea: document.getElementById('townArea').value,
-      capacity: document.getElementById('capacity').value,
-      dtrType: document.getElementById('dtrType').value,
-      mounting: document.getElementById('mounting').value,
-      dtrManufacture: document.getElementById('dtrManufacture').value,
-      serialNumber: document.getElementById('serialNumber').value,
-      manufacturingDate: document.getElementById('manufacturingDate').value,
-      dtrStatus: document.getElementById('dtrStatus').value,
-      numUprisers: document.getElementById('numUprisers').value,
-      metered: document.getElementById('metered').value,
-      meteringType: document.getElementById('meteringType').value,
-      latitude: lat,
-      longitude: lng
+      suggestionBox.style.display = "none";
     };
 
-    showSpinner();
-    responseEl.textContent = '⏳ Submitting...';
-    responseEl.className = '';
-
-    fetch(scriptURL, {
-      method: 'POST',
-      body: JSON.stringify(data),
-      headers: { 'Content-Type': 'application/json' },
-      mode: 'no-cors'
-    })
-    .then(() => {
-      responseEl.textContent = '✅ Submitted successfully!';
-      responseEl.className = 'success';
-      form.reset();
-      document.getElementById('latitude').style.display = 'none';
-      document.getElementById('longitude').style.display = 'none';
-      document.getElementById('meteringType').disabled = false;
-      document.getElementById('locationStatus').innerText = '📍 Location not captured';
-      document.getElementById('transformerSearch').value = '';
-      suggestionsBox.style.display = 'none';
-      hideSpinner();
-    })
-    .catch((err) => {
-      responseEl.textContent = '❌ Submission failed. Please try again.';
-      responseEl.className = 'error';
-      console.error(err);
-      hideSpinner();
-    });
+    suggestionBox.appendChild(div);
   });
 
-  // init feeder dropdown
-  updateFeeders();
+  suggestionBox.style.display = "block";
+}
+
+// Live search with suggestions
+document.getElementById("transformerSearch").addEventListener("input", function() {
+  const keyword = this.value.trim().toLowerCase();
+  const suggestionBox = document.getElementById("suggestions");
+  
+  if (keyword.length < 2) {
+    suggestionBox.style.display = "none";
+    return;
+  }
+  
+  searchTransformer();
+});
+
+// Enter key triggers search
+document.getElementById("transformerSearch").addEventListener("keypress", function(e) {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    searchTransformer();
+  }
+});
+
+// Hide suggestions when clicking outside
+document.addEventListener("click", function(e) {
+  if (!e.target.closest(".input-group")) {
+    document.getElementById("suggestions").style.display = "none";
+  }
+});
+
+// ============ EXISTING APP FUNCTIONS ============
+
+function updateFeeders() {
+  const voltage = document.getElementById("voltageLevel").value;
+  const feederSelect = document.getElementById("feederName");
+  
+  feederSelect.innerHTML = '<option value="">Select Feeder</option>';
+  document.getElementById("feederId").value = "";
+
+  if (voltage && feederDatabase[voltage]) {
+    feederDatabase[voltage].forEach(feeder => {
+      const option = document.createElement("option");
+      option.value = feeder.name;
+      option.text = feeder.name;
+      feederSelect.appendChild(option);
+    });
+  }
+}
+
+function populateFeederId() {
+  const voltage = document.getElementById("voltageLevel").value;
+  const selectedFeederName = document.getElementById("feederName").value;
+  const feederIdInput = document.getElementById("feederId");
+
+  if (!selectedFeederName || !voltage) {
+    feederIdInput.value = "";
+    return;
+  }
+
+  const currentFeeders = feederDatabase[voltage];
+  const matchedFeeder = currentFeeders.find(f => f.name === selectedFeederName);
+
+  if (matchedFeeder) {
+    feederIdInput.value = matchedFeeder.id;
+  } else {
+    feederIdInput.value = "";
+  }
+}
+
+function toggleMeteringType() {
+  const meteredValue = document.getElementById("metered").value;
+  const meteringTypeSelect = document.getElementById("meteringType");
+  
+  if (meteredValue === "No") {
+    meteringTypeSelect.value = "N/A";
+    meteringTypeSelect.disabled = true;
+  } else {
+    meteringTypeSelect.value = "";
+    meteringTypeSelect.disabled = false;
+  }
+}
+
+function getLocation() {
+  const status = document.getElementById("locationStatus");
+
+  if (navigator.geolocation) {
+    status.innerText = "📍 Capturing location...";
+
+    navigator.geolocation.getCurrentPosition(
+      function(position) {
+        document.getElementById("latitude").value = position.coords.latitude;
+        document.getElementById("longitude").value = position.coords.longitude;
+
+        document.getElementById("latitude").style.display = "block";
+        document.getElementById("longitude").style.display = "block";
+
+        status.innerText = "✅ Location captured";
+      },
+      function() {
+        alert("Unable to retrieve location");
+        status.innerText = "❌ Failed to get location";
+      }
+    );
+  } else {
+    alert("Geolocation not supported");
+  }
+}
+
+// Show spinner and disable button
+function showSpinner() {
+  const submitBtn = document.getElementById("submitBtn");
+  const btnText = submitBtn.querySelector(".btn-text");
+  
+  // Disable button
+  submitBtn.disabled = true;
+  
+  // Change button content to show spinner
+  btnText.innerHTML = '<span class="spinner"></span> Submitting...';
+}
+
+// Hide spinner and enable button
+function hideSpinner() {
+  const submitBtn = document.getElementById("submitBtn");
+  const btnText = submitBtn.querySelector(".btn-text");
+  
+  // Enable button
+  submitBtn.disabled = false;
+  
+  // Restore button text
+  btnText.textContent = 'Submit Data';
+}
+
+document.getElementById("form").addEventListener("submit", function(e) {
+  e.preventDefault();
+
+  // Check if form is already submitting
+  const submitBtn = document.getElementById("submitBtn");
+  if (submitBtn.disabled) {
+    return; // Prevent double submission
+  }
+
+  const dtrId = document.getElementById("dtrId").value.trim();
+  const responseEl = document.getElementById("response");
+  
+  // Validate DTR ID is not empty
+  if (!dtrId) {
+    responseEl.textContent = "⚠️ Please enter a DTR ID";
+    responseEl.className = "error";
+    document.getElementById("dtrId").focus();
+    return;
+  }
+
+  // Show spinner and disable button while checking
+  showSpinner();
+  responseEl.textContent = "⏳ Checking for duplicates...";
+  responseEl.className = "";
+
+  // Check for duplicate DTR ID in submission sheet
+  checkDTRIdInSubmissionSheet(dtrId)
+    .then(duplicateCheck => {
+      if (duplicateCheck.exists) {
+        responseEl.textContent = duplicateCheck.message;
+        responseEl.className = "error";
+        document.getElementById("dtrId").focus();
+        document.getElementById("dtrId").classList.add("input-error");
+        hideSpinner();
+        return Promise.reject("Duplicate found");
+      }
+      
+      // No duplicate found, proceed with submission
+      const data = {
+        voltage: document.getElementById("voltageLevel").value,
+        feeder: document.getElementById("feederName").value,
+        feederId: document.getElementById("feederId").value,
+        dtrId: dtrId,
+        name: document.getElementById("name").value,
+        townArea: document.getElementById("townArea").value,
+        capacity: document.getElementById("capacity").value,
+        dtrType: document.getElementById("dtrType").value,
+        mounting: document.getElementById("mounting").value,
+        dtrManufacture: document.getElementById("dtrManufacture").value,
+        serialNumber: document.getElementById("serialNumber").value,
+        manufacturingDate: document.getElementById("manufacturingDate").value,
+        dtrStatus: document.getElementById("dtrStatus").value,
+        numUprisers: document.getElementById("numUprisers").value,
+        metered: document.getElementById("metered").value,
+        meteringType: document.getElementById("meteringType").value,
+        latitude: document.getElementById("latitude").value,
+        longitude: document.getElementById("longitude").value
+      };
+
+      // Validate location
+      if (!data.latitude || !data.longitude) {
+        responseEl.textContent = "⚠️ Please capture location first";
+        responseEl.className = "error";
+        hideSpinner();
+        return Promise.reject("Location not captured");
+      }
+
+      responseEl.textContent = "⏳ Submitting...";
+      responseEl.className = "";
+
+      return fetch(scriptURL, {
+        method: "POST",
+        body: JSON.stringify(data),
+        headers: {
+          "Content-Type": "application/json"
+        },
+        mode: "no-cors"
+      });
+    })
+    .then(() => {
+      // Success
+      const responseEl = document.getElementById("response");
+      responseEl.textContent = "✅ Submitted successfully!";
+      responseEl.className = "success";
+      
+      // Reset form
+      document.getElementById("form").reset();
+      document.getElementById("latitude").style.display = "none";
+      document.getElementById("longitude").style.display = "none";
+      document.getElementById("meteringType").disabled = false;
+      document.getElementById("locationStatus").innerText = "Location not captured";
+      document.getElementById("transformerSearch").value = "";
+      document.getElementById("suggestions").style.display = "none";
+      document.getElementById("dtrIdValidation").textContent = "";
+      document.getElementById("dtrIdValidation").className = "validation-message";
+      document.getElementById("dtrId").classList.remove("input-error", "input-success");
+      
+      // Hide spinner and enable button
+      hideSpinner();
+    })
+    .catch((error) => {
+      // Only show error if it's not a duplicate or validation error (already handled)
+      if (error !== "Duplicate found" && error !== "Location not captured") {
+        const responseEl = document.getElementById("response");
+        responseEl.textContent = "❌ Submission failed. Please try again.";
+        responseEl.className = "error";
+        console.error("Submission error:", error);
+        hideSpinner();
+      }
+      // If it was a duplicate or validation error, spinner is already hidden
+    });
+});
+
 </script>
+
 </body>
 </html>
