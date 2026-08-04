@@ -76,10 +76,16 @@
       cursor: pointer;
       margin-top: 10px;
       transition: background 0.2s ease;
+      position: relative;
     }
 
-    button:hover {
+    button:hover:not(:disabled) {
       background: #0056b3;
+    }
+
+    button:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
     }
 
     .btn-link {
@@ -102,6 +108,7 @@
       text-align: center;
       margin-top: 15px;
       font-weight: bold;
+      min-height: 24px;
     }
 
     #locationStatus {
@@ -164,6 +171,41 @@
 
     .search-btn:hover {
       background: #218838;
+    }
+
+    /* Spinner Styles */
+    .spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255,255,255,0.3);
+      border-radius: 50%;
+      border-top-color: #fff;
+      animation: spin 0.8s ease-in-out infinite;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .btn-text {
+      display: inline-block;
+      vertical-align: middle;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    /* Success and Error message colors */
+    .success {
+      color: #28a745;
+    }
+
+    .error {
+      color: #dc3545;
     }
   </style>
 </head>
@@ -314,7 +356,9 @@
   <input type="text" id="latitude" placeholder="Latitude" readonly>
   <input type="text" id="longitude" placeholder="Longitude" readonly>
 
-  <button type="submit">Submit Data</button>
+  <button type="submit" id="submitBtn">
+    <span class="btn-text">Submit Data</span>
+  </button>
 
   <a href="https://docs.google.com/spreadsheets/d/1qVCLY2fMHe39hW693jzoUBLTk9vBVMocfOdCkPnWIL4/edit?usp=drivesdk" 
      target="_blank" 
@@ -325,8 +369,8 @@
 <p id="response"></p>
 
 <script>
-
-const scriptURL = "https://script.google.com/macros/s/AKfycbxXkNEdJzkqDB0KMORSb_hr0jj__QIiFYeiy6-xgG-eo31MIZ4p0Ib2HVDmApyt6Q/exec";
+// Google Sheet to Save to
+const scriptURL = "https://script.google.com/macros/s/AKfycbzGAWIjluH14yOFK5PcXWAdUSZ-0LdA_OGSt-2VwEojo2Pb5KNgD7VwmgUaSPosBQ/exec";
 
 // Transformer database from Google Sheets
 const sheetURL = "https://script.google.com/macros/s/AKfycbxHY_PYmo4wwzmasQAKtO73hHofXJF0ms9olsZBVbw4UDFPUg5TywlqiySPlHfy28oc/exec";
@@ -563,8 +607,38 @@ function getLocation() {
   }
 }
 
+// Show spinner and disable button
+function showSpinner() {
+  const submitBtn = document.getElementById("submitBtn");
+  const btnText = submitBtn.querySelector(".btn-text");
+  
+  // Disable button
+  submitBtn.disabled = true;
+  
+  // Change button content to show spinner
+  btnText.innerHTML = '<span class="spinner"></span> Submitting...';
+}
+
+// Hide spinner and enable button
+function hideSpinner() {
+  const submitBtn = document.getElementById("submitBtn");
+  const btnText = submitBtn.querySelector(".btn-text");
+  
+  // Enable button
+  submitBtn.disabled = false;
+  
+  // Restore button text
+  btnText.textContent = 'Submit Data';
+}
+
 document.getElementById("form").addEventListener("submit", function(e) {
   e.preventDefault();
+
+  // Check if form is already submitting
+  const submitBtn = document.getElementById("submitBtn");
+  if (submitBtn.disabled) {
+    return; // Prevent double submission
+  }
 
   const data = {
     voltage: document.getElementById("voltageLevel").value,
@@ -587,12 +661,19 @@ document.getElementById("form").addEventListener("submit", function(e) {
     longitude: document.getElementById("longitude").value
   };
 
+  // Validate location
   if (!data.latitude || !data.longitude) {
-    document.getElementById("response").innerText = "⚠️ Please capture location first";
+    const responseEl = document.getElementById("response");
+    responseEl.textContent = "⚠️ Please capture location first";
+    responseEl.className = "error";
     return;
   }
 
-  document.getElementById("response").innerText = "⏳ Submitting...";
+  // Show spinner and disable button
+  showSpinner();
+  const responseEl = document.getElementById("response");
+  responseEl.textContent = "⏳ Submitting...";
+  responseEl.className = "";
 
   fetch(scriptURL, {
     method: "POST",
@@ -603,7 +684,11 @@ document.getElementById("form").addEventListener("submit", function(e) {
     mode: "no-cors"
   })
   .then(() => {
-    document.getElementById("response").innerText = "✅ Submitted successfully!";
+    // Success
+    responseEl.textContent = "✅ Submitted successfully!";
+    responseEl.className = "success";
+    
+    // Reset form
     document.getElementById("form").reset();
     document.getElementById("latitude").style.display = "none";
     document.getElementById("longitude").style.display = "none";
@@ -611,9 +696,18 @@ document.getElementById("form").addEventListener("submit", function(e) {
     document.getElementById("locationStatus").innerText = "Location not captured";
     document.getElementById("transformerSearch").value = "";
     document.getElementById("suggestions").style.display = "none";
+    
+    // Hide spinner and enable button
+    hideSpinner();
   })
-  .catch(() => {
-    document.getElementById("response").innerText = "❌ Submission failed";
+  .catch((error) => {
+    // Error
+    responseEl.textContent = "❌ Submission failed. Please try again.";
+    responseEl.className = "error";
+    console.error("Submission error:", error);
+    
+    // Hide spinner and enable button
+    hideSpinner();
   });
 });
 
