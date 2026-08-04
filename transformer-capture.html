@@ -244,31 +244,19 @@
     .search-loading.active {
       display: block;
     }
-    /* Duplicate check indicator */
-    #dtrId {
-      transition: border-color 0.3s;
-    }
-    #dtrId.valid {
-      border-color: #2d8f4a;
-      background-color: #f6fcf8;
-    }
-    #dtrId.invalid {
-      border-color: #c72a2a;
-      background-color: #fff5f5;
-    }
-    .duplicate-check {
-      font-size: 0.8rem;
-      margin-top: 4px;
+    /* Duplicate warning style */
+    .duplicate-warning {
+      background: #fff3cd;
+      border: 1px solid #ffc107;
+      color: #856404;
+      padding: 10px 14px;
+      border-radius: 10px;
+      margin: 8px 0;
+      font-size: 0.9rem;
       display: none;
     }
-    .duplicate-check.show {
+    .duplicate-warning.show {
       display: block;
-    }
-    .duplicate-check.valid {
-      color: #2d8f4a;
-    }
-    .duplicate-check.invalid {
-      color: #c72a2a;
     }
   </style>
 </head>
@@ -314,9 +302,8 @@
     </div>
 
     <div class="input-group">
-      <label for="dtrId">DTR ID <span style="color: #c72a2a;">*</span></label>
+      <label for="dtrId">DTR ID</label>
       <input type="text" id="dtrId" placeholder="e.g. DTR-123" required>
-      <div id="duplicateCheck" class="duplicate-check"></div>
     </div>
 
     <div class="input-group">
@@ -409,6 +396,10 @@
       </select>
     </div>
 
+    <div id="duplicateWarning" class="duplicate-warning">
+      ⚠️ <span id="duplicateMessage">This Transformer ID already exists in the submission database!</span>
+    </div>
+
     <div style="display: flex; gap: 8px; margin: 8px 0;">
       <button type="button" onclick="getLocation()" style="background: #1f7b4d; padding: 12px;">📍 Capture Location</button>
     </div>
@@ -434,9 +425,8 @@
   const scriptURL = "https://script.google.com/macros/s/AKfycbzGAWIjluH14yOFK5PcXWAdUSZ-0LdA_OGSt-2VwEojo2Pb5KNgD7VwmgUaSPosBQ/exec";
   const sheetURL = "https://script.google.com/macros/s/AKfycbxHY_PYmo4wwzmasQAKtO73hHofXJF0ms9olsZBVbw4UDFPUg5TywlqiySPlHfy28oc/exec";
   
-  // For checking duplicates - this would be the URL to your submission sheet data
-  // You'll need to create a separate endpoint or use the same sheet URL
-  const submissionDataURL = "https://script.google.com/macros/s/AKfycbxHY_PYmo4wwzmasQAKtO73hHofXJF0ms9olsZBVbw4UDFPUg5TywlqiySPlHfy28oc/exec";
+  // Submission sheet URL for duplicate checking
+  const submissionSheetURL = "https://script.google.com/macros/s/AKfycbzGAWIjluH14yOFK5PcXWAdUSZ-0LdA_OGSt-2VwEojo2Pb5KNgD7VwmgUaSPosBQ/exec";
 
   // --------------------------------------------------------------
   // FEEDER DATABASE
@@ -463,22 +453,22 @@
   const submitBtn = document.getElementById('submitBtn');
   const responseEl = document.getElementById('response');
   const searchLoading = document.getElementById('searchLoading');
-  const dtrIdInput = document.getElementById('dtrId');
-  const duplicateCheckEl = document.getElementById('duplicateCheck');
+  const duplicateWarning = document.getElementById('duplicateWarning');
+  const duplicateMessage = document.getElementById('duplicateMessage');
 
   // --------------------------------------------------------------
-  // LOAD TRANSFORMER DATA - PRELOAD BEFORE SEARCH IS ENABLED
-  let transformers = [];
+  // LOAD DATA FROM BOTH SHEETS
+  let transformers = []; // For search (from sheetURL)
+  let submissionData = []; // For duplicate checking (from submissionSheetURL)
   let isDataLoaded = false;
-
-  // Store existing DTR IDs from submissions
-  let existingDTRIds = new Set();
+  let isSubmissionDataLoaded = false;
 
   function loadTransformerData() {
     searchLoading.classList.add('active');
     searchInput.disabled = true;
     searchInput.placeholder = 'Loading data...';
 
+    // Load search data
     fetch(sheetURL)
       .then(res => {
         if (!res.ok) throw new Error('Network response was not ok');
@@ -487,53 +477,37 @@
       .then(data => {
         transformers = data;
         isDataLoaded = true;
-        // Enable search input
         searchInput.disabled = false;
         searchInput.placeholder = 'type to search …';
         searchLoading.classList.remove('active');
-        console.log(`✅ Loaded ${transformers.length} transformer records`);
-        
-        // Also load existing submission data for duplicate checking
-        loadSubmissionData();
+        console.log(`✅ Loaded ${transformers.length} transformer records for search`);
       })
       .catch(err => {
         console.warn("Transformer data load error:", err);
         searchInput.disabled = false;
         searchInput.placeholder = 'Search unavailable';
         searchLoading.classList.remove('active');
-        // Optionally show error message
         const statusMsg = document.createElement('div');
         statusMsg.style.cssText = 'color: #c72a2a; font-size: 0.8rem; margin-top: 4px;';
         statusMsg.textContent = '⚠️ Could not load transformer data';
         searchInput.parentNode.appendChild(statusMsg);
         setTimeout(() => statusMsg.remove(), 5000);
       });
-  }
 
-  // Load submission data for duplicate checking
-  function loadSubmissionData() {
-    // Use the same URL but we need to ensure we're getting the submission data
-    // This assumes your sheet contains the DTR IDs in a column
-    fetch(submissionDataURL)
+    // Load submission data for duplicate checking
+    fetch(submissionSheetURL)
       .then(res => {
         if (!res.ok) throw new Error('Network response was not ok');
         return res.json();
       })
       .then(data => {
-        // Assuming the data contains DTR_ID field
-        if (Array.isArray(data)) {
-          data.forEach(item => {
-            if (item.DTR_ID || item.DTRID) {
-              const id = (item.DTR_ID || item.DTRID).toString().trim();
-              if (id) existingDTRIds.add(id);
-            }
-          });
-          console.log(`✅ Loaded ${existingDTRIds.size} existing DTR IDs for duplicate checking`);
-        }
+        submissionData = data;
+        isSubmissionDataLoaded = true;
+        console.log(`✅ Loaded ${submissionData.length} records from submission sheet for duplicate checking`);
       })
       .catch(err => {
-        console.warn("Could not load submission data for duplicate check:", err);
-        // If we can't load submission data, we'll still proceed but without duplicate check
+        console.warn("Submission data load error:", err);
+        isSubmissionDataLoaded = false;
       });
   }
 
@@ -541,51 +515,42 @@
   loadTransformerData();
 
   // --------------------------------------------------------------
-  // DUPLICATE CHECK FUNCTION
-  function checkDuplicateDTRId() {
-    const dtrId = dtrIdInput.value.trim();
-    const duplicateCheckEl = document.getElementById('duplicateCheck');
+  // CHECK DUPLICATE DTR ID AGAINST SUBMISSION SHEET ONLY
+  function checkDuplicateDTRId(dtrId) {
+    if (!isSubmissionDataLoaded || !submissionData.length) {
+      return false; // Can't check if data isn't loaded
+    }
     
-    if (!dtrId) {
-      dtrIdInput.className = '';
-      duplicateCheckEl.className = 'duplicate-check';
-      duplicateCheckEl.textContent = '';
-      return;
-    }
-
-    // Check against existing submissions
-    if (existingDTRIds.has(dtrId)) {
-      dtrIdInput.className = 'invalid';
-      duplicateCheckEl.className = 'duplicate-check show invalid';
-      duplicateCheckEl.textContent = '❌ This DTR ID already exists in the database!';
-      return false;
-    }
-
-    // Also check against the transformer data (if the ID exists there but not in submissions)
-    const existsInTransformers = transformers.some(item => 
-      item.DTRID && item.DTRID.toString().trim() === dtrId
-    );
-
-    if (existsInTransformers) {
-      // Check if it's in submissions by looking at existingDTRIds
-      // If it's in transformers but not in submissions, it's fine to add
-      dtrIdInput.className = 'valid';
-      duplicateCheckEl.className = 'duplicate-check show valid';
-      duplicateCheckEl.textContent = '✅ DTR ID exists in transformer list but not submitted yet - OK to add';
-      return true;
-    }
-
-    // New ID
-    dtrIdInput.className = 'valid';
-    duplicateCheckEl.className = 'duplicate-check show valid';
-    duplicateCheckEl.textContent = '✅ New DTR ID - OK to submit';
-    return true;
+    // Case-insensitive comparison
+    const trimmedId = dtrId.trim();
+    if (!trimmedId) return false;
+    
+    return submissionData.some(item => {
+      const existingId = String(item.DTRID || '').trim();
+      return existingId.toLowerCase() === trimmedId.toLowerCase();
+    });
   }
 
-  // Check duplicate on input
-  dtrIdInput.addEventListener('input', checkDuplicateDTRId);
-  dtrIdInput.addEventListener('blur', checkDuplicateDTRId);
+  // Real-time duplicate check when user types in DTR ID
+  document.getElementById('dtrId').addEventListener('input', function() {
+    const dtrId = this.value.trim();
+    if (!dtrId || !isSubmissionDataLoaded) {
+      duplicateWarning.classList.remove('show');
+      return;
+    }
+    
+    const isDuplicate = checkDuplicateDTRId(dtrId);
+    if (isDuplicate) {
+      duplicateMessage.textContent = `Transformer ID "${dtrId}" already exists in the submission database!`;
+      duplicateWarning.classList.add('show');
+    } else {
+      duplicateWarning.classList.remove('show');
+    }
+  });
 
+  // Also check when selecting from search results
+  // The search result click handler already populates DTR ID, so we trigger the check
+  
   // --------------------------------------------------------------
   // AUTO SEARCH (as you type) – ONLY WORKS AFTER DATA IS LOADED
   function performAutoSearch() {
@@ -623,14 +588,9 @@
       const div = document.createElement('div');
       div.className = 'suggestion-item';
       const feederName = item.FEEDER11NAME || item.FEEDER33NAME || 'N/A';
-      const dtrId = item.DTRID || '—';
-      // Check if this ID already exists in submissions
-      const isDuplicate = existingDTRIds.has(dtrId.toString().trim());
-      const duplicateWarning = isDuplicate ? ' ⚠️ Already submitted' : '';
-      
       div.innerHTML = `
         <strong>${item.DTR_NAME || 'Unnamed'}</strong>
-        <span class="suggestion-sub">ID: ${dtrId}${duplicateWarning}</span><br>
+        <span class="suggestion-sub">ID: ${item.DTRID || '—'}</span><br>
         <span class="suggestion-sub">Feeder: ${feederName}</span>
       `;
       div.addEventListener('click', () => {
@@ -638,9 +598,11 @@
         document.getElementById('name').value = item.DTR_NAME || '';
         document.getElementById('dtrId').value = item.DTRID || '';
         searchInput.value = item.DTR_NAME || '';
-        
-        // Check duplicate after populating
-        checkDuplicateDTRId();
+
+        // Trigger duplicate check for the selected DTR ID
+        const dtrIdInput = document.getElementById('dtrId');
+        const event = new Event('input');
+        dtrIdInput.dispatchEvent(event);
 
         // auto-select voltage & feeder
         const f11 = item.FEEDER11NAME || '';
@@ -760,7 +722,7 @@
   }
 
   // --------------------------------------------------------------
-  // SUBMIT with duplicate check
+  // SUBMIT with duplicate check against submission sheet only
   function showSpinner() {
     const btnText = submitBtn.querySelector('.btn-text');
     submitBtn.disabled = true;
@@ -777,27 +739,23 @@
     if (submitBtn.disabled) return;
 
     const dtrId = document.getElementById('dtrId').value.trim();
-    
-    // Validate DTR ID is not empty
-    if (!dtrId) {
-      responseEl.textContent = '⚠️ Please enter a DTR ID';
-      responseEl.className = 'error';
-      return;
-    }
-
-    // Check for duplicate before submitting
-    if (existingDTRIds.has(dtrId)) {
-      responseEl.textContent = '❌ Duplicate Error: This DTR ID already exists in the database!';
-      responseEl.className = 'error';
-      // Highlight the DTR ID field
-      dtrIdInput.className = 'invalid';
-      duplicateCheckEl.className = 'duplicate-check show invalid';
-      duplicateCheckEl.textContent = '❌ This DTR ID already exists in the database!';
-      return;
-    }
-
     const lat = document.getElementById('latitude').value;
     const lng = document.getElementById('longitude').value;
+
+    // Check for duplicate DTR ID against submission sheet only
+    if (dtrId && isSubmissionDataLoaded) {
+      const isDuplicate = checkDuplicateDTRId(dtrId);
+      if (isDuplicate) {
+        duplicateMessage.textContent = `Transformer ID "${dtrId}" already exists in the submission database!`;
+        duplicateWarning.classList.add('show');
+        responseEl.textContent = '❌ Submission failed: Duplicate Transformer ID in submission database';
+        responseEl.className = 'error';
+        // Scroll to warning
+        duplicateWarning.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+    }
+
     if (!lat || !lng) {
       responseEl.textContent = '⚠️ Please capture location first';
       responseEl.className = 'error';
@@ -838,8 +796,6 @@
     .then(() => {
       responseEl.textContent = '✅ Submitted successfully!';
       responseEl.className = 'success';
-      // Add the new DTR ID to the set to prevent immediate re-submission
-      existingDTRIds.add(dtrId);
       form.reset();
       document.getElementById('latitude').style.display = 'none';
       document.getElementById('longitude').style.display = 'none';
@@ -847,9 +803,7 @@
       document.getElementById('locationStatus').innerText = '📍 Location not captured';
       document.getElementById('transformerSearch').value = '';
       suggestionsBox.style.display = 'none';
-      dtrIdInput.className = '';
-      duplicateCheckEl.className = 'duplicate-check';
-      duplicateCheckEl.textContent = '';
+      duplicateWarning.classList.remove('show');
       hideSpinner();
     })
     .catch((err) => {
