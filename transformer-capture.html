@@ -140,7 +140,6 @@
       box-shadow: 0 0 0 4px rgba(45, 143, 74, 0.25);
       background-color: white;
     }
-    /* suggestions stay clean */
     .suggestions-box {
       position: absolute;
       top: calc(100% + 4px);
@@ -230,7 +229,6 @@
     select { appearance: auto; }
     .inline-icon { font-size: 1.2rem; }
     hr { border: none; border-top: 1px solid #e2e9f3; margin: 12px 0; }
-    /* Loading overlay for search */
     .search-loading {
       position: absolute;
       right: 12px;
@@ -244,7 +242,6 @@
     .search-loading.active {
       display: block;
     }
-    /* Duplicate warning style */
     .duplicate-warning {
       background: #fff3cd;
       border: 1px solid #ffc107;
@@ -258,6 +255,17 @@
     .duplicate-warning.show {
       display: block;
     }
+    .validation-spinner {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid #f3f3f3;
+      border-top: 2px solid #1a6bff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
   </style>
 </head>
 <body>
@@ -265,7 +273,6 @@
   <h2>⚡ Transformer Data Capture</h2>
 
   <form id="form" autocomplete="off">
-    <!-- SEARCH with live suggestions – GREEN search bar -->
     <div class="input-group">
       <label for="transformerSearch">🔍 Search transformer (name, ID, feeder)</label>
       <input 
@@ -302,7 +309,7 @@
     </div>
 
     <div class="input-group">
-      <label for="dtrId">DTR ID</label>
+      <label for="dtrId">DTR ID <span id="dtrValidationStatus"></span></label>
       <input type="text" id="dtrId" placeholder="e.g. DTR-123" required>
     </div>
 
@@ -425,8 +432,8 @@
   const scriptURL = "https://script.google.com/macros/s/AKfycbzGAWIjluH14yOFK5PcXWAdUSZ-0LdA_OGSt-2VwEojo2Pb5KNgD7VwmgUaSPosBQ/exec";
   const sheetURL = "https://script.google.com/macros/s/AKfycbxHY_PYmo4wwzmasQAKtO73hHofXJF0ms9olsZBVbw4UDFPUg5TywlqiySPlHfy28oc/exec";
   
-  // Submission sheet URL for duplicate checking
-  const submissionSheetURL = "https://script.google.com/macros/s/AKfycbzGAWIjluH14yOFK5PcXWAdUSZ-0LdA_OGSt-2VwEojo2Pb5KNgD7VwmgUaSPosBQ/exec";
+  // Submission sheet URL for duplicate checking - using the same URL but with GET method
+  const submissionCheckURL = "https://script.google.com/macros/s/AKfycbzGAWIjluH14yOFK5PcXWAdUSZ-0LdA_OGSt-2VwEojo2Pb5KNgD7VwmgUaSPosBQ/exec";
 
   // --------------------------------------------------------------
   // FEEDER DATABASE
@@ -455,11 +462,13 @@
   const searchLoading = document.getElementById('searchLoading');
   const duplicateWarning = document.getElementById('duplicateWarning');
   const duplicateMessage = document.getElementById('duplicateMessage');
+  const dtrIdInput = document.getElementById('dtrId');
+  const dtrValidationStatus = document.getElementById('dtrValidationStatus');
 
   // --------------------------------------------------------------
   // LOAD DATA FROM BOTH SHEETS
-  let transformers = []; // For search (from sheetURL)
-  let submissionData = []; // For duplicate checking (from submissionSheetURL)
+  let transformers = [];
+  let submissionData = [];
   let isDataLoaded = false;
   let isSubmissionDataLoaded = false;
 
@@ -495,7 +504,7 @@
       });
 
     // Load submission data for duplicate checking
-    fetch(submissionSheetURL)
+    fetch(submissionCheckURL + '?action=getData')
       .then(res => {
         if (!res.ok) throw new Error('Network response was not ok');
         return res.json();
@@ -508,6 +517,24 @@
       .catch(err => {
         console.warn("Submission data load error:", err);
         isSubmissionDataLoaded = false;
+        // Try alternative approach - load from the view sheet
+        loadSubmissionDataFromView();
+      });
+  }
+
+  // Fallback: Try to load from the view sheet
+  function loadSubmissionDataFromView() {
+    fetch(sheetURL)
+      .then(res => res.json())
+      .then(data => {
+        // This is a fallback - we'll use the view sheet data for duplicate checking
+        submissionData = data;
+        isSubmissionDataLoaded = true;
+        console.log(`⚠️ Using view sheet data as fallback for duplicate checking (${submissionData.length} records)`);
+      })
+      .catch(err => {
+        console.warn("Fallback data load also failed:", err);
+        isSubmissionDataLoaded = false;
       });
   }
 
@@ -518,10 +545,9 @@
   // CHECK DUPLICATE DTR ID AGAINST SUBMISSION SHEET ONLY
   function checkDuplicateDTRId(dtrId) {
     if (!isSubmissionDataLoaded || !submissionData.length) {
-      return false; // Can't check if data isn't loaded
+      return false;
     }
     
-    // Case-insensitive comparison
     const trimmedId = dtrId.trim();
     if (!trimmedId) return false;
     
@@ -531,28 +557,42 @@
     });
   }
 
-  // Real-time duplicate check when user types in DTR ID
-  document.getElementById('dtrId').addEventListener('input', function() {
+  // Real-time duplicate check with debounce
+  let duplicateCheckTimeout;
+  dtrIdInput.addEventListener('input', function() {
+    clearTimeout(duplicateCheckTimeout);
     const dtrId = this.value.trim();
+    
     if (!dtrId || !isSubmissionDataLoaded) {
       duplicateWarning.classList.remove('show');
+      dtrValidationStatus.innerHTML = '';
       return;
     }
     
-    const isDuplicate = checkDuplicateDTRId(dtrId);
-    if (isDuplicate) {
-      duplicateMessage.textContent = `Transformer ID "${dtrId}" already exists in the submission database!`;
-      duplicateWarning.classList.add('show');
-    } else {
-      duplicateWarning.classList.remove('show');
-    }
+    // Show checking status
+    dtrValidationStatus.innerHTML = '<span class="validation-spinner"></span> checking...';
+    dtrValidationStatus.style.color = '#666';
+    
+    duplicateCheckTimeout = setTimeout(() => {
+      const isDuplicate = checkDuplicateDTRId(dtrId);
+      if (isDuplicate) {
+        duplicateMessage.textContent = `Transformer ID "${dtrId}" already exists in the submission database!`;
+        duplicateWarning.classList.add('show');
+        dtrValidationStatus.innerHTML = '❌ Duplicate';
+        dtrValidationStatus.style.color = '#c72a2a';
+      } else {
+        duplicateWarning.classList.remove('show');
+        dtrValidationStatus.innerHTML = '✅ Available';
+        dtrValidationStatus.style.color = '#1e7e34';
+      }
+    }, 300);
   });
 
   // Also check when selecting from search results
   // The search result click handler already populates DTR ID, so we trigger the check
   
   // --------------------------------------------------------------
-  // AUTO SEARCH (as you type) – ONLY WORKS AFTER DATA IS LOADED
+  // AUTO SEARCH (as you type)
   function performAutoSearch() {
     if (!isDataLoaded) {
       suggestionsBox.style.display = 'none';
@@ -566,7 +606,6 @@
       return;
     }
 
-    // filter
     const matches = transformers.filter(item => {
       const name = String(item.DTR_NAME || '').toLowerCase();
       const dtrId = String(item.DTRID || '').toLowerCase();
@@ -594,17 +633,14 @@
         <span class="suggestion-sub">Feeder: ${feederName}</span>
       `;
       div.addEventListener('click', () => {
-        // populate fields
         document.getElementById('name').value = item.DTR_NAME || '';
         document.getElementById('dtrId').value = item.DTRID || '';
         searchInput.value = item.DTR_NAME || '';
 
         // Trigger duplicate check for the selected DTR ID
-        const dtrIdInput = document.getElementById('dtrId');
         const event = new Event('input');
         dtrIdInput.dispatchEvent(event);
 
-        // auto-select voltage & feeder
         const f11 = item.FEEDER11NAME || '';
         const f33 = item.FEEDER33NAME || '';
         let voltage = '';
@@ -617,7 +653,6 @@
           vSelect.value = voltage;
           updateFeeders();
           const fSelect = document.getElementById('feederName');
-          // try exact match
           let found = false;
           for (let opt of fSelect.options) {
             if (opt.value === feederNameMatch) {
@@ -627,7 +662,6 @@
             }
           }
           if (!found) {
-            // fuzzy match
             const list = feederDatabase[voltage] || [];
             const matched = list.find(f => 
               f.name.toLowerCase() === feederNameMatch.toLowerCase() ||
@@ -647,13 +681,11 @@
     suggestionsBox.style.display = 'block';
   }
 
-  // ---- attach events ----
   searchInput.addEventListener('input', performAutoSearch);
   searchInput.addEventListener('focus', function() {
     if (this.value.trim().length > 0 && isDataLoaded) performAutoSearch();
   });
 
-  // hide on outside click
   document.addEventListener('click', (e) => {
     if (!e.target.closest('.input-group')) {
       suggestionsBox.style.display = 'none';
@@ -661,7 +693,7 @@
   });
 
   // --------------------------------------------------------------
-  // EXISTING FUNCTIONS (updateFeeders, populateFeederId, toggleMeteringType, getLocation)
+  // EXISTING FUNCTIONS
   function updateFeeders() {
     const voltage = document.getElementById('voltageLevel').value;
     const feederSelect = document.getElementById('feederName');
@@ -722,7 +754,7 @@
   }
 
   // --------------------------------------------------------------
-  // SUBMIT with duplicate check against submission sheet only
+  // SUBMIT with duplicate check
   function showSpinner() {
     const btnText = submitBtn.querySelector('.btn-text');
     submitBtn.disabled = true;
@@ -738,7 +770,7 @@
     e.preventDefault();
     if (submitBtn.disabled) return;
 
-    const dtrId = document.getElementById('dtrId').value.trim();
+    const dtrId = dtrIdInput.value.trim();
     const lat = document.getElementById('latitude').value;
     const lng = document.getElementById('longitude').value;
 
@@ -750,10 +782,13 @@
         duplicateWarning.classList.add('show');
         responseEl.textContent = '❌ Submission failed: Duplicate Transformer ID in submission database';
         responseEl.className = 'error';
-        // Scroll to warning
         duplicateWarning.scrollIntoView({ behavior: 'smooth', block: 'center' });
         return;
       }
+    } else if (dtrId && !isSubmissionDataLoaded) {
+      responseEl.textContent = '⚠️ Cannot verify duplicate - submission data not loaded. Please refresh.';
+      responseEl.className = 'warning';
+      return;
     }
 
     if (!lat || !lng) {
@@ -804,7 +839,13 @@
       document.getElementById('transformerSearch').value = '';
       suggestionsBox.style.display = 'none';
       duplicateWarning.classList.remove('show');
+      dtrValidationStatus.innerHTML = '';
       hideSpinner();
+      
+      // Refresh submission data after successful submission
+      setTimeout(() => {
+        loadSubmissionDataFromView();
+      }, 2000);
     })
     .catch((err) => {
       responseEl.textContent = '❌ Submission failed. Please try again.';
