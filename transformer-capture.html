@@ -26,14 +26,13 @@
       box-shadow: 0px 4px 15px rgba(0,0,0,0.1);
     }
 
-    /* External Placeholder / Label Group Container */
     .input-group {
       margin-bottom: 15px;
       display: flex;
       flex-direction: column;
+      position: relative;
     }
 
-    /* Style for External Placeholder Labels */
     .input-group label {
       font-size: 13px;
       font-weight: 600;
@@ -42,7 +41,6 @@
       transition: color 0.2s ease;
     }
 
-    /* Highlight label when the input is focused */
     .input-group:focus-within label {
       color: #007BFF;
     }
@@ -84,7 +82,6 @@
       background: #0056b3;
     }
 
-    /* Style for the View Report button */
     .btn-link {
       display: block;
       text-align: center;
@@ -118,6 +115,56 @@
     #longitude {
       display: none;
     }
+
+    /* Transformer Search Suggestions */
+    .suggestions-box {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      width: 100%;
+      background: white;
+      border: 1px solid #ccc;
+      border-top: none;
+      border-radius: 0 0 6px 6px;
+      max-height: 250px;
+      overflow-y: auto;
+      z-index: 1000;
+      display: none;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .suggestion-item {
+      padding: 10px 12px;
+      cursor: pointer;
+      border-bottom: 1px solid #eee;
+      font-size: 14px;
+    }
+
+    .suggestion-item:hover {
+      background: #f0f7ff;
+    }
+
+    .suggestion-item .suggestion-sub {
+      font-size: 12px;
+      color: #666;
+    }
+
+    .suggestion-item:last-child {
+      border-bottom: none;
+    }
+
+    /* Search button styling */
+    .search-btn {
+      background: #28a745;
+      margin-top: 5px;
+      padding: 10px 12px;
+      font-size: 14px;
+      width: 100%;
+    }
+
+    .search-btn:hover {
+      background: #218838;
+    }
   </style>
 </head>
 
@@ -126,6 +173,18 @@
 <h2>Transformer Data Capture</h2>
 
 <form id="form">
+
+  <!-- Transformer Search Section -->
+  <div class="input-group">
+    <label for="transformerSearch">Search Transformer</label>
+    <input 
+      type="text" 
+      id="transformerSearch" 
+      placeholder="Search by name, ID, or feeder" 
+      autocomplete="off">
+    <button type="button" class="search-btn" onclick="searchTransformer()">🔍 Search Transformer</button>
+    <div id="suggestions" class="suggestions-box"></div>
+  </div>
 
   <div class="input-group">
     <label for="voltageLevel">Voltage Level</label>
@@ -174,6 +233,7 @@
       <option value="500kVA">500kVA</option>
       <option value="750kVA">750kVA</option>
       <option value="1000kVA">1000kVA</option>
+      <option value="1350kVA">1350kVA</option>
       <option value="1500kVA">1500kVA</option>
       <option value="2000kVA">2000kVA</option>
       <option value="2500kVA">2500kVA</option>
@@ -208,6 +268,11 @@
     <input type="text" id="serialNumber" placeholder="Enter Serial Number" >
   </div>
   
+  <div class="input-group">
+    <label for="manufacturingDate">Manufacturing Date</label>
+    <input type="date" id="manufacturingDate">
+  </div>
+
   <div class="input-group">
     <label for="dtrStatus">DTR Status</label>
     <select id="dtrStatus" required>
@@ -263,6 +328,21 @@
 
 const scriptURL = "https://script.google.com/macros/s/AKfycbxXkNEdJzkqDB0KMORSb_hr0jj__QIiFYeiy6-xgG-eo31MIZ4p0Ib2HVDmApyt6Q/exec";
 
+// Transformer database from Google Sheets
+const sheetURL = "https://script.google.com/macros/s/AKfycbxHY_PYmo4wwzmasQAKtO73hHofXJF0ms9olsZBVbw4UDFPUg5TywlqiySPlHfy28oc/exec";
+let transformers = [];
+
+// Load transformer data
+fetch(sheetURL)
+  .then(response => response.json())
+  .then(data => {
+    transformers = data;
+  })
+  .catch(error => {
+    console.error("Error loading transformer data:", error);
+  });
+
+// Feeder database
 const feederDatabase = {
   "11kv": [
     { name: "Unical-A", id: "1165" },
@@ -275,9 +355,137 @@ const feederDatabase = {
     { name: "Waterboard-A", id: "200" },
     { name: "Waterboard-B", id: "182" },
     { name: "Diamond Hills", id: "162" },
+    { name: "Amika", id: "163" },
+    { name: "Amika Gamma", id: "999" },
+    { name: "Amika Urban A", id: "989" },
+    { name: "Amika Urban B", id: "989" },
+    { name: "Tinapa Road", id: "195" },
+    { name: "Akamkpa Urban", id: "195" },
     { name: "Akamkpa", id: "157" }
   ]
 };
+
+// ============ TRANSFORMER SEARCH FUNCTIONALITY ============
+
+function searchTransformer() {
+  const keyword = document.getElementById("transformerSearch").value.trim().toLowerCase();
+  
+  if (!keyword) {
+    document.getElementById("suggestions").style.display = "none";
+    return;
+  }
+
+  const matches = transformers.filter(item =>
+    String(item.DTR_NAME || "").toLowerCase().includes(keyword) ||
+    String(item.DTRID || "").toLowerCase().includes(keyword) ||
+    String(item.FEEDER11NAME || "").toLowerCase().includes(keyword) ||
+    String(item.FEEDER11ID || "").toLowerCase().includes(keyword) ||
+    String(item.FEEDER33NAME || "").toLowerCase().includes(keyword) ||
+    String(item.FEEDER33ID || "").toLowerCase().includes(keyword)
+  ).slice(0, 10);
+
+  const suggestionBox = document.getElementById("suggestions");
+  suggestionBox.innerHTML = "";
+
+  if (matches.length === 0) {
+    suggestionBox.style.display = "none";
+    return;
+  }
+
+  matches.forEach(item => {
+    const div = document.createElement("div");
+    div.className = "suggestion-item";
+    div.innerHTML = `
+      <strong>${item.DTR_NAME || "Unknown"}</strong>
+      <span class="suggestion-sub"> | ID: ${item.DTRID || "N/A"}</span>
+      <br>
+      <span class="suggestion-sub">Feeder: ${item.FEEDER11NAME || item.FEEDER33NAME || "N/A"}</span>
+    `;
+
+    div.onclick = function() {
+      // Populate the form fields
+      document.getElementById("transformerSearch").value = item.DTR_NAME || "";
+      document.getElementById("name").value = item.DTR_NAME || "";
+      document.getElementById("dtrId").value = item.DTRID || "";
+      
+      // Auto-populate feeder if matching
+      const feederName = item.FEEDER11NAME || item.FEEDER33NAME || "";
+      const voltageLevel = item.FEEDER11NAME ? "11kv" : (item.FEEDER33NAME ? "33kv" : "");
+      
+      if (feederName && voltageLevel) {
+        // Try to match feeder in our database
+        const feederSelect = document.getElementById("feederName");
+        const voltageSelect = document.getElementById("voltageLevel");
+        
+        // Set voltage level
+        voltageSelect.value = voltageLevel;
+        updateFeeders(); // Update feeder dropdown
+        
+        // Try to select the matching feeder
+        let found = false;
+        for (let option of feederSelect.options) {
+          if (option.value === feederName) {
+            feederSelect.value = feederName;
+            found = true;
+            break;
+          }
+        }
+        
+        if (found) {
+          populateFeederId();
+        } else {
+          // If not found in dropdown, check if we can map it
+          const matchedFeeder = feederDatabase[voltageLevel]?.find(f => 
+            f.name.toLowerCase() === feederName.toLowerCase() ||
+            feederName.toLowerCase().includes(f.name.toLowerCase()) ||
+            f.name.toLowerCase().includes(feederName.toLowerCase())
+          );
+          
+          if (matchedFeeder) {
+            feederSelect.value = matchedFeeder.name;
+            populateFeederId();
+          }
+        }
+      }
+
+      suggestionBox.style.display = "none";
+    };
+
+    suggestionBox.appendChild(div);
+  });
+
+  suggestionBox.style.display = "block";
+}
+
+// Live search with suggestions
+document.getElementById("transformerSearch").addEventListener("input", function() {
+  const keyword = this.value.trim().toLowerCase();
+  const suggestionBox = document.getElementById("suggestions");
+  
+  if (keyword.length < 2) {
+    suggestionBox.style.display = "none";
+    return;
+  }
+  
+  searchTransformer();
+});
+
+// Enter key triggers search
+document.getElementById("transformerSearch").addEventListener("keypress", function(e) {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    searchTransformer();
+  }
+});
+
+// Hide suggestions when clicking outside
+document.addEventListener("click", function(e) {
+  if (!e.target.closest(".input-group")) {
+    document.getElementById("suggestions").style.display = "none";
+  }
+});
+
+// ============ EXISTING APP FUNCTIONS ============
 
 function updateFeeders() {
   const voltage = document.getElementById("voltageLevel").value;
@@ -333,7 +541,7 @@ function getLocation() {
   const status = document.getElementById("locationStatus");
 
   if (navigator.geolocation) {
-    status.innerText = "📡 Capturing location...";
+    status.innerText = "📍 Capturing location...";
 
     navigator.geolocation.getCurrentPosition(
       function(position) {
@@ -370,6 +578,7 @@ document.getElementById("form").addEventListener("submit", function(e) {
     mounting: document.getElementById("mounting").value,
     dtrManufacture: document.getElementById("dtrManufacture").value,
     serialNumber: document.getElementById("serialNumber").value,
+    manufacturingDate: document.getElementById("manufacturingDate").value,
     dtrStatus: document.getElementById("dtrStatus").value,
     numUprisers: document.getElementById("numUprisers").value,
     metered: document.getElementById("metered").value,
@@ -400,6 +609,8 @@ document.getElementById("form").addEventListener("submit", function(e) {
     document.getElementById("longitude").style.display = "none";
     document.getElementById("meteringType").disabled = false;
     document.getElementById("locationStatus").innerText = "Location not captured";
+    document.getElementById("transformerSearch").value = "";
+    document.getElementById("suggestions").style.display = "none";
   })
   .catch(() => {
     document.getElementById("response").innerText = "❌ Submission failed";
@@ -410,4 +621,3 @@ document.getElementById("form").addEventListener("submit", function(e) {
 
 </body>
 </html>
-
