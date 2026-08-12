@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DTR Information Search</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; }
+    body {
+      font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+      padding: 24px 16px;
+      background: #f2f5f9;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .container {
+      max-width: 480px;
+      width: 100%;
+      background: white;
+      border-radius: 24px;
+      padding: 24px 20px 32px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+    }
+    /* ===== HEADER ===== */
+    .header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid #eef2f7;
+    }
+    .logo-container {
+      margin-bottom: 2px;
+    }
+    .logo-container img {
+      width: 140px;
+      height: auto;
+      object-fit: contain;
+      border-radius: 12px;
+      display: block;
+    }
+    .header-text {
+      text-align: center;
+    }
+    .header-text h2 {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #0b1a33;
+      margin: 0;
+      line-height: 1.2;
+    }
+    .header-text .subtitle {
+      font-size: 0.8rem;
+      color: #4d627a;
+      font-weight: 400;
+    }
+
+    /* ===== SEARCH SECTION ===== */
+    .search-section {
+      margin-bottom: 16px;
+      position: relative;
+    }
+    .search-input-wrapper {
+      position: relative;
+    }
+    #searchInput {
+      width: 100%;
+      padding: 14px 16px 14px 44px;
+      border: 2px solid #d9e0eb;
+      border-radius: 14px;
+      font-size: 1rem;
+      outline: none;
+      transition: 0.2s;
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="%237a8ba8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>');
+      background-repeat: no-repeat;
+      background-position: 14px center;
+      background-size: 20px;
+    }
+    #searchInput:focus {
+      border-color: #1a6bff;
+      box-shadow: 0 0 0 3px rgba(26,107,255,0.15);
+      background-color: white;
+    }
+    #searchInput::placeholder {
+      color: #a0b0c8;
+    }
+    #searchInput:disabled {
+      background-color: #f2f5f9;
+      cursor: not-allowed;
+      opacity: 0.7;
+    }
+    .search-input-wrapper.loading #searchInput {
+      padding-right: 50px;
+      border-color: #1a6bff;
+      background-image: none;
+      background-color: #f8faff;
+    }
+    .search-input-wrapper.loading #searchInput::placeholder {
+      color: #1a6bff;
+    }
+    .search-loading {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: none;
+      align-items: center;
+      gap: 8px;
+    }
+    .search-input-wrapper.loading .search-loading {
+      display: flex;
+    }
+    .search-loading .spinner-small {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      border: 2.5px solid #eef2f7;
+      border-radius: 50%;
+      border-top-color: #1a6bff;
+      animation: spin 0.7s linear infinite;
+    }
+    .search-loading .loading-text {
+      font-size: 0.8rem;
+      color: #1a6bff;
+      font-weight: 500;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ===== SUGGESTIONS DROPDOWN ===== */
+    .suggestions-box {
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0;
+      width: 100%;
+      background: white;
+      border: 1px solid #d0d8e3;
+      border-radius: 14px;
+      max-height: 280px;
+      overflow-y: auto;
+      z-index: 100;
+      box-shadow: 0 12px 28px rgba(0,0,0,0.12);
+      display: none;
+      padding: 4px 0;
+    }
+    .suggestions-box::-webkit-scrollbar {
+      width: 6px;
+    }
+    .suggestions-box::-webkit-scrollbar-track {
+      background: #f2f5f9;
+      border-radius: 8px;
+    }
+    .suggestions-box::-webkit-scrollbar-thumb {
+      background: #d0d8e3;
+      border-radius: 8px;
+    }
+    .suggestion-item {
+      padding: 12px 16px;
+      cursor: pointer;
+      border-bottom: 1px solid #f0f4fc;
+      font-size: 0.95rem;
+      transition: 0.1s;
+    }
+    .suggestion-item:last-child {
+      border-bottom: none;
+    }
+    .suggestion-item:hover {
+      background: #f0f7ff;
+    }
+    .suggestion-item .suggestion-main {
+      font-weight: 500;
+      color: #0b1a33;
+    }
+    .suggestion-item .suggestion-sub {
+      font-size: 0.78rem;
+      color: #4a5c7a;
+      margin-left: 8px;
+    }
+    .suggestion-item .suggestion-detail {
+      font-size: 0.75rem;
+      color: #7a8ba8;
+      margin-top: 2px;
+    }
+    .suggestion-item .highlight {
+      background: #e8f0fe;
+      padding: 0 2px;
+      border-radius: 2px;
+    }
+    .no-suggestions {
+      padding: 16px;
+      text-align: center;
+      color: #7a8ba8;
+      font-size: 0.9rem;
+    }
+
+    /* ===== RESULTS / DETAIL VIEW ===== */
+    .results-container {
+      margin-top: 4px;
+    }
+
+    /* ===== WELCOME MESSAGE ===== */
+    .welcome-message {
+      text-align: center;
+      padding: 40px 20px;
+      color: #7a8ba8;
+    }
+    .welcome-message .icon {
+      font-size: 3rem;
+      margin-bottom: 8px;
+    }
+    .welcome-message h3 {
+      font-size: 1.1rem;
+      color: #0b1a33;
+      margin-bottom: 4px;
+    }
+    .welcome-message p {
+      font-size: 0.9rem;
+    }
+
+    /* ===== DETAIL VIEW CARD ===== */
+    .detail-card {
+      background: #f8faff;
+      border-radius: 14px;
+      padding: 20px;
+      border: 1px solid #eef2f7;
+      animation: fadeIn 0.3s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .detail-card .dtr-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #eef2f7;
+    }
+    .detail-card .dtr-name {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #0b1a33;
+    }
+    .detail-card .dtr-id {
+      font-size: 0.85rem;
+      color: #3b6cb7;
+      font-weight: 600;
+      background: #e8f0fe;
+      padding: 2px 12px;
+      border-radius: 20px;
+      display: inline-block;
+    }
+    .detail-card .detail-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px 16px;
+      padding: 4px 0;
+      font-size: 0.9rem;
+      color: #1f2a44;
+    }
+    .detail-card .detail-row .label {
+      color: #7a8ba8;
+      font-weight: 500;
+      min-width: 80px;
+    }
+    .detail-card .detail-row .value {
+      font-weight: 500;
+    }
+    .detail-card .badge {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 2px 12px;
+      border-radius: 20px;
+    }
+    .badge-active { background: #d4edda; color: #155724; }
+    .badge-inactive { background: #f8d7da; color: #721c24; }
+    .badge-new { background: #cce5ff; color: #004085; }
+    .badge-public { background: #d1ecf1; color: #0c5460; }
+    .badge-private { background: #fff3cd; color: #856404; }
+
+    .detail-card .location-row {
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid #eef2f7;
+      font-size: 0.8rem;
+      color: #7a8ba8;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 480px) {
+      .detail-card .dtr-header {
+        flex-direction: column;
+        gap: 6px;
+      }
+      .detail-card .detail-row {
+        flex-direction: column;
+        gap: 2px;
+      }
+      .detail-card .detail-row .label {
+        min-width: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <!-- ===== HEADER ===== -->
+  <div class="header">
+    <div class="logo-container">
+      <img src="PHED logo.png" alt="PHED Logo" onerror="this.style.display='none'">
+    </div>
+    <div class="header-text">
+      <h2>Calabar Region</h2>
+      <div class="subtitle">DTR Information Search</div>
+    </div>
+  </div>
+
+  <!-- ===== SEARCH ===== -->
+  <div class="search-section">
+    <div class="search-input-wrapper" id="searchWrapper">
+      <input type="text" id="searchInput" placeholder="Loading transformer data..." disabled>
+      <div class="search-loading">
+        <span class="spinner-small"></span>
+        <span class="loading-text">Loading...</span>
+      </div>
+      <div id="suggestions" class="suggestions-box"></div>
+    </div>
+  </div>
+
+  <!-- ===== RESULTS ===== -->
+  <div class="results-container" id="resultsContainer">
+    <!-- Welcome message (shown initially) -->
+    <div class="welcome-message" id="welcomeMessage">
+      <div class="icon">🔌</div>
+      <h3>Search for Transformers</h3>
+      <p>Start typing to find DTR information</p>
+    </div>
+
+    <!-- Detail view (shown when a transformer is selected) -->
+    <div id="detailView" style="display:none;"></div>
+  </div>
+</div>
+
+<script>
+  // ============================================================
+  // CONFIG
+  // ============================================================
+  const searchDataURL = "https://script.google.com/macros/s/AKfycbxHY_PYmo4wwzmasQAKtO73hHofXJF0ms9olsZBVbw4UDFPUg5TywlqiySPlHfy28oc/exec";
+
+  // ============================================================
+  // DOM REFS
+  // ============================================================
+  const searchWrapper = document.getElementById('searchWrapper');
+  const searchInput = document.getElementById('searchInput');
+  const suggestionsBox = document.getElementById('suggestions');
+  const welcomeMessage = document.getElementById('welcomeMessage');
+  const detailView = document.getElementById('detailView');
+
+  // ============================================================
+  // STATE
+  // ============================================================
+  let transformers = [];
+  let isDataLoaded = false;
+  let selectedTransformer = null;
+
+  // ============================================================
+  // LOAD DATA - WITH BETTER ERROR HANDLING
+  // ============================================================
+  function loadTransformerData() {
+    // Show loading state in search box
+    searchWrapper.classList.add('loading');
+    searchInput.disabled = true;
+    searchInput.placeholder = 'Loading transformer data...';
+    welcomeMessage.classList.add('hidden');
+    detailView.style.display = 'none';
+
+    fetch(searchDataURL)
+      .then(res => {
+        if (!res.ok) throw new Error('Network response was not ok: ' + res.status);
+        return res.json();
+      })
+      .then(data => {
+        console.log('Raw data received:', data);
+        console.log('Data type:', typeof data);
+        console.log('Is array?', Array.isArray(data));
+        console.log('Data length:', data ? data.length : 'null/undefined');
+        
+        // Handle different data formats
+        if (data && typeof data === 'object') {
+          // Check if data has a results property (common in some APIs)
+          if (data.results && Array.isArray(data.results)) {
+            transformers = data.results;
+          } 
+          // Check if data has a data property
+          else if (data.data && Array.isArray(data.data)) {
+            transformers = data.data;
+          }
+          // Check if data itself is an array
+          else if (Array.isArray(data)) {
+            transformers = data;
+          }
+          // Check if data is an object with values
+          else if (typeof data === 'object' && !Array.isArray(data)) {
+            // Try to convert object to array of values
+            const values = Object.values(data);
+            if (values.length > 0 && Array.isArray(values[0])) {
+              // It might be a sheet data structure
+              transformers = values;
+            } else {
+              // Single object, wrap in array
+              transformers = [data];
+            }
+          }
+        } else {
+          transformers = [];
+        }
+        
+        // If transformers is empty, try to parse differently
+        if (transformers.length === 0 && data) {
+          console.warn('No transformers found in data, trying to parse as CSV-like structure');
+          // Try to parse as array of arrays (common for sheet data)
+          if (Array.isArray(data)) {
+            transformers = data;
+          }
+        }
+        
+        isDataLoaded = true;
+        
+        // Remove loading state
+        searchWrapper.classList.remove('loading');
+        searchInput.disabled = false;
+        searchInput.placeholder = 'Search by name, ID, feeder...';
+        
+        console.log(`✅ Loaded ${transformers.length} transformer records`);
+        console.log('First record sample:', transformers[0]);
+        
+        // Show welcome message
+        welcomeMessage.classList.remove('hidden');
+        
+        // If there's already text in search, show suggestions
+        if (searchInput.value.trim()) {
+          performSearch(searchInput.value.trim());
+        }
+      })
+      .catch(err => {
+        console.error("Transformer data load error:", err);
+        
+        // Remove loading state
+        searchWrapper.classList.remove('loading');
+        searchInput.disabled = false;
+        searchInput.placeholder = 'Error loading data - refresh page';
+        
+        welcomeMessage.classList.remove('hidden');
+        welcomeMessage.innerHTML = `
+          <div class="icon">⚠️</div>
+          <h3>Error Loading Data</h3>
+          <p>${err.message || 'Could not load transformer data. Please refresh the page.'}</p>
+          <p style="font-size:0.8rem; margin-top:8px; color:#999;">Check console for details</p>
+        `;
+      });
+  }
+
+  // ============================================================
+  // SEARCH / SUGGESTIONS
+  // ============================================================
+  function performSearch(keyword) {
+    console.log('Searching for:', keyword);
+    console.log('Data loaded:', isDataLoaded);
+    console.log('Transformers count:', transformers.length);
+    
+    if (!isDataLoaded || !keyword || keyword.length < 1) {
+      suggestionsBox.style.display = 'none';
+      return;
+    }
+
+    if (transformers.length === 0) {
+      suggestionsBox.innerHTML = `<div class="no-suggestions">No data available. Please refresh.</div>`;
+      suggestionsBox.style.display = 'block';
+      return;
+    }
+
+    const searchTerm = keyword.toLowerCase().trim();
+    
+    const matches = transformers.filter(item => {
+      // Handle different data formats (object or array)
+      let name = '', dtrId = '', f11 = '', f33 = '', f11id = '', f33id = '', town = '';
+      
+      if (typeof item === 'object' && item !== null) {
+        // Object format
+        name = String(item.DTR_NAME || item.name || item.TransformerName || '').toLowerCase();
+        dtrId = String(item.DTRID || item.dtrId || item.ID || '').toLowerCase();
+        f11 = String(item.FEEDER11NAME || item.feeder11 || item.Feeder11 || '').toLowerCase();
+        f33 = String(item.FEEDER33NAME || item.feeder33 || item.Feeder33 || '').toLowerCase();
+        f11id = String(item.FEEDER11ID || item.feeder11Id || '').toLowerCase();
+        f33id = String(item.FEEDER33ID || item.feeder33Id || '').toLowerCase();
+        town = String(item.TOWNAREA || item.town || item.Town || '').toLowerCase();
+      } else if (Array.isArray(item)) {
+        // Array format (sheet data)
+        // Try to map by index - this depends on your sheet structure
+        name = String(item[3] || '').toLowerCase(); // Assuming Transformer Name is at index 3
+        dtrId = String(item[4] || '').toLowerCase(); // Assuming DTR ID is at index 4
+        f11 = String(item[0] || '').toLowerCase(); // Assuming Feeder Name is at index 0
+        town = String(item[16] || '').toLowerCase(); // Assuming Town is at index 16
+      }
+      
+      return name.includes(searchTerm) || dtrId.includes(searchTerm) ||
+             f11.includes(searchTerm) || f33.includes(searchTerm) ||
+             f11id.includes(searchTerm) || f33id.includes(searchTerm) ||
+             town.includes(searchTerm);
+    });
+
+    console.log('Matches found:', matches.length);
+    displaySuggestions(matches, searchTerm);
+  }
+
+  // ============================================================
+  // DISPLAY SUGGESTIONS
+  // ============================================================
+  function displaySuggestions(matches, searchTerm) {
+    suggestionsBox.innerHTML = '';
+    
+    if (matches.length === 0) {
+      suggestionsBox.innerHTML = `<div class="no-suggestions">No transformers found</div>`;
+      suggestionsBox.style.display = 'block';
+      return;
+    }
+
+    matches.forEach(item => {
+      const div = document.createElement('div');
+      div.className = 'suggestion-item';
+      
+      let name = 'Unnamed', dtrId = 'No ID', feeder = 'N/A', town = 'N/A', capacity = 'N/A';
+      
+      // Handle different data formats
+      if (typeof item === 'object' && item !== null) {
+        name = item.DTR_NAME || item.name || item.TransformerName || 'Unnamed';
+        dtrId = item.DTRID || item.dtrId || item.ID || 'No ID';
+        feeder = item.FEEDER11NAME || item.FEEDER33NAME || item.feeder || item.Feeder || 'N/A';
+        town = item.TOWNAREA || item.town || item.Town || 'N/A';
+        capacity = item.CAPACITY || item.capacity || 'N/A';
+      } else if (Array.isArray(item)) {
+        // Array format - map by index
+        name = item[3] || 'Unnamed';
+        dtrId = item[4] || 'No ID';
+        feeder = item[0] || 'N/A';
+        town = item[16] || 'N/A';
+        capacity = item[5] || 'N/A';
+      }
+
+      // Highlight matching text
+      const highlightedName = highlightText(String(name), searchTerm);
+      const highlightedId = highlightText(String(dtrId), searchTerm);
+
+      div.innerHTML = `
+        <div>
+          <span class="suggestion-main">${highlightedName}</span>
+          <span class="suggestion-sub">${highlightedId}</span>
+        </div>
+        <div class="suggestion-detail">
+          Feeder: ${feeder} • Town: ${town} • Capacity: ${capacity}
+        </div>
+      `;
+      
+      div.addEventListener('click', () => {
+        selectTransformer(item);
+      });
+      
+      suggestionsBox.appendChild(div);
+    });
+    
+    suggestionsBox.style.display = 'block';
+  }
+
+  // ============================================================
+  // HIGHLIGHT TEXT
+  // ============================================================
+  function highlightText(text, searchTerm) {
+    if (!text) return 'N/A';
+    const regex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+    return text.replace(regex, '<span class="highlight">$1</span>');
+  }
+
+  // ============================================================
+  // SELECT TRANSFORMER - Show full details
+  // ============================================================
+  function selectTransformer(item) {
+    selectedTransformer = item;
+    suggestionsBox.style.display = 'none';
+    
+    let name = 'Unnamed', dtrId = 'No ID', feeder = 'N/A', feederId = 'N/A';
+    let voltage = 'N/A', capacity = 'N/A', town = 'N/A', mounting = 'N/A';
+    let manufacturer = 'N/A', serial = 'N/A', mfgDate = 'N/A', metered = 'N/A';
+    let meteringType = 'N/A', uprisers = 'N/A', status = 'N/A', type = 'N/A';
+    let lat = '', lng = '';
+    
+    // Handle different data formats
+    if (typeof item === 'object' && item !== null) {
+      name = item.DTR_NAME || item.name || item.TransformerName || 'Unnamed';
+      dtrId = item.DTRID || item.dtrId || item.ID || 'No ID';
+      feeder = item.FEEDER11NAME || item.FEEDER33NAME || item.feeder || item.Feeder || 'N/A';
+      feederId = item.FEEDER11ID || item.FEEDER33ID || item.feederId || 'N/A';
+      voltage = item.VOLTAGE || item.voltage || 'N/A';
+      capacity = item.CAPACITY || item.capacity || 'N/A';
+      town = item.TOWNAREA || item.town || item.Town || 'N/A';
+      mounting = item.MOUNTING || item.mounting || 'N/A';
+      manufacturer = item.DTRMANUFACTURE || item.manufacturer || 'N/A';
+      serial = item.SERIALNUMBER || item.serialNumber || 'N/A';
+      mfgDate = item.MANUFACTURINGDATE || item.manufacturingDate || 'N/A';
+      metered = item.METERED || item.metered || 'N/A';
+      meteringType = item.METERINGTYPE || item.meteringType || 'N/A';
+      uprisers = item.NUMUPRISERS || item.numUprisers || 'N/A';
+      status = item.DTR_STATUS || item.status || 'N/A';
+      type = item.DTRTYPE || item.type || 'N/A';
+      lat = item.LATITUDE || item.latitude || '';
+      lng = item.LONGITUDE || item.longitude || '';
+    } else if (Array.isArray(item)) {
+      // Array format - map by index
+      // Based on your sheet structure: 
+      // 0: feeder, 1: feederId, 2: voltage, 3: name, 4: dtrId, 5: capacity, 
+      // 6: manufacturer, 7: serial, 8: mfgDate, 9: mounting, 10: uprisers, 
+      // 11: metered, 12: meteringType, 13: lat, 14: lng, 15: status, 16: town
+      feeder = item[0] || 'N/A';
+      feederId = item[1] || 'N/A';
+      voltage = item[2] || 'N/A';
+      name = item[3] || 'Unnamed';
+      dtrId = item[4] || 'No ID';
+      capacity = item[5] || 'N/A';
+      manufacturer = item[6] || 'N/A';
+      serial = item[7] || 'N/A';
+      mfgDate = item[8] || 'N/A';
+      mounting = item[9] || 'N/A';
+      uprisers = item[10] || 'N/A';
+      metered = item[11] || 'N/A';
+      meteringType = item[12] || 'N/A';
+      lat = item[13] || '';
+      lng = item[14] || '';
+      status = item[15] || 'N/A';
+      town = item[16] || 'N/A';
+      type = item[17] || 'N/A';
+    }
+    
+    // Set the search input to the name
+    searchInput.value = name;
+    welcomeMessage.classList.add('hidden');
+    detailView.style.display = 'block';
+    
+    // Get status badge class
+    let statusBadge = '';
+    const statusText = String(status);
+    if (statusText.toLowerCase().includes('active')) statusBadge = 'badge-active';
+    else if (statusText.toLowerCase().includes('inactive')) statusBadge = 'badge-inactive';
+    else if (statusText.toLowerCase().includes('new')) statusBadge = 'badge-new';
+
+    // Get type badge
+    let typeBadge = '';
+    const typeText = String(type);
+    if (typeText.toLowerCase().includes('public')) typeBadge = 'badge-public';
+    else if (typeText.toLowerCase().includes('private')) typeBadge = 'badge-private';
+
+    detailView.innerHTML = `
+      <div class="detail-card">
+        <div class="dtr-header">
+          <div>
+            <div class="dtr-name">${name}</div>
+            <span class="dtr-id">${dtrId}</span>
+          </div>
+          <div>
+            <span class="badge ${statusBadge}">${statusText}</span>
+            <span class="badge ${typeBadge}" style="margin-left:4px;">${typeText}</span>
+          </div>
+        </div>
+
+        <div class="detail-row">
+          <span><span class="label">📍 Feeder:</span> <span class="value">${feeder}</span></span>
+          <span><span class="label">Feeder ID:</span> <span class="value">${feederId}</span></span>
+        </div>
+        <div class="detail-row">
+          <span><span class="label">⚡ Voltage:</span> <span class="value">${voltage}</span></span>
+          <span><span class="label">📐 Capacity:</span> <span class="value">${capacity}</span></span>
+        </div>
+        <div class="detail-row">
+          <span><span class="label">🏘️ Town:</span> <span class="value">${town}</span></span>
+          <span><span class="label">🔧 Mounting:</span> <span class="value">${mounting}</span></span>
+        </div>
+        <div class="detail-row">
+          <span><span class="label">🏭 Manufacturer:</span> <span class="value">${manufacturer}</span></span>
+          <span><span class="label">🔢 Serial:</span> <span class="value">${serial}</span></span>
+        </div>
+        <div class="detail-row">
+          <span><span class="label">📅 Mfg Date:</span> <span class="value">${mfgDate}</span></span>
+          <span><span class="label">📊 Metered:</span> <span class="value">${metered}</span></span>
+        </div>
+        <div class="detail-row">
+          <span><span class="label">📋 Metering Type:</span> <span class="value">${meteringType}</span></span>
+          <span><span class="label">🔌 Uprisers:</span> <span class="value">${uprisers}</span></span>
+        </div>
+        ${lat && lng ? `
+          <div class="location-row">
+            📍 Coordinates: ${lat}, ${lng}
+          </div>
+        ` : ''}
+      </div>
+    `;
+
+    // Scroll to detail view
+    detailView.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  // ============================================================
+  // CLOSE SUGGESTIONS
+  // ============================================================
+  function closeSuggestions() {
+    setTimeout(() => {
+      suggestionsBox.style.display = 'none';
+    }, 200);
+  }
+
+  // ============================================================
+  // EVENT LISTENERS
+  // ============================================================
+  
+  // Real-time search with debounce
+  let searchTimeout;
+  searchInput.addEventListener('input', function() {
+    if (!isDataLoaded) return;
+    
+    clearTimeout(searchTimeout);
+    const keyword = this.value.trim();
+    
+    if (!keyword) {
+      suggestionsBox.style.display = 'none';
+      return;
+    }
+    
+    searchTimeout = setTimeout(() => {
+      performSearch(keyword);
+    }, 300);
+  });
+
+  // Focus - show suggestions if there's text
+  searchInput.addEventListener('focus', function() {
+    if (this.value.trim() && isDataLoaded) {
+      performSearch(this.value.trim());
+    }
+  });
+
+  // Click outside - close suggestions
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.search-section')) {
+      suggestionsBox.style.display = 'none';
+    }
+  });
+
+  // Enter key - select first suggestion
+  searchInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const firstSuggestion = suggestionsBox.querySelector('.suggestion-item');
+      if (firstSuggestion) {
+        firstSuggestion.click();
+      }
+    }
+    if (e.key === 'Escape') {
+      suggestionsBox.style.display = 'none';
+      this.blur();
+    }
+  });
+
+  // ============================================================
+  // INIT
+  // ============================================================
+  loadTransformerData();
+
+  console.log('🔍 DTR Information Search App (Live Search) loaded');
+</script>
+</body>
+</html>
