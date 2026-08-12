@@ -23,26 +23,40 @@
       padding: 24px 20px 32px;
       box-shadow: 0 12px 30px rgba(0,0,0,0.08);
     }
-    h2 {
-      text-align: center;
-      font-weight: 600;
-      font-size: 1.7rem;
-      letter-spacing: -0.3px;
-      color: #0b1a33;
-      margin-bottom: 24px;
+    /* ===== HEADER WITH BIG LOGO ON TOP ===== */
+    .header {
       display: flex;
+      flex-direction: column;
       align-items: center;
-      justify-content: center;
-      gap: 8px;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid #eef2f7;
     }
-    h2 small {
-      font-size: 0.9rem;
+    .logo-container {
+      margin-bottom: 2px; /* Reduced from 8px to 2px */
+    }
+    .logo-container img {
+      width: 180px;
+      height: auto;
+      object-fit: contain;
+      border-radius: 12px;
+      display: block;
+    }
+    .header-text {
+      text-align: center;
+    }
+    .header-text h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #0b1a33;
+      margin: 0;
+      line-height: 1.2;
+    }
+    .header-text .subtitle {
+      font-size: 0.85rem;
+      color: #4d627a;
       font-weight: 400;
-      color: #3b6cb7;
-      background: #e8f0fe;
-      padding: 0 12px;
-      border-radius: 40px;
-      line-height: 1.6;
+      margin-top: 0px; /* Reduced from 2px to 0px */
     }
     .input-group {
       margin-bottom: 18px;
@@ -277,7 +291,16 @@
 </head>
 <body>
 <div class="container">
-  <h2>Calabar Region DTR Data Capture</h2>
+  <!-- ===== HEADER WITH BIG LOGO ON TOP ===== -->
+  <div class="header">
+    <div class="logo-container">
+      <img src="PHED logo.png" alt="PHED Logo" onerror="this.style.display='none'">
+    </div>
+    <div class="header-text">
+      <h2>Calabar Region</h2>
+      <div class="subtitle">DTR Data Capture App</div>
+    </div>
+  </div>
 
   <form id="form" autocomplete="off">
     <div class="input-group">
@@ -395,6 +418,7 @@
       <label for="metered">Is It Metered?</label>
       <select id="metered" onchange="toggleMeteringType()" required>
         <option value="">Select</option>
+
         <option value="Yes">Yes</option>
         <option value="No">No</option>
       </select>
@@ -434,15 +458,15 @@
 </div>
 
 <script>
-  // --------------------------------------------------------------
-  // CONFIG - CORRECTED URLS
-  // ONLY this URL is used for validation (checking duplicates)
-  const validationScriptURL = "https://script.google.com/macros/s/AKfycby2kODp7c3pvqOB-dOtexVi_Me0wFYnhTiVLpH12AEWHfOKdgS3Lm6qucSy0nzvZw/exec";
-  // This URL is ONLY used for loading search data
+  // ============================================================
+  // CONFIG - UPDATE WITH YOUR DEPLOYED SCRIPT URL
+  // ============================================================
+  const validationScriptURL = "https://script.google.com/macros/s/AKfycbzGAWIjluH14yOFK5PcXWAdUSZ-0LdA_OGSt-2VwEojo2Pb5KNgD7VwmgUaSPosBQ/exec";
   const searchDataURL = "https://script.google.com/macros/s/AKfycbxHY_PYmo4wwzmasQAKtO73hHofXJF0ms9olsZBVbw4UDFPUg5TywlqiySPlHfy28oc/exec";
 
-  // --------------------------------------------------------------
+  // ============================================================
   // FEEDER DATABASE
+  // ============================================================
   const feederDatabase = {
     "11kv": [
       { name: "Unical-A", id: "1165" }, { name: "Unical-B", id: "1194" },
@@ -458,8 +482,9 @@
     ]
   };
 
-  // --------------------------------------------------------------
+  // ============================================================
   // DOM REFS
+  // ============================================================
   const searchInput = document.getElementById('transformerSearch');
   const suggestionsBox = document.getElementById('suggestions');
   const form = document.getElementById('form');
@@ -471,8 +496,9 @@
   const dtrIdInput = document.getElementById('dtrId');
   const dtrValidationStatus = document.getElementById('dtrValidationStatus');
 
-  // --------------------------------------------------------------
+  // ============================================================
   // LOAD DATA FROM VIEW SHEET (FOR SEARCH ONLY)
+  // ============================================================
   let transformers = [];
   let isDataLoaded = false;
 
@@ -510,14 +536,14 @@
   // Start loading immediately
   loadTransformerData();
 
-  // --------------------------------------------------------------
+  // ============================================================
   // DUPLICATE CHECK FUNCTION - EXCLUSIVELY USES validationScriptURL
+  // ============================================================
   async function checkDuplicateDTRId(dtrId) {
     const trimmedId = dtrId.trim();
     if (!trimmedId) return false;
 
     try {
-      // Directly call the validation script (main database) for duplicate check
       const response = await fetch(`${validationScriptURL}?action=checkDuplicate&dtrId=${encodeURIComponent(trimmedId)}`, {
         method: 'GET',
         mode: 'cors'
@@ -529,7 +555,6 @@
       }
 
       const data = await response.json();
-      // The script MUST return a JSON object with a boolean 'isDuplicate' property
       return data.isDuplicate === true;
     } catch (error) {
       console.error('Error during duplicate check:', error);
@@ -549,7 +574,6 @@
       return;
     }
     
-    // Show checking status
     dtrValidationStatus.innerHTML = '<span class="validation-spinner"></span> checking...';
     dtrValidationStatus.className = 'status-checking';
     duplicateWarning.classList.remove('show');
@@ -575,14 +599,14 @@
     }, 500);
   });
 
-  // Also check when selecting from search results
   function triggerDuplicateCheck() {
     const event = new Event('input');
     dtrIdInput.dispatchEvent(event);
   }
 
-  // --------------------------------------------------------------
-  // AUTO SEARCH (as you type)
+  // ============================================================
+  // AUTO SEARCH
+  // ============================================================
   function performAutoSearch() {
     if (!isDataLoaded) {
       suggestionsBox.style.display = 'none';
@@ -626,8 +650,6 @@
         document.getElementById('name').value = item.DTR_NAME || '';
         document.getElementById('dtrId').value = item.DTRID || '';
         searchInput.value = item.DTR_NAME || '';
-
-        // Trigger duplicate check for the selected DTR ID
         triggerDuplicateCheck();
 
         const f11 = item.FEEDER11NAME || '';
@@ -681,8 +703,9 @@
     }
   });
 
-  // --------------------------------------------------------------
+  // ============================================================
   // EXISTING FUNCTIONS
+  // ============================================================
   function updateFeeders() {
     const voltage = document.getElementById('voltageLevel').value;
     const feederSelect = document.getElementById('feederName');
@@ -742,8 +765,9 @@
     );
   }
 
-  // --------------------------------------------------------------
-  // SUBMIT with duplicate check
+  // ============================================================
+  // SUBMIT
+  // ============================================================
   function showSpinner() {
     const btnText = submitBtn.querySelector('.btn-text');
     submitBtn.disabled = true;
@@ -769,7 +793,6 @@
       return;
     }
 
-    // Check for duplicate DTR ID against the main script database
     try {
       const isDuplicate = await checkDuplicateDTRId(dtrId);
       if (isDuplicate) {
@@ -837,11 +860,7 @@
       duplicateWarning.classList.remove('show');
       dtrValidationStatus.innerHTML = '';
       hideSpinner();
-      
-      // Reload data to include new submission
-      setTimeout(() => {
-        loadTransformerData();
-      }, 2000);
+      setTimeout(() => loadTransformerData(), 2000);
     })
     .catch((err) => {
       responseEl.textContent = '❌ Submission failed. Please try again.';
