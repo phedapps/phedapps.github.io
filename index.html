@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>PHED Data Capture Portal</title>
+<title>PHED Apps Hub (Unofficial)</title>
 
 <!-- Font Awesome Icons -->
 <link rel="stylesheet"
@@ -12,39 +12,41 @@
 
 <style>
 
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:Arial, sans-serif;
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
 }
 
-body{
-    min-height:100vh;
-    display:flex;
-    justify-content:center;
-    align-items:center;
+body {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 
-    /* LIGHT BACKGROUND */
-    background:#f4f7fb;
+    background: #f4f7fb;
 
-    color:#1e293b;
-    padding:30px 15px;
+    color: #1e293b;
+    padding: 30px 15px;
 }
 
-.container{
-    text-align:center;
-    width:90%;
-    max-width:700px;
+.container {
+    text-align: center;
+    width: 90%;
+    max-width: 700px;
+	margin-bottom: 40px;
 }
 
 /* ===== LOGO SECTION ===== */
+
 .logo-container {
     display: flex;
     flex-direction: column;
     align-items: center;
     margin-bottom: 16px;
 }
+
 .logo-container img {
     width: 160px;
     height: auto;
@@ -53,6 +55,7 @@ body{
     display: block;
     margin-bottom: 4px;
 }
+
 .logo-container .logo-text {
     font-size: 0.75rem;
     color: #64748b;
@@ -61,161 +64,169 @@ body{
     text-transform: uppercase;
 }
 
-/* HEADER */
+/* ===== HEADER ===== */
 
-h1{
-    margin-bottom: 6px;
-    font-size:2rem;
-    color:#0f172a;
-    font-weight:700;
+h1 {
+    margin-bottom: 8px;
+    font-size: 2rem;
+    color: #0f172a;
+    font-weight: 700;
 }
 
-.subtitle{
-    margin-bottom:40px;
-    color:#64748b;
-    font-size:0.95rem;
+h1 span {
+    color: #64748b;
+    font-weight: 500;
 }
 
-/* BUTTON GRID */
-
-.btn-container{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:20px;
+.subtitle {
+    margin-bottom: 40px;
+    color: #64748b;
+    font-size: 0.95rem;
 }
 
-/* BUTTON */
+/* ===== BUTTON GRID ===== */
 
-.btn{
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    gap:14px;
-
-    min-height:85px;
-    padding:20px;
-
-    text-decoration:none;
-    color:white;
-
-    font-size:1.05rem;
-    font-weight:bold;
-
-    border-radius:14px;
-
-    transition:all 0.3s ease;
-
-    box-shadow:0 5px 15px rgba(15,23,42,0.12);
+.btn-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
 }
 
-/* ICON */
+/* ===== BUTTON ===== */
 
-.btn i{
-    font-size:1.6rem;
+.btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+
+    min-height: 85px;
+    padding: 20px;
+
+    text-decoration: none;
+    color: white;
+
+    font-size: 1.05rem;
+    font-weight: bold;
+
+    border-radius: 14px;
+
+    transition: all 0.3s ease;
+
+    box-shadow: 0 5px 15px rgba(15, 23, 42, 0.12);
 }
 
-/* HOVER */
+/* ===== ICON ===== */
 
-.btn:hover{
-    transform:translateY(-5px);
+.btn i {
+    font-size: 1.6rem;
+}
+
+/* ===== HOVER ===== */
+
+.btn:hover {
+    transform: translateY(-5px);
 
     box-shadow:
-        0 10px 22px rgba(15,23,42,0.18);
+        0 10px 22px rgba(15, 23, 42, 0.18);
 
-    filter:brightness(1.05);
+    filter: brightness(1.05);
 }
 
-/* ACTIVE */
+/* ===== ACTIVE ===== */
 
-.btn:active{
-    transform:translateY(-1px);
+.btn:active {
+    transform: translateY(-1px);
 }
 
+/* ===== BUTTON COLORS ===== */
 
-/* BUTTON 1 - GIS */
-
-.gis-btn{
-    background:#16a34a;
+/* 1 - GIS */
+.gis-btn {
+    background: #16a34a;
 }
 
-
-/* BUTTON 2 - TRANSFORMER */
-
-.transformer-btn{
-    background:#ea580c;
+/* 2 - Transformer */
+.transformer-btn {
+    background: #ea580c;
 }
 
-
-/* BUTTON 3 - NETWORK TREE */
-
-.feeder-btn{
-    background:#2563eb;
+/* 3 - Network Tree */
+.feeder-btn {
+    background: #2563eb;
 }
 
-
-/* BUTTON 4 - CALCULATOR */
-
-.meter-btn{
-    background:#7c3aed;
+/* 4 - Calculator */
+.meter-btn {
+    background: #7c3aed;
 }
 
-
-/* BUTTON 5 - LOR */
-
-.pole-btn{
-    background:#0891b2;
+/* 5 - LOR */
+.pole-btn {
+    background: #0891b2;
 }
 
-
-/* BUTTON 6 - SAGE */
-
-.report-btn{
-    background:#dc2626;
+/* 6 - Sage */
+.report-btn {
+    background: #dc2626;
 }
 
-
-/* BUTTON 7 - TRANSFORMER FINDER */
-
-.finder-btn{
-    background:#ca8a04;
+/* 7 - Transformer Finder */
+.finder-btn {
+    background: #ca8a04;
 }
 
-
-/* BUTTON 8 - COMING SOON */
-
-.coming-btn{
-    background:#64748b;
+/* 8 - Coming Soon */
+.coming-btn {
+    background: #64748b;
 }
 
+/* ===== FOOTER ===== */
 
-/* MOBILE */
+footer {
+    position: fixed;
+    bottom: 1px;
+	margin-top: 60px;
+    left: 0;
+    width: 100%;
+    text-align: center;
+	background-color: white;
+}
 
-@media (max-width:600px){
+footer p {
+    margin: 0;
+    color: #64748b;
+    font-size: 0.85rem;
+}
 
-    .container{
-        width:95%;
+/* ===== MOBILE ===== */
+
+@media (max-width: 600px) {
+
+    .container {
+        width: 95%;
     }
 
-    h1{
-        font-size:1.6rem;
+    h1 {
+        font-size: 1.6rem;
     }
 
-    .subtitle{
-        margin-bottom:30px;
+    .subtitle {
+        margin-bottom: 30px;
     }
 
-    .btn-container{
-        grid-template-columns:1fr;
-        gap:15px;
+    .btn-container {
+        grid-template-columns: 1fr;
+        gap: 15px;
     }
 
-    .btn{
-        min-height:75px;
-        font-size:1rem;
+    .btn {
+        min-height: 75px;
+        font-size: 1rem;
     }
 
-    .btn i{
-        font-size:1.4rem;
+    .btn i {
+        font-size: 1.4rem;
     }
 
     .logo-container img {
@@ -227,37 +238,56 @@ h1{
 </style>
 </head>
 
-
 <body>
 
 <div class="container">
 
     <!-- ===== LOGO ===== -->
+
     <div class="logo-container">
-        <img src="PHED logo.png" alt="PHED Logo" onerror="this.style.display='none'">
-        <span class="logo-text">Port Harcourt Electricity Distribution Company</span>
+
+        <img src="PHED logo.png"
+             alt="PHED Logo"
+             onerror="this.style.display='none'">
+
+        <span class="logo-text">
+            Port Harcourt Electricity Distribution Company
+        </span>
+
     </div>
 
-    <h1>PHED Data Capture Portal</h1>
+    <!-- ===== HEADER ===== -->
 
-    <p class="subtitle">Designed by Obot Akpan</p>
+    <h1>
+        PHED Apps Hub <span>(Unofficial)</span>
 
+    </h1>
+
+    <p class="subtitle">
+        Digital Tools for Calabar Region
+    </p>
+
+
+    <!-- ===== BUTTONS ===== -->
 
     <div class="btn-container">
 
-
         <!-- 1. GIS Capture -->
-        <a href="gis-capture.html" class="btn gis-btn">
+
+        <a href="gis-capture.html"
+           class="btn gis-btn">
 
             <i class="fa-solid fa-location-dot"></i>
 
-            <span>GIS Capture</span>
+            <span>Project GIS Capture</span>
 
         </a>
 
 
         <!-- 2. Transformer Capture -->
-        <a href="transformer-capture.html" class="btn transformer-btn">
+
+        <a href="transformer-capture.html"
+           class="btn transformer-btn">
 
             <i class="fa-solid fa-bolt"></i>
 
@@ -267,6 +297,7 @@ h1{
 
 
         <!-- 3. PHED Network Tree -->
+
         <a href="https://phednetwork.github.io"
            class="btn feeder-btn"
            target="_blank">
@@ -279,6 +310,7 @@ h1{
 
 
         <!-- 4. PHED Calculator -->
+
         <a href="https://phedcalculator.github.io"
            class="btn meter-btn"
            target="_blank">
@@ -291,6 +323,7 @@ h1{
 
 
         <!-- 5. PHED LOR -->
+
         <a href="https://phedlor.github.io"
            class="btn pole-btn"
            target="_blank">
@@ -303,6 +336,7 @@ h1{
 
 
         <!-- 6. PHED Sage Finder -->
+
         <a href="https://phedsage.github.io"
            class="btn report-btn"
            target="_blank">
@@ -315,6 +349,7 @@ h1{
 
 
         <!-- 7. Transformer Finder -->
+
         <a href="dtr-finder.html"
            class="btn finder-btn">
 
@@ -326,6 +361,7 @@ h1{
 
 
         <!-- 8. Coming Soon -->
+
         <a href="javascript:void(0)"
            class="btn coming-btn"
            onclick="alert('This feature is coming soon!');">
@@ -336,10 +372,16 @@ h1{
 
         </a>
 
-
     </div>
 
 </div>
+
+
+<!-- ===== FOOTER ===== -->
+
+<footer>
+    <p>Designed by Obot Akpan</p>
+</footer>
 
 </body>
 </html>
