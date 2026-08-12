@@ -3,98 +3,253 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Data Capture Portal</title>
+
+<title>PHED Data Capture Portal</title>
+
+<!-- Font Awesome Icons -->
+<link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
 <style>
-    *{
-        margin:0;
-        padding:0;
-        box-sizing:border-box;
-        font-family: Arial, sans-serif;
-    }
 
-    body{
-        height:100vh;
-        display:flex;
-        justify-content:center;
-        align-items:center;
-        background:linear-gradient(135deg, #0f172a, #1e3a8a);
-        color:white;
-    }
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial, sans-serif;
+}
+
+body{
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    /* LIGHT BACKGROUND */
+    background:#f4f7fb;
+
+    color:#1e293b;
+    padding:30px 15px;
+}
+
+.container{
+    text-align:center;
+    width:90%;
+    max-width:700px;
+}
+
+/* HEADER */
+
+h1{
+    margin-bottom:10px;
+    font-size:2rem;
+    color:#0f172a;
+    font-weight:700;
+}
+
+p{
+    margin-bottom:40px;
+    color:#64748b;
+    font-size:0.95rem;
+}
+
+/* BUTTON GRID */
+
+.btn-container{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:20px;
+}
+
+/* BUTTON */
+
+.btn{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:14px;
+
+    min-height:85px;
+    padding:20px;
+
+    text-decoration:none;
+    color:white;
+
+    font-size:1.05rem;
+    font-weight:bold;
+
+    border-radius:14px;
+
+    transition:all 0.3s ease;
+
+    box-shadow:0 5px 15px rgba(15,23,42,0.12);
+}
+
+/* ICON */
+
+.btn i{
+    font-size:1.6rem;
+}
+
+/* HOVER */
+
+.btn:hover{
+    transform:translateY(-5px);
+
+    box-shadow:
+        0 10px 22px rgba(15,23,42,0.18);
+
+    filter:brightness(1.05);
+}
+
+/* ACTIVE */
+
+.btn:active{
+    transform:translateY(-1px);
+}
+
+/* BUTTON 1 - GIS */
+
+.gis-btn{
+    background:#16a34a;
+}
+
+/* BUTTON 2 - TRANSFORMER */
+
+.transformer-btn{
+    background:#ea580c;
+}
+
+/* BUTTON 3 - NETWORK TREE */
+
+.feeder-btn{
+    background:#2563eb;
+}
+
+/* BUTTON 4 - CALCULATOR */
+
+.meter-btn{
+    background:#7c3aed;
+}
+
+/* BUTTON 5 - LOR */
+
+.pole-btn{
+    background:#0891b2;
+}
+
+/* BUTTON 6 - SAGE */
+
+.report-btn{
+    background:#dc2626;
+}
+
+
+/* MOBILE */
+
+@media (max-width:600px){
 
     .container{
-        text-align:center;
-        width:90%;
-        max-width:500px;
+        width:95%;
     }
 
     h1{
-        margin-bottom:15px;
-        font-size:2rem;
+        font-size:1.6rem;
     }
 
     p{
-        margin-bottom:40px;
-        opacity:0.9;
+        margin-bottom:30px;
     }
 
     .btn-container{
-        display:flex;
-        flex-direction:column;
-        gap:20px;
+        grid-template-columns:1fr;
+        gap:15px;
     }
 
     .btn{
-        display:block;
-        padding:20px;
-        text-decoration:none;
-        color:white;
-        font-size:1.2rem;
-        font-weight:bold;
-        border-radius:12px;
-        transition:0.3s ease;
-        box-shadow:0 4px 10px rgba(0,0,0,0.3);
+        min-height:75px;
+        font-size:1rem;
     }
 
-    .gis-btn{
-        background:#16a34a;
+    .btn i{
+        font-size:1.4rem;
     }
+}
 
-    .transformer-btn{
-        background:#ea580c;
-    }
-
-    .btn:hover{
-        transform:translateY(-3px);
-        opacity:0.9;
-    }
-
-    @media (min-width: 768px){
-        .btn-container{
-            flex-direction:row;
-        }
-
-        .btn{
-            flex:1;
-        }
-    }
 </style>
 </head>
+
+
 <body>
 
 <div class="container">
+
     <h1>PHED Data Capture Portal</h1>
+
     <p>Designed by Obot Akpan</p>
 
+
     <div class="btn-container">
+
+        <!-- 1. GIS Capture -->
         <a href="gis-capture.html" class="btn gis-btn">
-            📍 GIS Capture
+            <i class="fa-solid fa-location-dot"></i>
+            <span>GIS Capture</span>
         </a>
 
+
+        <!-- 2. Transformer Capture -->
         <a href="transformer-capture.html" class="btn transformer-btn">
-            ⚡ Transformer Capture
+            <i class="fa-solid fa-bolt"></i>
+            <span>Transformer Capture</span>
         </a>
+
+
+        <!-- 3. PHED Network Tree -->
+        <a href="https://phednetwork.github.io"
+           class="btn feeder-btn"
+           target="_blank">
+
+            <i class="fa-solid fa-network-wired"></i>
+            <span>PHED Network Tree</span>
+
+        </a>
+
+
+        <!-- 4. PHED Calculator -->
+        <a href="https://phedcalculator.github.io"
+           class="btn meter-btn"
+           target="_blank">
+
+            <i class="fa-solid fa-calculator"></i>
+            <span>PHED Calculator</span>
+
+        </a>
+
+
+        <!-- 5. PHED LOR -->
+        <a href="https://phedlor.github.io"
+           class="btn pole-btn"
+           target="_blank">
+
+            <i class="fa-solid fa-chart-line"></i>
+            <span>PHED LOR</span>
+
+        </a>
+
+
+        <!-- 6. PHED Sage Finder -->
+        <a href="https://phedsage.github.io"
+           class="btn report-btn"
+           target="_blank">
+
+            <i class="fa-solid fa-magnifying-glass-chart"></i>
+            <span>PHED Sage Finder</span>
+
+        </a>
+
     </div>
+
 </div>
 
 </body>
