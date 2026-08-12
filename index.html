@@ -38,16 +38,39 @@ body{
     max-width:700px;
 }
 
+/* ===== LOGO SECTION ===== */
+.logo-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 16px;
+}
+.logo-container img {
+    width: 160px;
+    height: auto;
+    object-fit: contain;
+    border-radius: 12px;
+    display: block;
+    margin-bottom: 4px;
+}
+.logo-container .logo-text {
+    font-size: 0.75rem;
+    color: #64748b;
+    font-weight: 500;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
 /* HEADER */
 
 h1{
-    margin-bottom:10px;
+    margin-bottom: 6px;
     font-size:2rem;
     color:#0f172a;
     font-weight:700;
 }
 
-p{
+.subtitle{
     margin-bottom:40px;
     color:#64748b;
     font-size:0.95rem;
@@ -177,7 +200,7 @@ p{
         font-size:1.6rem;
     }
 
-    p{
+    .subtitle{
         margin-bottom:30px;
     }
 
@@ -194,6 +217,11 @@ p{
     .btn i{
         font-size:1.4rem;
     }
+
+    .logo-container img {
+        width: 80px;
+        height: 80px;
+    }
 }
 
 </style>
@@ -204,9 +232,15 @@ p{
 
 <div class="container">
 
+    <!-- ===== LOGO ===== -->
+    <div class="logo-container">
+        <img src="PHED logo.png" alt="PHED Logo" onerror="this.style.display='none'">
+        <span class="logo-text">Port Harcourt Electricity Distribution Company</span>
+    </div>
+
     <h1>PHED Data Capture Portal</h1>
 
-    <p>Designed by Obot Akpan</p>
+    <p class="subtitle">Designed by Obot Akpan</p>
 
 
     <div class="btn-container">
