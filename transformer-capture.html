@@ -277,7 +277,7 @@
 </head>
 <body>
 <div class="container">
-  <h2>⚡ Transformer Data Capture</h2>
+  <h2>Calabar Region DTR Data Capture</h2>
 
   <form id="form" autocomplete="off">
     <div class="input-group">
@@ -435,9 +435,11 @@
 
 <script>
   // --------------------------------------------------------------
-  // CONFIG
-  const scriptURL = "https://script.google.com/macros/s/AKfycbzGAWIjluH14yOFK5PcXWAdUSZ-0LdA_OGSt-2VwEojo2Pb5KNgD7VwmgUaSPosBQ/exec";
-  const sheetURL = "https://script.google.com/macros/s/AKfycbxHY_PYmo4wwzmasQAKtO73hHofXJF0ms9olsZBVbw4UDFPUg5TywlqiySPlHfy28oc/exec";
+  // CONFIG - CORRECTED URLS
+  // ONLY this URL is used for validation (checking duplicates)
+  const validationScriptURL = "https://script.google.com/macros/s/AKfycby2kODp7c3pvqOB-dOtexVi_Me0wFYnhTiVLpH12AEWHfOKdgS3Lm6qucSy0nzvZw/exec";
+  // This URL is ONLY used for loading search data
+  const searchDataURL = "https://script.google.com/macros/s/AKfycbxHY_PYmo4wwzmasQAKtO73hHofXJF0ms9olsZBVbw4UDFPUg5TywlqiySPlHfy28oc/exec";
 
   // --------------------------------------------------------------
   // FEEDER DATABASE
@@ -470,7 +472,7 @@
   const dtrValidationStatus = document.getElementById('dtrValidationStatus');
 
   // --------------------------------------------------------------
-  // LOAD DATA FROM VIEW SHEET
+  // LOAD DATA FROM VIEW SHEET (FOR SEARCH ONLY)
   let transformers = [];
   let isDataLoaded = false;
 
@@ -479,7 +481,7 @@
     searchInput.disabled = true;
     searchInput.placeholder = 'Loading data...';
 
-    fetch(sheetURL)
+    fetch(searchDataURL)
       .then(res => {
         if (!res.ok) throw new Error('Network response was not ok');
         return res.json();
@@ -490,7 +492,7 @@
         searchInput.disabled = false;
         searchInput.placeholder = 'type to search …';
         searchLoading.classList.remove('active');
-        console.log(`✅ Loaded ${transformers.length} transformer records for search and validation`);
+        console.log(`✅ Loaded ${transformers.length} transformer records for search`);
       })
       .catch(err => {
         console.warn("Transformer data load error:", err);
@@ -509,20 +511,30 @@
   loadTransformerData();
 
   // --------------------------------------------------------------
-  // CHECK DUPLICATE DTR ID AGAINST VIEW SHEET DATA
-  function checkDuplicateDTRId(dtrId) {
-    if (!isDataLoaded || !transformers.length) {
-      return false;
-    }
-    
+  // DUPLICATE CHECK FUNCTION - EXCLUSIVELY USES validationScriptURL
+  async function checkDuplicateDTRId(dtrId) {
     const trimmedId = dtrId.trim();
     if (!trimmedId) return false;
-    
-    // Check against all records in the view sheet
-    return transformers.some(item => {
-      const existingId = String(item.DTRID || '').trim();
-      return existingId.toLowerCase() === trimmedId.toLowerCase();
-    });
+
+    try {
+      // Directly call the validation script (main database) for duplicate check
+      const response = await fetch(`${validationScriptURL}?action=checkDuplicate&dtrId=${encodeURIComponent(trimmedId)}`, {
+        method: 'GET',
+        mode: 'cors'
+      });
+
+      if (!response.ok) {
+        console.warn('Validation script not reachable. Assuming no duplicate.');
+        return false;
+      }
+
+      const data = await response.json();
+      // The script MUST return a JSON object with a boolean 'isDuplicate' property
+      return data.isDuplicate === true;
+    } catch (error) {
+      console.error('Error during duplicate check:', error);
+      return false;
+    }
   }
 
   // Real-time duplicate check with debounce
@@ -531,7 +543,7 @@
     clearTimeout(duplicateCheckTimeout);
     const dtrId = this.value.trim();
     
-    if (!dtrId || !isDataLoaded) {
+    if (!dtrId) {
       duplicateWarning.classList.remove('show');
       dtrValidationStatus.innerHTML = '';
       return;
@@ -540,20 +552,27 @@
     // Show checking status
     dtrValidationStatus.innerHTML = '<span class="validation-spinner"></span> checking...';
     dtrValidationStatus.className = 'status-checking';
+    duplicateWarning.classList.remove('show');
     
-    duplicateCheckTimeout = setTimeout(() => {
-      const isDuplicate = checkDuplicateDTRId(dtrId);
-      if (isDuplicate) {
-        duplicateMessage.textContent = `Transformer ID "${dtrId}" already exists in the database!`;
-        duplicateWarning.classList.add('show');
-        dtrValidationStatus.innerHTML = '❌ Duplicate';
-        dtrValidationStatus.className = 'status-duplicate';
-      } else {
-        duplicateWarning.classList.remove('show');
-        dtrValidationStatus.innerHTML = '✅ Available';
-        dtrValidationStatus.className = 'status-available';
+    duplicateCheckTimeout = setTimeout(async () => {
+      try {
+        const isDuplicate = await checkDuplicateDTRId(dtrId);
+        if (isDuplicate) {
+          duplicateMessage.textContent = `Transformer ID "${dtrId}" already exists in the database!`;
+          duplicateWarning.classList.add('show');
+          dtrValidationStatus.innerHTML = '❌ Duplicate';
+          dtrValidationStatus.className = 'status-duplicate';
+        } else {
+          duplicateWarning.classList.remove('show');
+          dtrValidationStatus.innerHTML = '✅ Available';
+          dtrValidationStatus.className = 'status-available';
+        }
+      } catch (err) {
+        console.error('Duplicate check failed:', err);
+        dtrValidationStatus.innerHTML = '⚠️ Check failed';
+        dtrValidationStatus.className = 'status-checking';
       }
-    }, 300);
+    }, 500);
   });
 
   // Also check when selecting from search results
@@ -736,7 +755,7 @@
     btnText.textContent = '✅ Submit Data';
   }
 
-  form.addEventListener('submit', function(e) {
+  form.addEventListener('submit', async function(e) {
     e.preventDefault();
     if (submitBtn.disabled) return;
 
@@ -744,9 +763,15 @@
     const lat = document.getElementById('latitude').value;
     const lng = document.getElementById('longitude').value;
 
-    // Check for duplicate DTR ID against view sheet data
-    if (dtrId && isDataLoaded) {
-      const isDuplicate = checkDuplicateDTRId(dtrId);
+    if (!dtrId) {
+      responseEl.textContent = '⚠️ Please enter a DTR ID';
+      responseEl.className = 'error';
+      return;
+    }
+
+    // Check for duplicate DTR ID against the main script database
+    try {
+      const isDuplicate = await checkDuplicateDTRId(dtrId);
       if (isDuplicate) {
         duplicateMessage.textContent = `Transformer ID "${dtrId}" already exists in the database!`;
         duplicateWarning.classList.add('show');
@@ -755,8 +780,9 @@
         duplicateWarning.scrollIntoView({ behavior: 'smooth', block: 'center' });
         return;
       }
-    } else if (dtrId && !isDataLoaded) {
-      responseEl.textContent = '⚠️ Cannot verify duplicate - data not loaded. Please refresh.';
+    } catch (err) {
+      console.error('Duplicate check failed:', err);
+      responseEl.textContent = '⚠️ Could not verify duplicate status. Please try again.';
       responseEl.className = 'warning';
       return;
     }
@@ -792,7 +818,7 @@
     responseEl.textContent = '⏳ Submitting...';
     responseEl.className = '';
 
-    fetch(scriptURL, {
+    fetch(validationScriptURL, {
       method: 'POST',
       body: JSON.stringify(data),
       headers: { 'Content-Type': 'application/json' },
