@@ -159,7 +159,7 @@
   <div id="projectSection">
     <div id="titleSection" class="card" style="background:transparent; padding:0;">
       <h3>Enter Project Title</h3>
-      <input type="text" id="projectTitleInput" placeholder="Enter title here" />
+      <input type="text" id="projectTitleInput" placeholder="E.g. Installation of 300KVA Substation for FHE Calabar" />
       <button onclick="startProjectApp()" style="width:30%;margin:12px auto;display:block;">Start</button>
     </div>
 
@@ -186,14 +186,14 @@
   <div id="transformerSection" style="display:none;">
     <div id="transformerTitleSection" class="card" style="background:transparent; padding:0;">
       <h3>Enter Feeder Name</h3>
-      <input type="text" id="feederNameInput" placeholder="Enter feeder name" />
+      <input type="text" id="feederNameInput" placeholder="E.g. MCC Feeder" />
       <button onclick="startTransformerApp()" style="width:30%;margin:12px auto;display:block;">Start</button>
     </div>
 
     <div id="transformerAppContent" style="display:none; padding:0;">
       <div class="table-wrapper">
         <table id="transformerTable">
-          <thead><tr><th>S/N</th><th>Name</th><th>Capacity</th><th>Remark</th><th>Lat</th><th>Lon</th><th></th></tr></thead>
+          <thead><tr><th>S/N</th><th>DTR Name</th><th>Capacity</th><th>Remark</th><th>Lat</th><th>Lon</th><th></th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
@@ -487,7 +487,7 @@ function exportKMLProject() {
 }
 
 // ─────────────────────────────────────────────────────────────
-//  TRANSFORMER CAPTURE
+//  TRANSFORMER CAPTURE (FIXED: edit/delete stay on right)
 // ─────────────────────────────────────────────────────────────
 function startTransformerApp() {
   const feeder = document.getElementById("feederNameInput").value.trim();
@@ -590,16 +590,29 @@ function captureTransformerLocation(btn) {
     pos => {
       const lat = pos.coords.latitude.toFixed(6);
       const lng = pos.coords.longitude.toFixed(6);
-      btn.parentElement.remove();
-      const latCell = document.createElement("td"); latCell.innerText = lat;
-      const lngCell = document.createElement("td"); lngCell.innerText = lng;
-      row.insertBefore(latCell, row.children[5]);
-      row.insertBefore(lngCell, row.children[6]);
+      
+      // Remove the capture button cell (which has colspan=2)
+      const captureCell = row.querySelector(".captureCell");
+      captureCell.remove();
+      
+      // Create lat and lon cells
+      const latCell = document.createElement("td");
+      latCell.innerText = lat;
+      const lngCell = document.createElement("td");
+      lngCell.innerText = lng;
+      
+      // Insert lat and lon BEFORE the actions cell (which is the last cell)
+      // row.cells.length - 1 gives the index of the last cell (actions)
+      const actionsIndex = row.cells.length - 1;
+      row.insertBefore(latCell, row.cells[actionsIndex]);
+      row.insertBefore(lngCell, row.cells[actionsIndex]);
+      
       row.dataset.captured = "true";
       nameInput.disabled = true;
       capacitySelect.disabled = true;
       remarkInput.disabled = true;
       row.querySelector(".edit-btn").disabled = false;
+      
       transformerData = transformerData.filter(r => r.id !== row.dataset.id);
       transformerData.push({
         id: row.dataset.id,
@@ -619,12 +632,22 @@ function editTransformerRow(btn) {
   const row = btn.closest("tr");
   row.dataset.captured = "";
   transformerData = transformerData.filter(r => r.id !== row.dataset.id);
-  row.children[4].remove(); row.children[4].remove();
+  
+  // Remove lat and lon cells (they are before the actions cell)
+  // Actions cell is the last one, so remove cells at index 4 and 5 (0-based)
+  row.children[4].remove(); // lat
+  row.children[4].remove(); // lon (now at same index after first removal)
+  
+  // Create a new capture cell with colspan=2 and insert before actions
   const cap = document.createElement("td");
   cap.colSpan = 2;
   cap.className = "captureCell";
   cap.innerHTML = `<button class="captureBtn small-btn" onclick="captureTransformerLocation(this)"><i class="fa-solid fa-location-crosshairs"></i> Recapture</button>`;
-  row.insertBefore(cap, row.children[4]);
+  
+  // Insert before the actions cell (which is the last cell)
+  const actionsIndex = row.cells.length - 1;
+  row.insertBefore(cap, row.cells[actionsIndex]);
+  
   row.querySelector(".transNameInput").disabled = false;
   row.querySelector(".capacitySelect").disabled = false;
   row.querySelector(".remarkInput").disabled = false;
