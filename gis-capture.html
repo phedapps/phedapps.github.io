@@ -39,12 +39,6 @@
       border: none; border-radius: 6px; margin: 3px 0; cursor: pointer;
     }
     button:disabled { background: #7ba6ff !important; cursor: not-allowed; }
-    .button-row {
-      display: flex; justify-content: flex-end; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;
-    }
-    .button-row button {
-      width: auto; min-width: 60px; padding: 6px 12px; font-weight: bold; font-size: 13px;
-    }
     .add-asset-row {
       display: flex; justify-content: center; margin-top: 12px;
     }
@@ -59,30 +53,60 @@
     th { background: #004aad; color: white; }
     #dataTable tbody tr:nth-child(odd) { background: #e9f3ff; }
     #dataTable tbody tr:nth-child(even) { background: white; }
-    #transformerTable tbody tr:nth-child(odd) { background: #e9f3ff; }
-    #transformerTable tbody tr:nth-child(even) { background: white; }
+    #transformerTable tbody tr:nth-child(odd) { background: #fff0e6; }
+    #transformerTable tbody tr:nth-child(even) { background: #fffaf5; }
     .small-btn { padding: 5px; font-size: 12px; }
     .captureBtn { background: #007bff; }
     .edit-btn { background: #ff9900; }
     .delete-btn { background: #cc0000; }
+
+    /* ---- MODE TABS: side by side ---- */
     .mode-selector {
-      display: flex; gap: 12px; justify-content: center; margin: 12px 0;
+      display: flex;
+      gap: 4px;
+      justify-content: center;
+      margin: 0 0 12px 0;
+      background: transparent;
+      padding: 0;
+      border-radius: 0;
     }
     .mode-selector button {
-      background: #e0e7f0; color: #004aad; border: 2px solid #004aad;
-      padding: 10px 24px; font-weight: bold; border-radius: 30px;
+      background: #d0d8e0;
+      color: #004aad;
+      border: 2px solid #004aad;
+      padding: 10px 28px;
+      font-weight: bold;
+      border-radius: 30px 30px 0 0;
+      margin: 0;
+      flex: 0 1 auto;
+      font-size: 15px;
+      transition: 0.15s;
     }
     .mode-selector button.active {
-      background: #004aad; color: white;
+      background: #004aad;
+      color: white;
+      border-bottom-color: transparent;
     }
-    @media(max-width:480px) {
-      .button-row button, #addAssetBtn { width: 100%; }
-      .mode-selector { flex-direction: column; align-items: center; }
-    }
-    .kml-btn { background: #2d7d2d; }
-    .transformer-remark { width: 100%; padding: 6px; border-radius: 4px; border: 1px solid #aaa; }
+    .mode-selector button i { margin-right: 6px; }
 
-    /* bottom export bar - all in one line, at the bottom */
+    /* ---- color-coded containers ---- */
+    #projectSection {
+      background: #f0f7ff;
+      border-left: 6px solid #004aad;
+      border-radius: 0 8px 8px 8px;
+    }
+    #transformerSection {
+      background: #fff5ed;
+      border-left: 6px solid #cc7a00;
+      border-radius: 0 8px 8px 8px;
+    }
+    #projectSection .card, #transformerSection .card {
+      background: transparent;
+      padding: 0;
+      box-shadow: none;
+    }
+
+    /* bottom export bar - all in one line */
     .bottom-export-bar {
       display: flex;
       justify-content: center;
@@ -107,6 +131,11 @@
       border-color: #cc0000;
       color: #cc0000;
     }
+
+    @media(max-width:600px) {
+      .mode-selector button { padding: 8px 14px; font-size: 13px; }
+      .bottom-export-bar button { min-width: 60px; padding: 5px 10px; font-size: 12px; }
+    }
   </style>
 </head>
 <body>
@@ -120,21 +149,21 @@
 
 <div class="container">
 
-  <!-- ===== MODE SELECTOR ===== -->
-  <div class="card mode-selector">
+  <!-- ===== MODE TABS: side by side ===== -->
+  <div class="mode-selector">
     <button id="modeProjectBtn" class="active" onclick="switchMode('project')"><i class="fa-solid fa-map"></i> Project GIS</button>
     <button id="modeTransformerBtn" onclick="switchMode('transformer')"><i class="fa-solid fa-bolt"></i> Transformer</button>
   </div>
 
   <!-- ===== PROJECT GIS CAPTURE ===== -->
-  <div id="projectSection" class="card">
-    <div id="titleSection">
+  <div id="projectSection">
+    <div id="titleSection" class="card" style="background:transparent; padding:0;">
       <h3>Enter Project Title</h3>
-      <input type="text" id="projectTitleInput" placeholder="E.g. Installation of 100KVA Substation for FHE Calabar" />
+      <input type="text" id="projectTitleInput" placeholder="Enter title here" />
       <button onclick="startProjectApp()" style="width:30%;margin:12px auto;display:block;">Start</button>
     </div>
 
-    <div id="projectAppContent" style="display:none">
+    <div id="projectAppContent" style="display:none; padding:0;">
       <div class="table-wrapper">
         <table id="dataTable">
           <thead><tr><th>S/N</th><th>Qty</th><th>Asset</th><th>Lat</th><th>Lon</th><th></th></tr></thead>
@@ -144,7 +173,6 @@
       <div class="add-asset-row">
         <button style="background:white;color:black;border:1px solid blue" id="addAssetBtn" onclick="addProjectRow()">➕ Add Asset</button>
       </div>
-      <!-- bottom export bar for project -->
       <div class="bottom-export-bar">
         <button class="reset-btn" onclick="resetProject()"><i class="fa-solid fa-rotate-left"></i> Reset</button>
         <button onclick="exportExcelProject()"><i class="fa-regular fa-file-excel"></i> Excel</button>
@@ -155,14 +183,14 @@
   </div>
 
   <!-- ===== TRANSFORMER CAPTURE ===== -->
-  <div id="transformerSection" class="card" style="display:none">
-    <div id="transformerTitleSection">
+  <div id="transformerSection" style="display:none;">
+    <div id="transformerTitleSection" class="card" style="background:transparent; padding:0;">
       <h3>Enter Feeder Name</h3>
-      <input type="text" id="feederNameInput" placeholder="E.g. MCC Feeder" />
+      <input type="text" id="feederNameInput" placeholder="Enter feeder name" />
       <button onclick="startTransformerApp()" style="width:30%;margin:12px auto;display:block;">Start</button>
     </div>
 
-    <div id="transformerAppContent" style="display:none">
+    <div id="transformerAppContent" style="display:none; padding:0;">
       <div class="table-wrapper">
         <table id="transformerTable">
           <thead><tr><th>S/N</th><th>Name</th><th>Capacity</th><th>Remark</th><th>Lat</th><th>Lon</th><th></th></tr></thead>
@@ -172,7 +200,6 @@
       <div class="add-asset-row">
         <button style="background:white;color:black;border:1px solid blue" id="addTransformerBtn" onclick="addTransformerRow()">➕ Add Transformer</button>
       </div>
-      <!-- bottom export bar for transformer -->
       <div class="bottom-export-bar">
         <button class="reset-btn" onclick="resetTransformer()"><i class="fa-solid fa-rotate-left"></i> Reset</button>
         <button onclick="exportExcelTransformer()"><i class="fa-regular fa-file-excel"></i> Excel</button>
