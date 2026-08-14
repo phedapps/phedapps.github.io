@@ -40,10 +40,10 @@
     }
     button:disabled { background: #7ba6ff !important; cursor: not-allowed; }
     .button-row {
-      display: flex; justify-content: flex-end; gap: 12px; margin-bottom: 12px; flex-wrap: wrap;
+      display: flex; justify-content: flex-end; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;
     }
     .button-row button {
-      width: auto; min-width: 80px; padding: 10px 16px; font-weight: bold;
+      width: auto; min-width: 60px; padding: 6px 12px; font-weight: bold; font-size: 13px;
     }
     .add-asset-row {
       display: flex; justify-content: center; margin-top: 12px;
@@ -59,6 +59,8 @@
     th { background: #004aad; color: white; }
     #dataTable tbody tr:nth-child(odd) { background: #e9f3ff; }
     #dataTable tbody tr:nth-child(even) { background: white; }
+    #transformerTable tbody tr:nth-child(odd) { background: #e9f3ff; }
+    #transformerTable tbody tr:nth-child(even) { background: white; }
     .small-btn { padding: 5px; font-size: 12px; }
     .captureBtn { background: #007bff; }
     .edit-btn { background: #ff9900; }
@@ -79,6 +81,32 @@
     }
     .kml-btn { background: #2d7d2d; }
     .transformer-remark { width: 100%; padding: 6px; border-radius: 4px; border: 1px solid #aaa; }
+
+    /* bottom export bar - all in one line, at the bottom */
+    .bottom-export-bar {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 16px;
+      flex-wrap: wrap;
+      border-top: 1px solid #ddd;
+      padding-top: 12px;
+    }
+    .bottom-export-bar button {
+      background: white;
+      color: black;
+      border: 1px solid #004aad;
+      padding: 6px 18px;
+      font-weight: 600;
+      font-size: 13px;
+      border-radius: 6px;
+      min-width: 70px;
+    }
+    .bottom-export-bar button i { margin-right: 4px; }
+    .bottom-export-bar .reset-btn {
+      border-color: #cc0000;
+      color: #cc0000;
+    }
   </style>
 </head>
 <body>
@@ -94,60 +122,62 @@
 
   <!-- ===== MODE SELECTOR ===== -->
   <div class="card mode-selector">
-    <button id="modeProjectBtn" class="active" onclick="switchMode('project')"><i class="fa-solid fa-map"></i> Project GIS Capture</button>
-    <button id="modeTransformerBtn" onclick="switchMode('transformer')"><i class="fa-solid fa-bolt"></i> Transformer Capture</button>
+    <button id="modeProjectBtn" class="active" onclick="switchMode('project')"><i class="fa-solid fa-map"></i> Project GIS</button>
+    <button id="modeTransformerBtn" onclick="switchMode('transformer')"><i class="fa-solid fa-bolt"></i> Transformer</button>
   </div>
 
-  <!-- ===== PROJECT GIS CAPTURE (unchanged) ===== -->
+  <!-- ===== PROJECT GIS CAPTURE ===== -->
   <div id="projectSection" class="card">
     <div id="titleSection">
       <h3>Enter Project Title</h3>
-      <input type="text" id="projectTitleInput" placeholder="Enter title here" />
+      <input type="text" id="projectTitleInput" placeholder="E.g. Installation of 100KVA Substation for FHE Calabar" />
       <button onclick="startProjectApp()" style="width:30%;margin:12px auto;display:block;">Start</button>
     </div>
 
     <div id="projectAppContent" style="display:none">
-      <div class="button-row">
-        <button style="background:white;color:red;border:1px solid red" onclick="resetProject()">Reset</button>
-        <button style="background:white;color:black;border:1px solid blue" onclick="exportExcelProject()">Export Excel</button>
-        <button style="background:white;color:black;border:1px solid blue" onclick="exportPDFProject()">Export PDF</button>
-        <button style="background:#2d7d2d;color:white;border:1px solid #1f5a1f" onclick="exportKMLProject()"><i class="fa-solid fa-map-location-dot"></i> Export KML</button>
-      </div>
       <div class="table-wrapper">
         <table id="dataTable">
-          <thead><tr><th>S/N</th><th>Quantity</th><th>Asset</th><th>Lat</th><th>Lon</th><th></th></tr></thead>
+          <thead><tr><th>S/N</th><th>Qty</th><th>Asset</th><th>Lat</th><th>Lon</th><th></th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
       <div class="add-asset-row">
         <button style="background:white;color:black;border:1px solid blue" id="addAssetBtn" onclick="addProjectRow()">➕ Add Asset</button>
       </div>
+      <!-- bottom export bar for project -->
+      <div class="bottom-export-bar">
+        <button class="reset-btn" onclick="resetProject()"><i class="fa-solid fa-rotate-left"></i> Reset</button>
+        <button onclick="exportExcelProject()"><i class="fa-regular fa-file-excel"></i> Excel</button>
+        <button onclick="exportPDFProject()"><i class="fa-regular fa-file-pdf"></i> PDF</button>
+        <button onclick="exportKMLProject()"><i class="fa-solid fa-map-location-dot"></i> KML</button>
+      </div>
     </div>
   </div>
 
-  <!-- ===== TRANSFORMER CAPTURE (NEW) ===== -->
+  <!-- ===== TRANSFORMER CAPTURE ===== -->
   <div id="transformerSection" class="card" style="display:none">
     <div id="transformerTitleSection">
       <h3>Enter Feeder Name</h3>
-      <input type="text" id="feederNameInput" placeholder="Enter feeder name" />
+      <input type="text" id="feederNameInput" placeholder="E.g. MCC Feeder" />
       <button onclick="startTransformerApp()" style="width:30%;margin:12px auto;display:block;">Start</button>
     </div>
 
     <div id="transformerAppContent" style="display:none">
-      <div class="button-row">
-        <button style="background:white;color:red;border:1px solid red" onclick="resetTransformer()">Reset</button>
-        <button style="background:white;color:black;border:1px solid blue" onclick="exportExcelTransformer()">Export Excel</button>
-        <button style="background:white;color:black;border:1px solid blue" onclick="exportPDFTransformer()">Export PDF</button>
-        <button style="background:#2d7d2d;color:white;border:1px solid #1f5a1f" onclick="exportKMLTransformer()"><i class="fa-solid fa-map-location-dot"></i> Export KML</button>
-      </div>
       <div class="table-wrapper">
         <table id="transformerTable">
-          <thead><tr><th>S/N</th><th>Transformer Name</th><th>Capacity</th><th>Remark</th><th>Lat</th><th>Lon</th><th></th></tr></thead>
+          <thead><tr><th>S/N</th><th>Name</th><th>Capacity</th><th>Remark</th><th>Lat</th><th>Lon</th><th></th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
       <div class="add-asset-row">
         <button style="background:white;color:black;border:1px solid blue" id="addTransformerBtn" onclick="addTransformerRow()">➕ Add Transformer</button>
+      </div>
+      <!-- bottom export bar for transformer -->
+      <div class="bottom-export-bar">
+        <button class="reset-btn" onclick="resetTransformer()"><i class="fa-solid fa-rotate-left"></i> Reset</button>
+        <button onclick="exportExcelTransformer()"><i class="fa-regular fa-file-excel"></i> Excel</button>
+        <button onclick="exportPDFTransformer()"><i class="fa-regular fa-file-pdf"></i> PDF</button>
+        <button onclick="exportKMLTransformer()"><i class="fa-solid fa-map-location-dot"></i> KML</button>
       </div>
     </div>
   </div>
@@ -163,7 +193,7 @@
 let projectData = [];
 let transformerData = [];
 let globalDate = "";
-let currentMode = "project"; // 'project' or 'transformer'
+let currentMode = "project";
 
 // ─── ERROR BAR ──────────────────────────────────────────────
 function showGlobalError(msg) {
@@ -180,16 +210,14 @@ function switchMode(mode) {
   document.getElementById("modeTransformerBtn").classList.toggle("active", mode === "transformer");
   document.getElementById("projectSection").style.display = mode === "project" ? "block" : "none";
   document.getElementById("transformerSection").style.display = mode === "transformer" ? "block" : "none";
-  // hide/show date header (same for both)
   const dateEl = document.getElementById("projectDate");
   if (mode === "project") {
     dateEl.style.display = document.getElementById("projectAppContent").style.display === "block" ? "block" : "none";
   } else {
     dateEl.style.display = document.getElementById("transformerAppContent").style.display === "block" ? "block" : "none";
   }
-  // update header title
   document.getElementById("projectTitleHeader").innerText = 
-    mode === "project" ? "PHED GIS Capture · Project" : "PHED GIS Capture · Transformer";
+    mode === "project" ? "PHED GIS · Project" : "PHED GIS · Transformer";
 }
 
 // ─── DATE HELPER ────────────────────────────────────────────
@@ -206,7 +234,7 @@ function getFormattedDate() {
   return `${day} ${monthNames[d.getMonth()]}, ${d.getFullYear()}`;
 }
 
-// ─── LOCAL STORAGE (project & transformer) ─────────────────
+// ─── LOCAL STORAGE ──────────────────────────────────────────
 function saveAllToLocal() {
   const saved = {
     project: { title: document.getElementById("projectTitleHeader").innerText, date: globalDate, data: projectData },
@@ -223,8 +251,7 @@ function loadAllFromLocal() {
     if (project && project.data) {
       projectData = project.data;
       globalDate = project.date || getFormattedDate();
-      // restore project UI
-      document.getElementById("projectTitleHeader").innerText = project.title || "PHED GIS Capture";
+      document.getElementById("projectTitleHeader").innerText = project.title || "PHED GIS";
       document.getElementById("projectDate").innerText = "Date: " + globalDate;
       document.getElementById("projectDate").style.display = "block";
       document.getElementById("titleSection").style.display = "none";
@@ -234,7 +261,7 @@ function loadAllFromLocal() {
     if (transformer && transformer.data) {
       transformerData = transformer.data;
       globalDate = transformer.date || getFormattedDate();
-      document.getElementById("projectTitleHeader").innerText = transformer.feeder || "PHED GIS Capture";
+      document.getElementById("projectTitleHeader").innerText = transformer.feeder || "PHED GIS";
       document.getElementById("projectDate").innerText = "Date: " + globalDate;
       document.getElementById("projectDate").style.display = "block";
       document.getElementById("transformerTitleSection").style.display = "none";
@@ -246,7 +273,6 @@ function loadAllFromLocal() {
 
 window.onload = function() {
   loadAllFromLocal();
-  // default: show project mode
   switchMode("project");
 };
 
@@ -255,7 +281,7 @@ window.onbeforeunload = function() {
 };
 
 // ─────────────────────────────────────────────────────────────
-//  PROJECT GIS CAPTURE (unchanged logic, adapted)
+//  PROJECT GIS CAPTURE
 // ─────────────────────────────────────────────────────────────
 function startProjectApp() {
   const title = document.getElementById("projectTitleInput").value.trim();
@@ -290,7 +316,7 @@ function renderProjectTable() {
     row.dataset.captured = "true";
     row.innerHTML = `
       <td></td>
-      <td><input type="number" class="qtyInput" value="${item.quantity || 1}" min="1" style="width:70px;text-align:center;" disabled></td>
+      <td><input type="number" class="qtyInput" value="${item.quantity || 1}" min="1" style="width:60px;text-align:center;" disabled></td>
       <td><select class="assetSelect" disabled><option>${item.asset}</option></select></td>
       <td>${item.lat}</td>
       <td>${item.lng}</td>
@@ -319,10 +345,10 @@ function addProjectRow() {
   row.dataset.captured = "";
   row.innerHTML = `
     <td></td>
-    <td><input type="number" class="qtyInput" value="1" min="1" style="width:70px;text-align:center;"></td>
+    <td><input type="number" class="qtyInput" value="1" min="1" style="width:60px;text-align:center;"></td>
     <td>
       <select class="assetSelect">
-        <option value="" disabled selected>Select Asset</option>
+        <option value="" disabled selected>Select</option>
         <option value="Transformer">Transformer</option>
         <option value="40ft HT Pole">40ft HT Pole</option>
         <option value="34ft HT Pole">34ft HT Pole</option>
@@ -398,10 +424,10 @@ function deleteProjectRow(btn) {
 
 function exportExcelProject() {
   if (projectData.length === 0) return showGlobalError("No project data.");
-  const data = projectData.map((item, i) => ({ "S/N": i+1, "Quantity": item.quantity||1, "Asset": item.asset, "Latitude": item.lat, "Longitude": item.lng }));
+  const data = projectData.map((item, i) => ({ "S/N": i+1, "Qty": item.quantity||1, "Asset": item.asset, "Lat": item.lat, "Lon": item.lng }));
   const ws = XLSX.utils.json_to_sheet(data);
   const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Project GIS");
+  XLSX.utils.book_append_sheet(wb, ws, "Project");
   XLSX.writeFile(wb, "Project_GIS.xlsx");
 }
 
@@ -419,10 +445,10 @@ function exportPDFProject() {
 
 function exportKMLProject() {
   if (projectData.length === 0) return showGlobalError("No project data.");
-  const title = document.getElementById("projectTitleHeader").innerText || "Project GIS";
-  let kml = `<?xml version="1.0" encoding="UTF-8"?><kml xmlns="http://www.opengis.net/kml/2.2"><Document><name>${title}</name><description>Exported from PHED GIS Capture</description><Style id="assetStyle"><IconStyle><scale>1.2</scale><Icon><href>http://maps.google.com/mapfiles/kml/pushpin/red-pushpin.png</href></Icon></IconStyle></Style>`;
+  const title = document.getElementById("projectTitleHeader").innerText || "Project";
+  let kml = `<?xml version="1.0" encoding="UTF-8"?><kml xmlns="http://www.opengis.net/kml/2.2"><Document><name>${title}</name><description>Exported from PHED GIS</description><Style id="s"><IconStyle><scale>1.2</scale><Icon><href>http://maps.google.com/mapfiles/kml/pushpin/red-pushpin.png</href></Icon></IconStyle></Style>`;
   projectData.forEach(item => {
-    kml += `<Placemark><name>${item.quantity||1} × ${item.asset}</name><description>${item.asset} | ${item.lat}, ${item.lng}</description><styleUrl>#assetStyle</styleUrl><Point><coordinates>${item.lng},${item.lat},0</coordinates></Point></Placemark>`;
+    kml += `<Placemark><name>${item.quantity||1} × ${item.asset}</name><description>${item.asset} | ${item.lat}, ${item.lng}</description><styleUrl>#s</styleUrl><Point><coordinates>${item.lng},${item.lat},0</coordinates></Point></Placemark>`;
   });
   kml += `</Document></kml>`;
   const blob = new Blob([kml], { type: "application/vnd.google-earth.kml+xml" });
@@ -434,7 +460,7 @@ function exportKMLProject() {
 }
 
 // ─────────────────────────────────────────────────────────────
-//  TRANSFORMER CAPTURE (NEW)
+//  TRANSFORMER CAPTURE
 // ─────────────────────────────────────────────────────────────
 function startTransformerApp() {
   const feeder = document.getElementById("feederNameInput").value.trim();
@@ -471,7 +497,7 @@ function renderTransformerTable() {
       <td></td>
       <td><input type="text" class="transNameInput" value="${item.name}" style="width:100px;" disabled></td>
       <td><select class="capacitySelect" disabled><option>${item.capacity}</option></select></td>
-      <td><input type="text" class="remarkInput" value="${item.remark || ''}" style="width:120px;" disabled></td>
+      <td><input type="text" class="remarkInput" value="${item.remark || ''}" style="width:100px;" disabled></td>
       <td>${item.lat}</td>
       <td>${item.lng}</td>
       <td>
@@ -499,7 +525,7 @@ function addTransformerRow() {
   row.dataset.captured = "";
   row.innerHTML = `
     <td></td>
-    <td><input type="text" class="transNameInput" placeholder="Transformer name" style="width:100px;"></td>
+    <td><input type="text" class="transNameInput" placeholder="Name" style="width:100px;"></td>
     <td>
       <select class="capacitySelect">
         <option value="" disabled selected>Capacity</option>
@@ -513,7 +539,7 @@ function addTransformerRow() {
         <option value="3MVA">3MVA</option>
       </select>
     </td>
-    <td><input type="text" class="remarkInput" placeholder="Remark" style="width:120px;"></td>
+    <td><input type="text" class="remarkInput" placeholder="Remark" style="width:100px;"></td>
     <td colspan="2" class="captureCell">
       <button class="captureBtn small-btn" onclick="captureTransformerLocation(this)"><i class="fa-solid fa-location-crosshairs"></i> Capture</button>
     </td>
@@ -531,7 +557,7 @@ function captureTransformerLocation(btn) {
   const nameInput = row.querySelector(".transNameInput");
   const capacitySelect = row.querySelector(".capacitySelect");
   const remarkInput = row.querySelector(".remarkInput");
-  if (!nameInput.value.trim()) return showGlobalError("Enter DTR name.");
+  if (!nameInput.value.trim()) return showGlobalError("Enter transformer name.");
   if (!capacitySelect.value) return showGlobalError("Select capacity.");
   navigator.geolocation.getCurrentPosition(
     pos => {
@@ -540,7 +566,6 @@ function captureTransformerLocation(btn) {
       btn.parentElement.remove();
       const latCell = document.createElement("td"); latCell.innerText = lat;
       const lngCell = document.createElement("td"); lngCell.innerText = lng;
-      // insert before the last cell (actions)
       row.insertBefore(latCell, row.children[5]);
       row.insertBefore(lngCell, row.children[6]);
       row.dataset.captured = "true";
@@ -567,7 +592,6 @@ function editTransformerRow(btn) {
   const row = btn.closest("tr");
   row.dataset.captured = "";
   transformerData = transformerData.filter(r => r.id !== row.dataset.id);
-  // remove lat/lon cells (they are at index 4 and 5 before actions)
   row.children[4].remove(); row.children[4].remove();
   const cap = document.createElement("td");
   cap.colSpan = 2;
@@ -591,7 +615,7 @@ function deleteTransformerRow(btn) {
 
 function exportExcelTransformer() {
   if (transformerData.length === 0) return showGlobalError("No transformer data.");
-  const data = transformerData.map((item, i) => ({ "S/N": i+1, "Name": item.name, "Capacity": item.capacity, "Remark": item.remark||'', "Latitude": item.lat, "Longitude": item.lng }));
+  const data = transformerData.map((item, i) => ({ "S/N": i+1, "Name": item.name, "Capacity": item.capacity, "Remark": item.remark||'', "Lat": item.lat, "Lon": item.lng }));
   const ws = XLSX.utils.json_to_sheet(data);
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "Transformers");
@@ -614,9 +638,9 @@ function exportPDFTransformer() {
 function exportKMLTransformer() {
   if (transformerData.length === 0) return showGlobalError("No transformer data.");
   const feeder = document.getElementById("projectTitleHeader").innerText || "Transformers";
-  let kml = `<?xml version="1.0" encoding="UTF-8"?><kml xmlns="http://www.opengis.net/kml/2.2"><Document><name>${feeder} - Transformers</name><description>Transformer locations</description><Style id="transStyle"><IconStyle><scale>1.2</scale><Icon><href>http://maps.google.com/mapfiles/kml/pushpin/blue-pushpin.png</href></Icon></IconStyle></Style>`;
+  let kml = `<?xml version="1.0" encoding="UTF-8"?><kml xmlns="http://www.opengis.net/kml/2.2"><Document><name>${feeder} - Transformers</name><description>Transformer locations</description><Style id="ts"><IconStyle><scale>1.2</scale><Icon><href>http://maps.google.com/mapfiles/kml/pushpin/blue-pushpin.png</href></Icon></IconStyle></Style>`;
   transformerData.forEach(item => {
-    kml += `<Placemark><name>${item.name}</name><description>Capacity: ${item.capacity} | Remark: ${item.remark||''}</description><styleUrl>#transStyle</styleUrl><Point><coordinates>${item.lng},${item.lat},0</coordinates></Point></Placemark>`;
+    kml += `<Placemark><name>${item.name}</name><description>Capacity: ${item.capacity} | Remark: ${item.remark||''}</description><styleUrl>#ts</styleUrl><Point><coordinates>${item.lng},${item.lat},0</coordinates></Point></Placemark>`;
   });
   kml += `</Document></kml>`;
   const blob = new Blob([kml], { type: "application/vnd.google-earth.kml+xml" });
