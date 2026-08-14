@@ -3,76 +3,88 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>PHED GIS Capture App</title>
+  <title>PHED GIS · Project & Transformer Capture</title>
 
   <!-- FONT AWESOME -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 
   <!-- EXCEL + PDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-<style>
-*{box-sizing:border-box;}
-body{
-  font-family:"Segoe UI",Arial,sans-serif;
-  margin:0;background:#f4f6f8;overflow-x:hidden;
-}
-header{background:#004aad;color:white;padding:8px;text-align:center;}
-footer{
-  background:#004aad;color:white;text-align:center;
-  padding:8px;font-size:12px;position:fixed;bottom:0;width:100%;
-}
-#globalError{
-  width:100%;text-align:center;color:white;background:#cc0000;
-  padding:8px;font-size:14px;display:none;position:fixed;
-  bottom:40px;left:0;z-index:9999;
-}
-.container{padding:8px;margin-bottom:70px;max-width:100%;}
-.card{background:white;padding:10px;border-radius:8px;margin-bottom:10px;}
-input,select{
-  padding:8px;width:100%;border-radius:6px;
-  border:1px solid #aaa;font-size:16px;
-}
-button{
-  padding:8px;width:100%;background:#0066ff;color:white;
-  border:none;border-radius:6px;margin:3px 0;cursor:pointer;
-}
-button:disabled{background:#7ba6ff!important;cursor:not-allowed;}
-.button-row{
-  display:flex;justify-content:flex-end;gap:12px;margin-bottom:12px;
-}
-.button-row button{
-  width:10vw;min-width:80px;padding:10px;font-weight:bold;
-}
-.add-asset-row{
-  display:flex;justify-content:center;margin-top:12px;
-}
-#addAssetBtn{
-  width:10vw;min-width:100px;background:#008000;font-weight:bold;
-}
-.table-wrapper{
-  overflow-x:auto;background:white;border-radius:8px;padding:5px;
-}
-table{width:100%;border-collapse:collapse;}
-th,td{padding:6px;text-align:center;}
-th{background:#004aad;color:white;}
-#dataTable tbody tr:nth-child(odd){background:#e9f3ff;}
-#dataTable tbody tr:nth-child(even){background:white;}
-.small-btn{padding:5px;font-size:12px;}
-.captureBtn{background:#007bff;}
-.edit-btn{background:#ff9900;}
-.delete-btn{background:#cc0000;}
-@media(max-width:480px){
-  .button-row button,#addAssetBtn{width:30vw;}
-}
-</style>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      margin: 0; background: #f4f6f8; overflow-x: hidden;
+    }
+    header { background: #004aad; color: white; padding: 8px; text-align: center; }
+    footer {
+      background: #004aad; color: white; text-align: center;
+      padding: 8px; font-size: 12px; position: fixed; bottom: 0; width: 100%;
+    }
+    #globalError {
+      width: 100%; text-align: center; color: white; background: #cc0000;
+      padding: 8px; font-size: 14px; display: none; position: fixed;
+      bottom: 40px; left: 0; z-index: 9999;
+    }
+    .container { padding: 8px; margin-bottom: 70px; max-width: 100%; }
+    .card { background: white; padding: 10px; border-radius: 8px; margin-bottom: 10px; }
+    input, select {
+      padding: 8px; width: 100%; border-radius: 6px;
+      border: 1px solid #aaa; font-size: 16px;
+    }
+    button {
+      padding: 8px; background: #0066ff; color: white;
+      border: none; border-radius: 6px; margin: 3px 0; cursor: pointer;
+    }
+    button:disabled { background: #7ba6ff !important; cursor: not-allowed; }
+    .button-row {
+      display: flex; justify-content: flex-end; gap: 12px; margin-bottom: 12px; flex-wrap: wrap;
+    }
+    .button-row button {
+      width: auto; min-width: 80px; padding: 10px 16px; font-weight: bold;
+    }
+    .add-asset-row {
+      display: flex; justify-content: center; margin-top: 12px;
+    }
+    #addAssetBtn {
+      min-width: 100px; background: #008000; font-weight: bold;
+    }
+    .table-wrapper {
+      overflow-x: auto; background: white; border-radius: 8px; padding: 5px;
+    }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 6px; text-align: center; }
+    th { background: #004aad; color: white; }
+    #dataTable tbody tr:nth-child(odd) { background: #e9f3ff; }
+    #dataTable tbody tr:nth-child(even) { background: white; }
+    .small-btn { padding: 5px; font-size: 12px; }
+    .captureBtn { background: #007bff; }
+    .edit-btn { background: #ff9900; }
+    .delete-btn { background: #cc0000; }
+    .mode-selector {
+      display: flex; gap: 12px; justify-content: center; margin: 12px 0;
+    }
+    .mode-selector button {
+      background: #e0e7f0; color: #004aad; border: 2px solid #004aad;
+      padding: 10px 24px; font-weight: bold; border-radius: 30px;
+    }
+    .mode-selector button.active {
+      background: #004aad; color: white;
+    }
+    @media(max-width:480px) {
+      .button-row button, #addAssetBtn { width: 100%; }
+      .mode-selector { flex-direction: column; align-items: center; }
+    }
+    .kml-btn { background: #2d7d2d; }
+    .transformer-remark { width: 100%; padding: 6px; border-radius: 4px; border: 1px solid #aaa; }
+  </style>
 </head>
-
 <body>
 
 <header>
-  <h2 id="projectTitleHeader">PHED GIS Capture App</h2>
+  <h2 id="projectTitleHeader">PHED GIS Capture</h2>
   <div id="projectDate" style="display:none"></div>
 </header>
 
@@ -80,198 +92,232 @@ th{background:#004aad;color:white;}
 
 <div class="container">
 
-  <div id="titleSection" class="card">
-    <h3>Enter Project Title</h3>
-    <input type="text" id="projectTitleInput" placeholder="Enter title here"/>
-    <button onclick="startApp()" style="width:30%;margin:12px auto;display:block;">Start</button>
+  <!-- ===== MODE SELECTOR ===== -->
+  <div class="card mode-selector">
+    <button id="modeProjectBtn" class="active" onclick="switchMode('project')"><i class="fa-solid fa-map"></i> Project GIS Capture</button>
+    <button id="modeTransformerBtn" onclick="switchMode('transformer')"><i class="fa-solid fa-bolt"></i> Transformer Capture</button>
   </div>
 
-  <div id="appContent" class="card" style="display:none">
-
-    <!-- ✅ RESET BUTTON ADDED HERE -->
-    <div class="button-row">
-      <button style="background:white;color:red;border:1px solid red" onclick="resetApp()">Reset</button>
-      <button style="background:white;color:black;border:1px solid blue" onclick="exportExcel()">Export Excel</button>
-      <button style="background:white;color:black;border:1px solid blue" onclick="exportPDF()">Export PDF</button>
+  <!-- ===== PROJECT GIS CAPTURE (unchanged) ===== -->
+  <div id="projectSection" class="card">
+    <div id="titleSection">
+      <h3>Enter Project Title</h3>
+      <input type="text" id="projectTitleInput" placeholder="Enter title here" />
+      <button onclick="startProjectApp()" style="width:30%;margin:12px auto;display:block;">Start</button>
     </div>
 
-    <div class="table-wrapper">
-      <table id="dataTable">
-        <thead>
-          <tr>
-            <th>S/N</th>
-            <th>Quantity</th>        <!-- New Column -->
-            <th>Asset</th>
-            <th>Lat</th>
-            <th>Lon</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+    <div id="projectAppContent" style="display:none">
+      <div class="button-row">
+        <button style="background:white;color:red;border:1px solid red" onclick="resetProject()">Reset</button>
+        <button style="background:white;color:black;border:1px solid blue" onclick="exportExcelProject()">Export Excel</button>
+        <button style="background:white;color:black;border:1px solid blue" onclick="exportPDFProject()">Export PDF</button>
+        <button style="background:#2d7d2d;color:white;border:1px solid #1f5a1f" onclick="exportKMLProject()"><i class="fa-solid fa-map-location-dot"></i> Export KML</button>
+      </div>
+      <div class="table-wrapper">
+        <table id="dataTable">
+          <thead><tr><th>S/N</th><th>Quantity</th><th>Asset</th><th>Lat</th><th>Lon</th><th></th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="add-asset-row">
+        <button style="background:white;color:black;border:1px solid blue" id="addAssetBtn" onclick="addProjectRow()">➕ Add Asset</button>
+      </div>
     </div>
-
-    <div class="add-asset-row">
-      <button style="background:white;color:black;border:1px solid blue" id="addAssetBtn" onclick="addRow()">➕ Add Asset</button>
-    </div>
-
   </div>
+
+  <!-- ===== TRANSFORMER CAPTURE (NEW) ===== -->
+  <div id="transformerSection" class="card" style="display:none">
+    <div id="transformerTitleSection">
+      <h3>Enter Feeder Name</h3>
+      <input type="text" id="feederNameInput" placeholder="Enter feeder name" />
+      <button onclick="startTransformerApp()" style="width:30%;margin:12px auto;display:block;">Start</button>
+    </div>
+
+    <div id="transformerAppContent" style="display:none">
+      <div class="button-row">
+        <button style="background:white;color:red;border:1px solid red" onclick="resetTransformer()">Reset</button>
+        <button style="background:white;color:black;border:1px solid blue" onclick="exportExcelTransformer()">Export Excel</button>
+        <button style="background:white;color:black;border:1px solid blue" onclick="exportPDFTransformer()">Export PDF</button>
+        <button style="background:#2d7d2d;color:white;border:1px solid #1f5a1f" onclick="exportKMLTransformer()"><i class="fa-solid fa-map-location-dot"></i> Export KML</button>
+      </div>
+      <div class="table-wrapper">
+        <table id="transformerTable">
+          <thead><tr><th>S/N</th><th>Transformer Name</th><th>Capacity</th><th>Remark</th><th>Lat</th><th>Lon</th><th></th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="add-asset-row">
+        <button style="background:white;color:black;border:1px solid blue" id="addTransformerBtn" onclick="addTransformerRow()">➕ Add Transformer</button>
+      </div>
+    </div>
+  </div>
+
 </div>
 
-<footer>
-  Designed by <strong>Obot Akpan</strong>
-</footer>
+<footer>Designed by <strong>Obot Akpan</strong></footer>
 
 <script>
-let dataArray = [];
+// ─────────────────────────────────────────────────────────────
+//  GLOBALS
+// ─────────────────────────────────────────────────────────────
+let projectData = [];
+let transformerData = [];
 let globalDate = "";
+let currentMode = "project"; // 'project' or 'transformer'
 
-/* ✅ Error Bar */
-function showGlobalError(msg){
-  const bar=document.getElementById("globalError");
-  bar.innerHTML="⚠ "+msg;
-  bar.style.display="block";
-  setTimeout(()=>bar.style.display="none",3000);
+// ─── ERROR BAR ──────────────────────────────────────────────
+function showGlobalError(msg) {
+  const bar = document.getElementById("globalError");
+  bar.innerHTML = "⚠ " + msg;
+  bar.style.display = "block";
+  setTimeout(() => bar.style.display = "none", 3000);
 }
 
-/* ✅ Auto Save */
-function saveToLocal(){
-  const title=document.getElementById("projectTitleHeader").innerText;
+// ─── MODE SWITCH ────────────────────────────────────────────
+function switchMode(mode) {
+  currentMode = mode;
+  document.getElementById("modeProjectBtn").classList.toggle("active", mode === "project");
+  document.getElementById("modeTransformerBtn").classList.toggle("active", mode === "transformer");
+  document.getElementById("projectSection").style.display = mode === "project" ? "block" : "none";
+  document.getElementById("transformerSection").style.display = mode === "transformer" ? "block" : "none";
+  // hide/show date header (same for both)
+  const dateEl = document.getElementById("projectDate");
+  if (mode === "project") {
+    dateEl.style.display = document.getElementById("projectAppContent").style.display === "block" ? "block" : "none";
+  } else {
+    dateEl.style.display = document.getElementById("transformerAppContent").style.display === "block" ? "block" : "none";
+  }
+  // update header title
+  document.getElementById("projectTitleHeader").innerText = 
+    mode === "project" ? "PHED GIS Capture · Project" : "PHED GIS Capture · Transformer";
+}
 
-  const saved={
-    title:title,
-    date:globalDate,
-    data:dataArray
+// ─── DATE HELPER ────────────────────────────────────────────
+function getFormattedDate() {
+  const d = new Date();
+  let day = d.getDate();
+  const suffix = (day >= 11 && day <= 13) ? "th" :
+    (day % 10 === 1) ? "st" :
+    (day % 10 === 2) ? "nd" :
+    (day % 10 === 3) ? "rd" : "th";
+  day = day + suffix;
+  const monthNames = ["January","February","March","April","May","June",
+    "July","August","September","October","November","December"];
+  return `${day} ${monthNames[d.getMonth()]}, ${d.getFullYear()}`;
+}
+
+// ─── LOCAL STORAGE (project & transformer) ─────────────────
+function saveAllToLocal() {
+  const saved = {
+    project: { title: document.getElementById("projectTitleHeader").innerText, date: globalDate, data: projectData },
+    transformer: { feeder: document.getElementById("projectTitleHeader").innerText, date: globalDate, data: transformerData }
   };
-
-  localStorage.setItem("gisCaptureData",JSON.stringify(saved));
+  localStorage.setItem("gisCaptureAll", JSON.stringify(saved));
 }
 
-/* ✅ Restore Previous Session */
-window.onload=function(){
-  const saved=localStorage.getItem("gisCaptureData");
-  if(!saved) return;
+function loadAllFromLocal() {
+  const raw = localStorage.getItem("gisCaptureAll");
+  if (!raw) return;
+  try {
+    const { project, transformer } = JSON.parse(raw);
+    if (project && project.data) {
+      projectData = project.data;
+      globalDate = project.date || getFormattedDate();
+      // restore project UI
+      document.getElementById("projectTitleHeader").innerText = project.title || "PHED GIS Capture";
+      document.getElementById("projectDate").innerText = "Date: " + globalDate;
+      document.getElementById("projectDate").style.display = "block";
+      document.getElementById("titleSection").style.display = "none";
+      document.getElementById("projectAppContent").style.display = "block";
+      renderProjectTable();
+    }
+    if (transformer && transformer.data) {
+      transformerData = transformer.data;
+      globalDate = transformer.date || getFormattedDate();
+      document.getElementById("projectTitleHeader").innerText = transformer.feeder || "PHED GIS Capture";
+      document.getElementById("projectDate").innerText = "Date: " + globalDate;
+      document.getElementById("projectDate").style.display = "block";
+      document.getElementById("transformerTitleSection").style.display = "none";
+      document.getElementById("transformerAppContent").style.display = "block";
+      renderTransformerTable();
+    }
+  } catch(e) { /* ignore */ }
+}
 
-  const {title,date,data} = JSON.parse(saved);
-  if(!title) return;
+window.onload = function() {
+  loadAllFromLocal();
+  // default: show project mode
+  switchMode("project");
+};
 
-  document.getElementById("projectTitleHeader").innerText=title;
-  globalDate=date;
-  document.getElementById("projectDate").innerText="Date: "+date;
-  document.getElementById("projectDate").style.display="block";
+window.onbeforeunload = function() {
+  return "Your GIS data will be lost if you leave this page.";
+};
 
-  document.getElementById("titleSection").style.display="none";
-  document.getElementById("appContent").style.display="block";
+// ─────────────────────────────────────────────────────────────
+//  PROJECT GIS CAPTURE (unchanged logic, adapted)
+// ─────────────────────────────────────────────────────────────
+function startProjectApp() {
+  const title = document.getElementById("projectTitleInput").value.trim();
+  if (!title) return showGlobalError("Please enter a project title.");
+  document.getElementById("projectTitleHeader").innerText = title;
+  globalDate = getFormattedDate();
+  document.getElementById("projectDate").innerText = "Date: " + globalDate;
+  document.getElementById("projectDate").style.display = "block";
+  document.getElementById("titleSection").style.display = "none";
+  document.getElementById("projectAppContent").style.display = "block";
+  saveAllToLocal();
+}
 
-  dataArray=data || [];
-  const tbody=document.querySelector("#dataTable tbody");
-  tbody.innerHTML="";
+function resetProject() {
+  if (!confirm("Reset all project data?")) return;
+  projectData = [];
+  document.querySelector("#dataTable tbody").innerHTML = "";
+  document.getElementById("projectTitleInput").value = "";
+  document.getElementById("titleSection").style.display = "block";
+  document.getElementById("projectAppContent").style.display = "none";
+  document.getElementById("projectDate").style.display = "none";
+  saveAllToLocal();
+  showGlobalError("✅ Project reset.");
+}
 
-  data.forEach(item=>{
-    const row=document.createElement("tr");
-    row.dataset.id=item.id;
-    row.dataset.captured="true";
-
-    row.innerHTML=`
+function renderProjectTable() {
+  const tbody = document.querySelector("#dataTable tbody");
+  tbody.innerHTML = "";
+  projectData.forEach(item => {
+    const row = document.createElement("tr");
+    row.dataset.id = item.id;
+    row.dataset.captured = "true";
+    row.innerHTML = `
       <td></td>
       <td><input type="number" class="qtyInput" value="${item.quantity || 1}" min="1" style="width:70px;text-align:center;" disabled></td>
       <td><select class="assetSelect" disabled><option>${item.asset}</option></select></td>
       <td>${item.lat}</td>
       <td>${item.lng}</td>
       <td>
-        <button class="small-btn edit-btn" onclick="editRow(this)"><i class="fa-solid fa-pen"></i></button>
-        <button class="small-btn delete-btn" onclick="deleteRow(this)"><i class="fa-solid fa-trash"></i></button>
+        <button class="small-btn edit-btn" onclick="editProjectRow(this)"><i class="fa-solid fa-pen"></i></button>
+        <button class="small-btn delete-btn" onclick="deleteProjectRow(this)"><i class="fa-solid fa-trash"></i></button>
       </td>
     `;
     tbody.appendChild(row);
   });
-
-  updateSerialNumbers();
-};
-
-/* ✅ Warn Before Leaving */
-window.onbeforeunload=function(){
-  return "Your GIS data will be lost if you leave this page.";
-};
-
-/* ✅ Start App */
-function startApp(){
-  const title=document.getElementById("projectTitleInput").value.trim();
-  if(!title) return showGlobalError("Please enter a project title.");
-  document.getElementById("projectTitleHeader").innerText=title;
-
-  /* ✅ Formatted Date */
-  const d = new Date();
-
-  let day = d.getDate();
-  const suffix =
-    (day >= 11 && day <= 13) ? "th" :
-    (day % 10 === 1) ? "st" :
-    (day % 10 === 2) ? "nd" :
-    (day % 10 === 3) ? "rd" : "th";
-
-  day = day + suffix;
-
-  const monthNames = [
-    "January","February","March","April","May","June",
-    "July","August","September","October","November","December"
-  ];
-
-  const month = monthNames[d.getMonth()];
-  const year = d.getFullYear();
-
-  globalDate = `${day} ${month}, ${year}`;
-
-  document.getElementById("projectDate").innerText="Date: "+globalDate;
-  document.getElementById("projectDate").style.display="block";
-
-  document.getElementById("titleSection").style.display="none";
-  document.getElementById("appContent").style.display="block";
-
-  saveToLocal();
+  updateProjectSerialNumbers();
 }
 
-/* ✅ Reset App Completely */
-function resetApp(){
-  if(!confirm("Are you sure you want to reset everything? This will erase all saved data.")){
-    return;
-  }
-
-  localStorage.removeItem("gisCaptureData");
-  dataArray = [];
-  globalDate = "";
-
-  document.querySelector("#dataTable tbody").innerHTML = "";
-  document.getElementById("projectTitleInput").value = "";
-  document.getElementById("projectTitleHeader").innerText = "PHED GIS Capture App";
-  document.getElementById("projectDate").style.display = "none";
-
-  document.getElementById("titleSection").style.display = "block";
-  document.getElementById("appContent").style.display = "none";
-
-  showGlobalError("✅ App reset successfully.");
+function updateProjectSerialNumbers() {
+  const rows = document.querySelectorAll("#dataTable tbody tr");
+  rows.forEach((row, i) => row.cells[0].innerText = i + 1);
 }
 
-/* ✅ Update Serial Numbers */
-function updateSerialNumbers(){
-  const rows=document.querySelectorAll("#dataTable tbody tr");
-  rows.forEach((row,index)=>{ row.cells[0].innerText=index+1; });
-}
-
-/* ✅ Add New Row */
-function addRow(){
-  const last=document.querySelector("#dataTable tbody tr:last-child");
-  if(last && !last.dataset.captured){
-    return showGlobalError("Complete previous asset first.");
-  }
-
-  const table=document.querySelector("#dataTable tbody");
-  const row=table.insertRow();
-  const rowId=Date.now();
-  row.dataset.id=rowId; 
-  row.dataset.captured="";
-
-  row.innerHTML=`
+function addProjectRow() {
+  const last = document.querySelector("#dataTable tbody tr:last-child");
+  if (last && !last.dataset.captured) return showGlobalError("Complete previous asset first.");
+  const table = document.querySelector("#dataTable tbody");
+  const row = table.insertRow();
+  const rowId = Date.now() + Math.random();
+  row.dataset.id = rowId;
+  row.dataset.captured = "";
+  row.innerHTML = `
     <td></td>
     <td><input type="number" class="qtyInput" value="1" min="1" style="width:70px;text-align:center;"></td>
     <td>
@@ -287,144 +333,299 @@ function addRow(){
       </select>
     </td>
     <td colspan="2" class="captureCell">
-      <button class="captureBtn small-btn" onclick="captureLocation(this)">
-        <i class="fa-solid fa-location-crosshairs"></i> Capture
-      </button>
+      <button class="captureBtn small-btn" onclick="captureProjectLocation(this)"><i class="fa-solid fa-location-crosshairs"></i> Capture</button>
     </td>
     <td>
-      <button class="small-btn edit-btn" disabled onclick="editRow(this)">
-        <i class="fa-solid fa-pen"></i>
-      </button>
-      <button class="small-btn delete-btn" onclick="deleteRow(this)">
-        <i class="fa-solid fa-trash"></i>
-      </button>
+      <button class="small-btn edit-btn" disabled onclick="editProjectRow(this)"><i class="fa-solid fa-pen"></i></button>
+      <button class="small-btn delete-btn" onclick="deleteProjectRow(this)"><i class="fa-solid fa-trash"></i></button>
     </td>
   `;
-
-  updateSerialNumbers();
-  saveToLocal();
+  updateProjectSerialNumbers();
+  saveAllToLocal();
 }
 
-/* ✅ Capture GPS */
-function captureLocation(btn){
-  const row=btn.closest("tr");
-  const asset=row.querySelector(".assetSelect");
-  const qty=row.querySelector(".qtyInput");
-
-  if(!asset.value) return showGlobalError("Select an asset first.");
-  if(!qty.value || parseInt(qty.value) < 1) return showGlobalError("Enter a valid quantity.");
-
+function captureProjectLocation(btn) {
+  const row = btn.closest("tr");
+  const asset = row.querySelector(".assetSelect");
+  const qty = row.querySelector(".qtyInput");
+  if (!asset.value) return showGlobalError("Select an asset.");
+  if (!qty.value || parseInt(qty.value) < 1) return showGlobalError("Valid quantity required.");
   navigator.geolocation.getCurrentPosition(
-    pos=>{
-      const lat=pos.coords.latitude.toFixed(6);
-      const lng=pos.coords.longitude.toFixed(6);
-
+    pos => {
+      const lat = pos.coords.latitude.toFixed(6);
+      const lng = pos.coords.longitude.toFixed(6);
       btn.parentElement.remove();
-      const latCell=document.createElement("td");
-      const lngCell=document.createElement("td");
-      latCell.innerText=lat;
-      lngCell.innerText=lng;
-
-      row.insertBefore(latCell,row.children[3]);
-      row.insertBefore(lngCell,row.children[4]);
-
-      row.dataset.captured="true";
-      asset.disabled=true;
-      qty.disabled=true;
-      row.querySelector(".edit-btn").disabled=false;
-
-      dataArray=dataArray.filter(r=>r.id!==row.dataset.id);
-      dataArray.push({
-        id:row.dataset.id,
-        quantity: parseInt(qty.value),
-        asset:asset.value,
-        lat:lat,
-        lng:lng
-      });
-
-      saveToLocal();
+      const latCell = document.createElement("td"); latCell.innerText = lat;
+      const lngCell = document.createElement("td"); lngCell.innerText = lng;
+      row.insertBefore(latCell, row.children[3]);
+      row.insertBefore(lngCell, row.children[4]);
+      row.dataset.captured = "true";
+      asset.disabled = true;
+      qty.disabled = true;
+      row.querySelector(".edit-btn").disabled = false;
+      projectData = projectData.filter(r => r.id !== row.dataset.id);
+      projectData.push({ id: row.dataset.id, quantity: parseInt(qty.value), asset: asset.value, lat, lng });
+      saveAllToLocal();
     },
-    ()=>showGlobalError("GPS unavailable.")
+    () => showGlobalError("GPS unavailable.")
   );
 }
 
-/* ✅ Edit Row */
-function editRow(btn){
-  if(!confirm("Do you want to edit this record?")) return;
-
-  const row=btn.closest("tr");
-  row.dataset.captured="";
-  dataArray=dataArray.filter(r=>r.id!==row.dataset.id);
-
-  row.children[3].remove(); // remove Lat
-  row.children[3].remove(); // remove Lon
-
-  const cap=document.createElement("td");
-  cap.colSpan=2; 
-  cap.className="captureCell";
-  cap.innerHTML=`
-    <button class="captureBtn small-btn" onclick="captureLocation(this)">
-      <i class="fa-solid fa-location-crosshairs"></i> Recapture
-    </button>
-  `;
-  row.insertBefore(cap,row.children[3]);
-
-  row.querySelector(".assetSelect").disabled=false;
-  row.querySelector(".qtyInput").disabled=false;
-  saveToLocal();
+function editProjectRow(btn) {
+  if (!confirm("Edit this record?")) return;
+  const row = btn.closest("tr");
+  row.dataset.captured = "";
+  projectData = projectData.filter(r => r.id !== row.dataset.id);
+  row.children[3].remove(); row.children[3].remove();
+  const cap = document.createElement("td");
+  cap.colSpan = 2;
+  cap.className = "captureCell";
+  cap.innerHTML = `<button class="captureBtn small-btn" onclick="captureProjectLocation(this)"><i class="fa-solid fa-location-crosshairs"></i> Recapture</button>`;
+  row.insertBefore(cap, row.children[3]);
+  row.querySelector(".assetSelect").disabled = false;
+  row.querySelector(".qtyInput").disabled = false;
+  saveAllToLocal();
 }
 
-/* ✅ Delete Row */
-function deleteRow(btn){
-  if(!confirm("Are you sure?")) return;
-
-  const row=btn.closest("tr");
-  dataArray=dataArray.filter(r=>r.id!==row.dataset.id);
+function deleteProjectRow(btn) {
+  if (!confirm("Delete?")) return;
+  const row = btn.closest("tr");
+  projectData = projectData.filter(r => r.id !== row.dataset.id);
   row.remove();
-
-  updateSerialNumbers();
-  saveToLocal();
+  updateProjectSerialNumbers();
+  saveAllToLocal();
 }
 
-/* ✅ Export Excel */
-function exportExcel(){
-  if(dataArray.length===0) return showGlobalError("No data recorded.");
-
-  const exportData=dataArray.map((item,i)=>({
-    "S/N":i+1,
-    "Quantity":item.quantity || 1,
-    "Asset":item.asset,
-    "Latitude":item.lat,
-    "Longitude":item.lng
-  }));
-
-  const ws=XLSX.utils.json_to_sheet(exportData);
-  const wb=XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb,ws,"GIS Data");
-  XLSX.writeFile(wb,"GIS_Data.xlsx");
-
-  localStorage.removeItem("gisCaptureData");
+function exportExcelProject() {
+  if (projectData.length === 0) return showGlobalError("No project data.");
+  const data = projectData.map((item, i) => ({ "S/N": i+1, "Quantity": item.quantity||1, "Asset": item.asset, "Latitude": item.lat, "Longitude": item.lng }));
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Project GIS");
+  XLSX.writeFile(wb, "Project_GIS.xlsx");
 }
 
-/* ✅ Export PDF */
-function exportPDF(){
-  const {jsPDF}=window.jspdf;
-  const doc=new jsPDF();
-
-  doc.text(document.getElementById("projectTitleHeader").innerText,10,10);
-  doc.text("Date: "+globalDate,10,16);
-
-  if(dataArray.length===0) return showGlobalError("No data recorded.");
-
-  dataArray.forEach((item,i)=>{
-    doc.text(`${i+1}. ${item.quantity || 1} × ${item.asset} | ${item.lat}, ${item.lng}`,10,30+i*10);
+function exportPDFProject() {
+  if (projectData.length === 0) return showGlobalError("No project data.");
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  doc.text("Project GIS Capture", 10, 10);
+  doc.text("Date: " + globalDate, 10, 16);
+  projectData.forEach((item, i) => {
+    doc.text(`${i+1}. ${item.quantity||1} × ${item.asset} | ${item.lat}, ${item.lng}`, 10, 30 + i*10);
   });
+  doc.save("Project_GIS.pdf");
+}
 
-  doc.save("GIS_Data.pdf");
+function exportKMLProject() {
+  if (projectData.length === 0) return showGlobalError("No project data.");
+  const title = document.getElementById("projectTitleHeader").innerText || "Project GIS";
+  let kml = `<?xml version="1.0" encoding="UTF-8"?><kml xmlns="http://www.opengis.net/kml/2.2"><Document><name>${title}</name><description>Exported from PHED GIS Capture</description><Style id="assetStyle"><IconStyle><scale>1.2</scale><Icon><href>http://maps.google.com/mapfiles/kml/pushpin/red-pushpin.png</href></Icon></IconStyle></Style>`;
+  projectData.forEach(item => {
+    kml += `<Placemark><name>${item.quantity||1} × ${item.asset}</name><description>${item.asset} | ${item.lat}, ${item.lng}</description><styleUrl>#assetStyle</styleUrl><Point><coordinates>${item.lng},${item.lat},0</coordinates></Point></Placemark>`;
+  });
+  kml += `</Document></kml>`;
+  const blob = new Blob([kml], { type: "application/vnd.google-earth.kml+xml" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = "Project_GIS.kml"; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showGlobalError("✅ KML exported.");
+}
 
-  localStorage.removeItem("gisCaptureData");
+// ─────────────────────────────────────────────────────────────
+//  TRANSFORMER CAPTURE (NEW)
+// ─────────────────────────────────────────────────────────────
+function startTransformerApp() {
+  const feeder = document.getElementById("feederNameInput").value.trim();
+  if (!feeder) return showGlobalError("Please enter a feeder name.");
+  document.getElementById("projectTitleHeader").innerText = feeder;
+  globalDate = getFormattedDate();
+  document.getElementById("projectDate").innerText = "Date: " + globalDate;
+  document.getElementById("projectDate").style.display = "block";
+  document.getElementById("transformerTitleSection").style.display = "none";
+  document.getElementById("transformerAppContent").style.display = "block";
+  saveAllToLocal();
+}
+
+function resetTransformer() {
+  if (!confirm("Reset all transformer data?")) return;
+  transformerData = [];
+  document.querySelector("#transformerTable tbody").innerHTML = "";
+  document.getElementById("feederNameInput").value = "";
+  document.getElementById("transformerTitleSection").style.display = "block";
+  document.getElementById("transformerAppContent").style.display = "none";
+  document.getElementById("projectDate").style.display = "none";
+  saveAllToLocal();
+  showGlobalError("✅ Transformer reset.");
+}
+
+function renderTransformerTable() {
+  const tbody = document.querySelector("#transformerTable tbody");
+  tbody.innerHTML = "";
+  transformerData.forEach(item => {
+    const row = document.createElement("tr");
+    row.dataset.id = item.id;
+    row.dataset.captured = "true";
+    row.innerHTML = `
+      <td></td>
+      <td><input type="text" class="transNameInput" value="${item.name}" style="width:100px;" disabled></td>
+      <td><select class="capacitySelect" disabled><option>${item.capacity}</option></select></td>
+      <td><input type="text" class="remarkInput" value="${item.remark || ''}" style="width:120px;" disabled></td>
+      <td>${item.lat}</td>
+      <td>${item.lng}</td>
+      <td>
+        <button class="small-btn edit-btn" onclick="editTransformerRow(this)"><i class="fa-solid fa-pen"></i></button>
+        <button class="small-btn delete-btn" onclick="deleteTransformerRow(this)"><i class="fa-solid fa-trash"></i></button>
+      </td>
+    `;
+    tbody.appendChild(row);
+  });
+  updateTransformerSerialNumbers();
+}
+
+function updateTransformerSerialNumbers() {
+  const rows = document.querySelectorAll("#transformerTable tbody tr");
+  rows.forEach((row, i) => row.cells[0].innerText = i + 1);
+}
+
+function addTransformerRow() {
+  const last = document.querySelector("#transformerTable tbody tr:last-child");
+  if (last && !last.dataset.captured) return showGlobalError("Complete previous transformer first.");
+  const table = document.querySelector("#transformerTable tbody");
+  const row = table.insertRow();
+  const rowId = Date.now() + Math.random();
+  row.dataset.id = rowId;
+  row.dataset.captured = "";
+  row.innerHTML = `
+    <td></td>
+    <td><input type="text" class="transNameInput" placeholder="Transformer name" style="width:100px;"></td>
+    <td>
+      <select class="capacitySelect">
+        <option value="" disabled selected>Capacity</option>
+        <option value="50KVA">50KVA</option>
+        <option value="100KVA">100KVA</option>
+        <option value="200KVA">200KVA</option>
+        <option value="300KVA">300KVA</option>
+        <option value="500KVA">500KVA</option>
+        <option value="1MVA">1MVA</option>
+        <option value="1.5MVA">1.5MVA</option>
+        <option value="3MVA">3MVA</option>
+      </select>
+    </td>
+    <td><input type="text" class="remarkInput" placeholder="Remark" style="width:120px;"></td>
+    <td colspan="2" class="captureCell">
+      <button class="captureBtn small-btn" onclick="captureTransformerLocation(this)"><i class="fa-solid fa-location-crosshairs"></i> Capture</button>
+    </td>
+    <td>
+      <button class="small-btn edit-btn" disabled onclick="editTransformerRow(this)"><i class="fa-solid fa-pen"></i></button>
+      <button class="small-btn delete-btn" onclick="deleteTransformerRow(this)"><i class="fa-solid fa-trash"></i></button>
+    </td>
+  `;
+  updateTransformerSerialNumbers();
+  saveAllToLocal();
+}
+
+function captureTransformerLocation(btn) {
+  const row = btn.closest("tr");
+  const nameInput = row.querySelector(".transNameInput");
+  const capacitySelect = row.querySelector(".capacitySelect");
+  const remarkInput = row.querySelector(".remarkInput");
+  if (!nameInput.value.trim()) return showGlobalError("Enter DTR name.");
+  if (!capacitySelect.value) return showGlobalError("Select capacity.");
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      const lat = pos.coords.latitude.toFixed(6);
+      const lng = pos.coords.longitude.toFixed(6);
+      btn.parentElement.remove();
+      const latCell = document.createElement("td"); latCell.innerText = lat;
+      const lngCell = document.createElement("td"); lngCell.innerText = lng;
+      // insert before the last cell (actions)
+      row.insertBefore(latCell, row.children[5]);
+      row.insertBefore(lngCell, row.children[6]);
+      row.dataset.captured = "true";
+      nameInput.disabled = true;
+      capacitySelect.disabled = true;
+      remarkInput.disabled = true;
+      row.querySelector(".edit-btn").disabled = false;
+      transformerData = transformerData.filter(r => r.id !== row.dataset.id);
+      transformerData.push({
+        id: row.dataset.id,
+        name: nameInput.value.trim(),
+        capacity: capacitySelect.value,
+        remark: remarkInput.value.trim(),
+        lat, lng
+      });
+      saveAllToLocal();
+    },
+    () => showGlobalError("GPS unavailable.")
+  );
+}
+
+function editTransformerRow(btn) {
+  if (!confirm("Edit this transformer?")) return;
+  const row = btn.closest("tr");
+  row.dataset.captured = "";
+  transformerData = transformerData.filter(r => r.id !== row.dataset.id);
+  // remove lat/lon cells (they are at index 4 and 5 before actions)
+  row.children[4].remove(); row.children[4].remove();
+  const cap = document.createElement("td");
+  cap.colSpan = 2;
+  cap.className = "captureCell";
+  cap.innerHTML = `<button class="captureBtn small-btn" onclick="captureTransformerLocation(this)"><i class="fa-solid fa-location-crosshairs"></i> Recapture</button>`;
+  row.insertBefore(cap, row.children[4]);
+  row.querySelector(".transNameInput").disabled = false;
+  row.querySelector(".capacitySelect").disabled = false;
+  row.querySelector(".remarkInput").disabled = false;
+  saveAllToLocal();
+}
+
+function deleteTransformerRow(btn) {
+  if (!confirm("Delete?")) return;
+  const row = btn.closest("tr");
+  transformerData = transformerData.filter(r => r.id !== row.dataset.id);
+  row.remove();
+  updateTransformerSerialNumbers();
+  saveAllToLocal();
+}
+
+function exportExcelTransformer() {
+  if (transformerData.length === 0) return showGlobalError("No transformer data.");
+  const data = transformerData.map((item, i) => ({ "S/N": i+1, "Name": item.name, "Capacity": item.capacity, "Remark": item.remark||'', "Latitude": item.lat, "Longitude": item.lng }));
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Transformers");
+  XLSX.writeFile(wb, "Transformers.xlsx");
+}
+
+function exportPDFTransformer() {
+  if (transformerData.length === 0) return showGlobalError("No transformer data.");
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  doc.text("Transformer Capture", 10, 10);
+  doc.text("Feeder: " + document.getElementById("projectTitleHeader").innerText, 10, 16);
+  doc.text("Date: " + globalDate, 10, 22);
+  transformerData.forEach((item, i) => {
+    doc.text(`${i+1}. ${item.name} | ${item.capacity} | ${item.remark||''} | ${item.lat}, ${item.lng}`, 10, 36 + i*10);
+  });
+  doc.save("Transformers.pdf");
+}
+
+function exportKMLTransformer() {
+  if (transformerData.length === 0) return showGlobalError("No transformer data.");
+  const feeder = document.getElementById("projectTitleHeader").innerText || "Transformers";
+  let kml = `<?xml version="1.0" encoding="UTF-8"?><kml xmlns="http://www.opengis.net/kml/2.2"><Document><name>${feeder} - Transformers</name><description>Transformer locations</description><Style id="transStyle"><IconStyle><scale>1.2</scale><Icon><href>http://maps.google.com/mapfiles/kml/pushpin/blue-pushpin.png</href></Icon></IconStyle></Style>`;
+  transformerData.forEach(item => {
+    kml += `<Placemark><name>${item.name}</name><description>Capacity: ${item.capacity} | Remark: ${item.remark||''}</description><styleUrl>#transStyle</styleUrl><Point><coordinates>${item.lng},${item.lat},0</coordinates></Point></Placemark>`;
+  });
+  kml += `</Document></kml>`;
+  const blob = new Blob([kml], { type: "application/vnd.google-earth.kml+xml" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = "Transformers.kml"; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showGlobalError("✅ KML exported.");
 }
 </script>
-
 </body>
 </html>
