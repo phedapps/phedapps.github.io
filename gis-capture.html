@@ -106,6 +106,21 @@
       box-shadow: none;
     }
 
+    /* ---- larger asset & name columns ---- */
+    .assetSelect, .transNameInput {
+      min-width: 120px;
+      width: 100%;
+    }
+    /* make the asset column and name column wider */
+    #dataTable .asset-col, #transformerTable .name-col {
+      min-width: 130px;
+    }
+    /* coords now 2 decimals = small */
+    .coord-cell {
+      font-size: 13px;
+      letter-spacing: 0.3px;
+    }
+
     /* bottom export bar - all in one line */
     .bottom-export-bar {
       display: flex;
@@ -135,6 +150,7 @@
     @media(max-width:600px) {
       .mode-selector button { padding: 8px 14px; font-size: 13px; }
       .bottom-export-bar button { min-width: 60px; padding: 5px 10px; font-size: 12px; }
+      .assetSelect, .transNameInput { min-width: 100px; }
     }
   </style>
 </head>
@@ -159,14 +175,14 @@
   <div id="projectSection">
     <div id="titleSection" class="card" style="background:transparent; padding:0;">
       <h3>Enter Project Title</h3>
-      <input type="text" id="projectTitleInput" placeholder="E.g. Installation of 300KVA Substation for FHE Calabar" />
+      <input type="text" id="projectTitleInput" placeholder="Enter title here" />
       <button onclick="startProjectApp()" style="width:30%;margin:12px auto;display:block;">Start</button>
     </div>
 
     <div id="projectAppContent" style="display:none; padding:0;">
       <div class="table-wrapper">
         <table id="dataTable">
-          <thead><tr><th>S/N</th><th>Qty</th><th>Asset</th><th>Lat</th><th>Lon</th><th></th></tr></thead>
+          <thead><tr><th>S/N</th><th>Qty</th><th class="asset-col">Asset</th><th>Lat</th><th>Lon</th><th></th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
@@ -186,14 +202,14 @@
   <div id="transformerSection" style="display:none;">
     <div id="transformerTitleSection" class="card" style="background:transparent; padding:0;">
       <h3>Enter Feeder Name</h3>
-      <input type="text" id="feederNameInput" placeholder="E.g. MCC Feeder" />
+      <input type="text" id="feederNameInput" placeholder="Enter feeder name" />
       <button onclick="startTransformerApp()" style="width:30%;margin:12px auto;display:block;">Start</button>
     </div>
 
     <div id="transformerAppContent" style="display:none; padding:0;">
       <div class="table-wrapper">
         <table id="transformerTable">
-          <thead><tr><th>S/N</th><th>DTR Name</th><th>Capacity</th><th>Remark</th><th>Lat</th><th>Lon</th><th></th></tr></thead>
+          <thead><tr><th>S/N</th><th class="name-col">Name</th><th>Capacity</th><th>Remark</th><th>Lat</th><th>Lon</th><th></th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
@@ -307,6 +323,11 @@ window.onbeforeunload = function() {
   return "Your GIS data will be lost if you leave this page.";
 };
 
+// ─── HELPER: format coords to 2 decimals ──────────────────
+function fmtCoord(v) {
+  return parseFloat(v).toFixed(2);
+}
+
 // ─────────────────────────────────────────────────────────────
 //  PROJECT GIS CAPTURE
 // ─────────────────────────────────────────────────────────────
@@ -345,8 +366,8 @@ function renderProjectTable() {
       <td></td>
       <td><input type="number" class="qtyInput" value="${item.quantity || 1}" min="1" style="width:60px;text-align:center;" disabled></td>
       <td><select class="assetSelect" disabled><option>${item.asset}</option></select></td>
-      <td>${item.lat}</td>
-      <td>${item.lng}</td>
+      <td class="coord-cell">${fmtCoord(item.lat)}</td>
+      <td class="coord-cell">${fmtCoord(item.lng)}</td>
       <td>
         <button class="small-btn edit-btn" onclick="editProjectRow(this)"><i class="fa-solid fa-pen"></i></button>
         <button class="small-btn delete-btn" onclick="deleteProjectRow(this)"><i class="fa-solid fa-trash"></i></button>
@@ -408,8 +429,12 @@ function captureProjectLocation(btn) {
       const lat = pos.coords.latitude.toFixed(6);
       const lng = pos.coords.longitude.toFixed(6);
       btn.parentElement.remove();
-      const latCell = document.createElement("td"); latCell.innerText = lat;
-      const lngCell = document.createElement("td"); lngCell.innerText = lng;
+      const latCell = document.createElement("td");
+      latCell.className = "coord-cell";
+      latCell.innerText = fmtCoord(lat);
+      const lngCell = document.createElement("td");
+      lngCell.className = "coord-cell";
+      lngCell.innerText = fmtCoord(lng);
       row.insertBefore(latCell, row.children[3]);
       row.insertBefore(lngCell, row.children[4]);
       row.dataset.captured = "true";
@@ -487,7 +512,7 @@ function exportKMLProject() {
 }
 
 // ─────────────────────────────────────────────────────────────
-//  TRANSFORMER CAPTURE (FIXED: edit/delete stay on right)
+//  TRANSFORMER CAPTURE
 // ─────────────────────────────────────────────────────────────
 function startTransformerApp() {
   const feeder = document.getElementById("feederNameInput").value.trim();
@@ -522,11 +547,11 @@ function renderTransformerTable() {
     row.dataset.captured = "true";
     row.innerHTML = `
       <td></td>
-      <td><input type="text" class="transNameInput" value="${item.name}" style="width:100px;" disabled></td>
+      <td><input type="text" class="transNameInput" value="${item.name}" style="width:100%;min-width:120px;" disabled></td>
       <td><select class="capacitySelect" disabled><option>${item.capacity}</option></select></td>
-      <td><input type="text" class="remarkInput" value="${item.remark || ''}" style="width:100px;" disabled></td>
-      <td>${item.lat}</td>
-      <td>${item.lng}</td>
+      <td><input type="text" class="remarkInput" value="${item.remark || ''}" style="width:90px;" disabled></td>
+      <td class="coord-cell">${fmtCoord(item.lat)}</td>
+      <td class="coord-cell">${fmtCoord(item.lng)}</td>
       <td>
         <button class="small-btn edit-btn" onclick="editTransformerRow(this)"><i class="fa-solid fa-pen"></i></button>
         <button class="small-btn delete-btn" onclick="deleteTransformerRow(this)"><i class="fa-solid fa-trash"></i></button>
@@ -552,7 +577,7 @@ function addTransformerRow() {
   row.dataset.captured = "";
   row.innerHTML = `
     <td></td>
-    <td><input type="text" class="transNameInput" placeholder="Name" style="width:100px;"></td>
+    <td><input type="text" class="transNameInput" placeholder="Name" style="width:100%;min-width:120px;"></td>
     <td>
       <select class="capacitySelect">
         <option value="" disabled selected>Capacity</option>
@@ -566,7 +591,7 @@ function addTransformerRow() {
         <option value="3MVA">3MVA</option>
       </select>
     </td>
-    <td><input type="text" class="remarkInput" placeholder="Remark" style="width:100px;"></td>
+    <td><input type="text" class="remarkInput" placeholder="Remark" style="width:90px;"></td>
     <td colspan="2" class="captureCell">
       <button class="captureBtn small-btn" onclick="captureTransformerLocation(this)"><i class="fa-solid fa-location-crosshairs"></i> Capture</button>
     </td>
@@ -591,18 +616,16 @@ function captureTransformerLocation(btn) {
       const lat = pos.coords.latitude.toFixed(6);
       const lng = pos.coords.longitude.toFixed(6);
       
-      // Remove the capture button cell (which has colspan=2)
       const captureCell = row.querySelector(".captureCell");
       captureCell.remove();
       
-      // Create lat and lon cells
       const latCell = document.createElement("td");
-      latCell.innerText = lat;
+      latCell.className = "coord-cell";
+      latCell.innerText = fmtCoord(lat);
       const lngCell = document.createElement("td");
-      lngCell.innerText = lng;
+      lngCell.className = "coord-cell";
+      lngCell.innerText = fmtCoord(lng);
       
-      // Insert lat and lon BEFORE the actions cell (which is the last cell)
-      // row.cells.length - 1 gives the index of the last cell (actions)
       const actionsIndex = row.cells.length - 1;
       row.insertBefore(latCell, row.cells[actionsIndex]);
       row.insertBefore(lngCell, row.cells[actionsIndex]);
@@ -633,18 +656,14 @@ function editTransformerRow(btn) {
   row.dataset.captured = "";
   transformerData = transformerData.filter(r => r.id !== row.dataset.id);
   
-  // Remove lat and lon cells (they are before the actions cell)
-  // Actions cell is the last one, so remove cells at index 4 and 5 (0-based)
   row.children[4].remove(); // lat
-  row.children[4].remove(); // lon (now at same index after first removal)
+  row.children[4].remove(); // lon
   
-  // Create a new capture cell with colspan=2 and insert before actions
   const cap = document.createElement("td");
   cap.colSpan = 2;
   cap.className = "captureCell";
   cap.innerHTML = `<button class="captureBtn small-btn" onclick="captureTransformerLocation(this)"><i class="fa-solid fa-location-crosshairs"></i> Recapture</button>`;
   
-  // Insert before the actions cell (which is the last cell)
   const actionsIndex = row.cells.length - 1;
   row.insertBefore(cap, row.cells[actionsIndex]);
   
