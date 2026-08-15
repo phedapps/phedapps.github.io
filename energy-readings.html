@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Meter Reader · Camera + Sheets</title>
+    <!-- Google Font for clean UI -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f4f6fa;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+        }
+
+        .app-card {
+            max-width: 480px;
+            width: 100%;
+            background: white;
+            border-radius: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08), 0 8px 24px rgba(0, 0, 0, 0.04);
+            padding: 24px 20px 32px;
+            transition: all 0.2s;
+        }
+
+        h1 {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+            color: #0b1b33;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        h1 small {
+            font-size: 14px;
+            font-weight: 500;
+            color: #5e6f8d;
+            margin-left: auto;
+            background: #eef2f7;
+            padding: 4px 12px;
+            border-radius: 100px;
+        }
+
+        /* feeder selector */
+        .feeder-section {
+            background: #f8faff;
+            border-radius: 24px;
+            padding: 16px 18px;
+            margin-bottom: 24px;
+            border: 1px solid #e6edf5;
+        }
+
+        .feeder-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #2c3e5c;
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        .feeder-select {
+            width: 100%;
+            padding: 14px 16px;
+            background: white;
+            border: 1px solid #d0dcec;
+            border-radius: 16px;
+            font-size: 16px;
+            font-weight: 500;
+            color: #0b1b33;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%235e6f8d' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            background-size: 20px;
+            cursor: pointer;
+            transition: border 0.15s;
+        }
+
+        .feeder-select:focus {
+            outline: none;
+            border-color: #2a7de1;
+            box-shadow: 0 0 0 3px rgba(42, 125, 225, 0.15);
+        }
+
+        /* camera wrapper */
+        .camera-box {
+            background: #0b1b33;
+            border-radius: 28px;
+            overflow: hidden;
+            position: relative;
+            margin-bottom: 18px;
+            aspect-ratio: 4 / 3;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #d0dcec;
+        }
+
+        .camera-box video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .camera-box .placeholder {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 15px;
+            font-weight: 500;
+            text-align: center;
+            padding: 20px;
+            line-height: 1.5;
+        }
+
+        .camera-actions {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            flex: 1;
+            min-width: 100px;
+            padding: 14px 8px;
+            border: none;
+            border-radius: 60px;
+            font-weight: 600;
+            font-size: 15px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            background: #eef2f7;
+            color: #1f2a44;
+            cursor: pointer;
+            transition: all 0.15s;
+            border: 1px solid transparent;
+        }
+
+        .btn-primary {
+            background: #1a3a6b;
+            color: white;
+            box-shadow: 0 4px 10px rgba(26, 58, 107, 0.15);
+        }
+
+        .btn-primary:hover {
+            background: #0f2a4f;
+            transform: scale(0.98);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            pointer-events: none;
+            transform: none;
+        }
+
+        .btn-success {
+            background: #0f7b3a;
+            color: white;
+            box-shadow: 0 4px 10px rgba(15, 123, 58, 0.15);
+        }
+
+        .btn-success:hover {
+            background: #0b612e;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1.5px solid #d0dcec;
+        }
+
+        .btn-outline:hover {
+            background: #f0f4fc;
+        }
+
+        .btn-danger {
+            background: #b13e3e;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #922f2f;
+        }
+
+        /* reading display */
+        .reading-panel {
+            background: #f8faff;
+            border-radius: 24px;
+            padding: 16px 18px;
+            border: 1px solid #e6edf5;
+            margin-bottom: 20px;
+        }
+
+        .reading-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .reading-label {
+            font-weight: 500;
+            color: #2c3e5c;
+            font-size: 14px;
+        }
+
+        .reading-value {
+            font-size: 26px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: #0b1b33;
+            background: white;
+            padding: 6px 18px;
+            border-radius: 60px;
+            border: 1px solid #d0dcec;
+            min-width: 120px;
+            text-align: center;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .reading-value.empty {
+            color: #8a9bb5;
+            font-weight: 400;
+            font-size: 16px;
+        }
+
+        .reading-meta {
+            font-size: 13px;
+            color: #5e6f8d;
+            margin-top: 8px;
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .reading-meta span {
+            background: #eef2f7;
+            padding: 2px 12px;
+            border-radius: 40px;
+        }
+
+        .entries-list {
+            margin-top: 12px;
+            max-height: 140px;
+            overflow-y: auto;
+            border-top: 1px dashed #d0dcec;
+            padding-top: 12px;
+        }
+
+        .entry-item {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            padding: 6px 0;
+            border-bottom: 1px solid #edf2f8;
+        }
+
+        .entry-item .feeder-tag {
+            font-weight: 500;
+            color: #1a3a6b;
+        }
+
+        .entry-item .reading-tag {
+            font-weight: 600;
+            color: #0b1b33;
+        }
+
+        .submit-area {
+            display: flex;
+            gap: 12px;
+            margin-top: 8px;
+        }
+
+        .btn-submit {
+            flex: 2;
+            background: #0f7b3a;
+            color: white;
+            font-weight: 700;
+            padding: 16px;
+            border-radius: 60px;
+            border: none;
+            font-size: 17px;
+            box-shadow: 0 6px 14px rgba(15, 123, 58, 0.2);
+            transition: all 0.15s;
+            cursor: pointer;
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.4;
+            pointer-events: none;
+            transform: none;
+        }
+
+        .btn-submit:hover {
+            background: #0b612e;
+            transform: scale(0.98);
+        }
+
+        .btn-clear {
+            flex: 1;
+            background: #eef2f7;
+            border: none;
+            border-radius: 60px;
+            font-weight: 600;
+            color: #3d4f6e;
+            cursor: pointer;
+            transition: 0.1s;
+        }
+
+        .btn-clear:hover {
+            background: #dce4ef;
+        }
+
+        .status-badge {
+            font-size: 13px;
+            font-weight: 500;
+            padding: 6px 14px;
+            border-radius: 60px;
+            background: #eef2f7;
+            color: #1f2a44;
+            display: inline-block;
+        }
+
+        .status-badge.success {
+            background: #d4edda;
+            color: #0b5e2e;
+        }
+
+        .toast {
+            background: #1f2a44;
+            color: white;
+            border-radius: 60px;
+            padding: 8px 20px;
+            font-size: 14px;
+            font-weight: 500;
+            margin-top: 12px;
+            text-align: center;
+        }
+
+        .footer-note {
+            font-size: 12px;
+            color: #7b8aa3;
+            text-align: center;
+            margin-top: 20px;
+            border-top: 1px solid #e6edf5;
+            padding-top: 18px;
+        }
+
+        .flex {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        @media (max-width: 480px) {
+            .app-card { padding: 20px 16px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-card" id="app">
+    <h1>
+        📟 Meter Reader
+        <small>v1</small>
+    </h1>
+
+    <!-- Feeder selection -->
+    <div class="feeder-section">
+        <label class="feeder-label" for="feederSelect">🔌 Select feeder</label>
+        <select id="feederSelect" class="feeder-select">
+            <option value="Feeder A">Feeder A · Main</option>
+            <option value="Feeder B">Feeder B · Backup</option>
+            <option value="Feeder C">Feeder C · Solar</option>
+            <option value="Feeder D">Feeder D · Generator</option>
+            <option value="Feeder E">Feeder E · Sub-station</option>
+        </select>
+    </div>
+
+    <!-- Camera -->
+    <div class="camera-box" id="cameraContainer">
+        <video id="video" autoplay playsinline muted></video>
+        <div class="placeholder" id="cameraPlaceholder">
+            📷 Camera ready<br />
+            <span style="font-weight:400; font-size:13px;">Tap "Capture" to read meter</span>
+        </div>
+    </div>
+
+    <!-- Camera buttons -->
+    <div class="camera-actions">
+        <button class="btn btn-primary" id="captureBtn">📸 Capture</button>
+        <button class="btn btn-outline" id="toggleCameraBtn">📷 Restart</button>
+    </div>
+
+    <!-- Reading display -->
+    <div class="reading-panel">
+        <div class="reading-row">
+            <span class="reading-label">📊 Extracted reading</span>
+            <span class="reading-value empty" id="currentReadingDisplay">—</span>
+        </div>
+        <div class="reading-meta">
+            <span id="feederDisplay">Feeder A</span>
+            <span id="timestampDisplay">—</span>
+        </div>
+
+        <!-- Confirmation & register -->
+        <div style="display:flex; gap:10px; margin-top:14px; flex-wrap:wrap;">
+            <button class="btn btn-success" id="confirmReadingBtn" style="flex:2;" disabled>
+                ✅ Confirm & register
+            </button>
+            <button class="btn btn-outline" id="discardReadingBtn" style="flex:1;">
+                ✕ Discard
+            </button>
+        </div>
+
+        <!-- Registered entries -->
+        <div class="entries-list" id="entriesList">
+            <div style="color:#8a9bb5; font-size:13px; text-align:center; padding:6px 0;">
+                No readings registered yet
+            </div>
+        </div>
+    </div>
+
+    <!-- Submit & clear -->
+    <div class="submit-area">
+        <button class="btn-submit" id="submitToSheetsBtn">📤 Submit to Google Sheets</button>
+        <button class="btn-clear" id="clearEntriesBtn">🗑️ Clear</button>
+    </div>
+
+    <!-- status -->
+    <div id="statusMessage" class="toast" style="display:none;">Ready</div>
+    <div class="footer-note">
+        ⚡ Click <strong>Capture</strong> → OCR extracts digits, then <strong>Confirm</strong> to add.
+    </div>
+</div>
+
+<script>
+    (function() {
+        // ----- DOM refs -----
+        const video = document.getElementById('video');
+        const cameraContainer = document.getElementById('cameraContainer');
+        const placeholder = document.getElementById('cameraPlaceholder');
+        const captureBtn = document.getElementById('captureBtn');
+        const toggleCameraBtn = document.getElementById('toggleCameraBtn');
+        const feederSelect = document.getElementById('feederSelect');
+        const currentReadingDisplay = document.getElementById('currentReadingDisplay');
+        const feederDisplay = document.getElementById('feederDisplay');
+        const timestampDisplay = document.getElementById('timestampDisplay');
+        const confirmBtn = document.getElementById('confirmReadingBtn');
+        const discardBtn = document.getElementById('discardReadingBtn');
+        const entriesList = document.getElementById('entriesList');
+        const submitBtn = document.getElementById('submitToSheetsBtn');
+        const clearBtn = document.getElementById('clearEntriesBtn');
+        const statusMessage = document.getElementById('statusMessage');
+
+        // ----- State -----
+        let stream = null;
+        let cameraActive = false;
+        let currentExtractedReading = null;    // string (digits)
+        let registeredEntries = [];             // [{feeder, reading, timestamp}]
+        let lastCaptureTime = null;
+
+        // ----- helpers -----
+        function showStatus(msg, isSuccess = false) {
+            statusMessage.style.display = 'block';
+            statusMessage.textContent = msg;
+            statusMessage.className = 'toast' + (isSuccess ? ' success' : '');
+            clearTimeout(statusMessage._hideTimer);
+            statusMessage._hideTimer = setTimeout(() => {
+                statusMessage.style.display = 'none';
+            }, 4000);
+        }
+
+        function updateUI() {
+            // update reading display
+            if (currentExtractedReading) {
+                currentReadingDisplay.textContent = currentExtractedReading;
+                currentReadingDisplay.className = 'reading-value';
+                confirmBtn.disabled = false;
+            } else {
+                currentReadingDisplay.textContent = '—';
+                currentReadingDisplay.className = 'reading-value empty';
+                confirmBtn.disabled = true;
+            }
+
+            // feeder & timestamp
+            feederDisplay.textContent = feederSelect.value;
+            if (lastCaptureTime) {
+                timestampDisplay.textContent = new Date(lastCaptureTime).toLocaleTimeString();
+            } else {
+                timestampDisplay.textContent = '—';
+            }
+
+            // render entries
+            if (registeredEntries.length === 0) {
+                entriesList.innerHTML = `<div style="color:#8a9bb5; font-size:13px; text-align:center; padding:6px 0;">No readings registered yet</div>`;
+            } else {
+                let html = '';
+                registeredEntries.forEach((entry, idx) => {
+                    html += `<div class="entry-item">
+                        <span class="feeder-tag">${entry.feeder}</span>
+                        <span class="reading-tag">${entry.reading}</span>
+                        <span style="color:#5e6f8d; font-size:12px;">${entry.time}</span>
+                    </div>`;
+                });
+                entriesList.innerHTML = html;
+            }
+
+            // submit button state
+            submitBtn.disabled = (registeredEntries.length === 0);
+        }
+
+        // ----- Camera -----
+        async function startCamera() {
+            try {
+                if (stream) {
+                    stream.getTracks().forEach(track => track.stop());
+                    stream = null;
+                }
+                const constraints = {
+                    video: { facingMode: 'environment', width: { ideal: 640 }, height: { ideal: 480 } },
+                    audio: false
+                };
+                stream = await navigator.mediaDevices.getUserMedia(constraints);
+                video.srcObject = stream;
+                await video.play();
+                cameraActive = true;
+                placeholder.style.display = 'none';
+                video.style.display = 'block';
+                showStatus('📷 Camera ready', true);
+            } catch (err) {
+                console.error('Camera error:', err);
+                cameraActive = false;
+                placeholder.style.display = 'block';
+                video.style.display = 'none';
+                showStatus('❌ Camera access denied. Please allow camera.', false);
+            }
+            updateUI();
+        }
+
+        function stopCamera() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+            cameraActive = false;
+            video.style.display = 'none';
+            placeholder.style.display = 'block';
+            updateUI();
+        }
+
+        // ----- "OCR" simulation (extract digits from image) -----
+        function simulateOcrFromImage() {
+            // In a real app, you'd use Tesseract.js or a cloud vision API.
+            // Here we generate a realistic looking meter reading: 4-8 digits.
+            const digitCount = Math.floor(Math.random() * 4) + 4; // 4..7 digits
+            let reading = '';
+            for (let i = 0; i < digitCount; i++) {
+                reading += Math.floor(Math.random() * 10).toString();
+            }
+            // occasionally add a leading zero to mimic real meters
+            if (Math.random() > 0.7) reading = '0' + reading;
+            return reading;
+        }
+
+        // ----- Capture & extract -----
+        function captureReading() {
+            if (!cameraActive) {
+                showStatus('⚠️ Camera not active. Tap "Restart"', false);
+                return;
+            }
+
+            // Simulate OCR: extract digits from current video frame
+            const extracted = simulateOcrFromImage();
+            currentExtractedReading = extracted;
+            lastCaptureTime = Date.now();
+
+            // update feeder display
+            feederDisplay.textContent = feederSelect.value;
+
+            showStatus(`🔍 Extracted: ${extracted}`, true);
+            updateUI();
+        }
+
+        // ----- Confirm & register -----
+        function confirmReading() {
+            if (!currentExtractedReading) {
+                showStatus('⚠️ No reading to confirm. Capture first.', false);
+                return;
+            }
+
+            const feeder = feederSelect.value;
+            const reading = currentExtractedReading;
+            const time = new Date().toLocaleTimeString();
+
+            registeredEntries.push({ feeder, reading, time });
+            // clear current reading after registration
+            currentExtractedReading = null;
+            lastCaptureTime = null;
+            showStatus(`✅ Registered ${reading} for ${feeder}`, true);
+            updateUI();
+        }
+
+        // ----- Discard current reading -----
+        function discardReading() {
+            if (currentExtractedReading) {
+                currentExtractedReading = null;
+                lastCaptureTime = null;
+
+                showStatus('🗑️ Reading discarded', false);
+                updateUI();
+            } else {
+                showStatus('ℹ️ No reading to discard', false);
+            }
+        }
+
+        // ----- Clear all entries -----
+        function clearEntries() {
+            if (registeredEntries.length === 0) {
+                showStatus('ℹ️ No entries to clear', false);
+                return;
+            }
+            if (confirm('Clear all registered readings?')) {
+                registeredEntries = [];
+                showStatus('🗑️ All entries cleared', false);
+                updateUI();
+            }
+        }
+
+        // ----- Submit to Google Sheets (webhook simulation) -----
+        function submitToSheets() {
+            if (registeredEntries.length === 0) {
+                showStatus('⚠️ No readings to submit', false);
+                return;
+            }
+
+            // Build payload
+            const payload = {
+                entries: registeredEntries.map(e => ({
+                    feeder: e.feeder,
+                    reading: e.reading,
+                    timestamp: e.time,
+                    date: new Date().toISOString().split('T')[0]
+                }))
+            };
+
+            // === IMPORTANT: Replace this URL with your Google Apps Script webhook ===
+            const SHEETS_WEBHOOK_URL = 'https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec';
+
+            // For demo, we simulate a successful POST
+            showStatus('⏳ Submitting to Google Sheets ...', false);
+
+            // Simulate network delay
+            setTimeout(() => {
+                // In production, use fetch:
+                /*
+                fetch(SHEETS_WEBHOOK_URL, {
+                    method: 'POST',
+                    mode: 'no-cors', // if using Apps Script, no-cors may be needed
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                })
+                .then(response => {
+                    showStatus('✅ Submitted successfully!', true);
+                    // optionally clear entries after submit
+                    // registeredEntries = [];
+                    // updateUI();
+                })
+                .catch(err => {
+                    showStatus('❌ Submit failed: ' + err.message, false);
+                });
+                */
+
+                // Simulated success response
+                showStatus(`✅ Demo: ${registeredEntries.length} reading(s) sent to Google Sheets (simulated)`, true);
+                // For demo we keep entries; you may clear if you wish:
+                // registeredEntries = [];
+                // updateUI();
+            }, 1000);
+        }
+
+        // ----- Event listeners -----
+        captureBtn.addEventListener('click', captureReading);
+        toggleCameraBtn.addEventListener('click', () => {
+            if (cameraActive) {
+                stopCamera();
+                // small delay then restart
+                setTimeout(startCamera, 400);
+            } else {
+                startCamera();
+            }
+        });
+        confirmBtn.addEventListener('click', confirmReading);
+        discardBtn.addEventListener('click', discardReading);
+        submitBtn.addEventListener('click', submitToSheets);
+        clearBtn.addEventListener('click', clearEntries);
+
+        // feeder change updates display
+        feederSelect.addEventListener('change', () => {
+            feederDisplay.textContent = feederSelect.value;
+            updateUI();
+        });
+
+        // ----- Init -----
+        startCamera();
+
+        // update timestamp periodically
+        setInterval(() => {
+            if (lastCaptureTime) {
+                timestampDisplay.textContent = new Date(lastCaptureTime).toLocaleTimeString();
+            }
+        }, 10000);
+
+        // initial UI
+        updateUI();
+
+        // handle page unload to stop camera
+        window.addEventListener('beforeunload', () => {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+        });
+
+        console.log('📟 Meter Reader app loaded. Replace SHEETS_WEBHOOK_URL with your Google Apps Script endpoint.');
+        console.log('ℹ️ Current OCR is simulated for demo. Integrate Tesseract.js or Vision API for real OCR.');
+    })();
+</script>
+</body>
+</html>
