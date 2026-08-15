@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Meter Reader · Optimized for MK6E</title>
+    <title>Meter Reader · MK6E Optimized</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
@@ -107,22 +107,30 @@
             align-items: center;
             justify-content: center;
             border: 1px solid #d0dcec;
+            min-height: 300px;
         }
 
         .camera-box video {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            display: block;
+            display: none;
         }
 
         .camera-box .placeholder {
-            color: rgba(255, 255, 255, 0.5);
+            color: rgba(255, 255, 255, 0.7);
             font-size: 15px;
             font-weight: 500;
             text-align: center;
             padding: 20px;
-            line-height: 1.5;
+            line-height: 1.6;
+            z-index: 5;
+        }
+
+        .camera-box .placeholder .icon {
+            font-size: 48px;
+            display: block;
+            margin-bottom: 12px;
         }
 
         /* 4:1 Viewfinder */
@@ -134,7 +142,7 @@
             height: 100%;
             pointer-events: none;
             z-index: 10;
-            display: flex;
+            display: none;
             align-items: center;
             justify-content: center;
         }
@@ -302,6 +310,15 @@
             background: #f0f4fc;
         }
 
+        .btn-danger {
+            background: #b13e3e;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #922f2f;
+        }
+
         .reading-panel {
             background: #f8faff;
             border-radius: 24px;
@@ -342,12 +359,6 @@
             color: #8a9bb5;
             font-weight: 400;
             font-size: 16px;
-        }
-
-        .reading-value.raw {
-            font-size: 14px;
-            color: #5e6f8d;
-            font-weight: 400;
         }
 
         .reading-meta {
@@ -452,6 +463,10 @@
             background: #2a4a7a;
         }
 
+        .toast.error {
+            background: #7a2a2a;
+        }
+
         .footer-note {
             font-size: 12px;
             color: #7b8aa3;
@@ -540,8 +555,9 @@
         <video id="video" autoplay playsinline muted></video>
         <canvas id="captureCanvas" style="display:none;"></canvas>
         <div class="placeholder" id="cameraPlaceholder">
-            📷 Camera ready<br />
-            <span style="font-weight:400; font-size:13px;">Tap "Capture" to read meter</span>
+            <span class="icon">📷</span>
+            Camera ready<br />
+            <span style="font-weight:400; font-size:13px;">Tap "Start Camera" below</span>
         </div>
 
         <div class="viewfinder-overlay" id="viewfinderOverlay">
@@ -555,8 +571,9 @@
     </div>
 
     <div class="camera-actions">
-        <button class="btn btn-primary" id="captureBtn">📸 Capture & OCR</button>
-        <button class="btn btn-outline" id="toggleCameraBtn">📷 Restart</button>
+        <button class="btn btn-primary" id="startCameraBtn">📷 Start Camera</button>
+        <button class="btn btn-primary" id="captureBtn" disabled>📸 Capture & OCR</button>
+        <button class="btn btn-outline" id="toggleCameraBtn">🔄 Restart</button>
     </div>
 
     <div class="reading-panel">
@@ -579,7 +596,6 @@
             </button>
         </div>
 
-        <!-- Manual input fallback -->
         <div class="manual-input-area">
             <input type="text" id="manualReadingInput" placeholder="Enter reading manually e.g. 67847.7" />
             <button class="btn-manual" id="manualAddBtn">➕ Add</button>
@@ -611,6 +627,7 @@
         const ctx = canvas.getContext('2d');
         const cameraContainer = document.getElementById('cameraContainer');
         const placeholder = document.getElementById('cameraPlaceholder');
+        const startCameraBtn = document.getElementById('startCameraBtn');
         const captureBtn = document.getElementById('captureBtn');
         const toggleCameraBtn = document.getElementById('toggleCameraBtn');
         const feederSelect = document.getElementById('feederSelect');
@@ -638,10 +655,10 @@
         let isProcessing = false;
 
         // ----- Helpers -----
-        function showStatus(msg, isSuccess = false, isOcr = false) {
+        function showStatus(msg, isSuccess = false, isOcr = false, isError = false) {
             statusMessage.style.display = 'block';
             statusMessage.textContent = msg;
-            statusMessage.className = 'toast' + (isSuccess ? ' success' : '') + (isOcr ? ' ocr-progress' : '');
+            statusMessage.className = 'toast' + (isSuccess ? ' success' : '') + (isOcr ? ' ocr-progress' : '') + (isError ? ' error' : '');
             clearTimeout(statusMessage._hideTimer);
             statusMessage._hideTimer = setTimeout(() => {
                 statusMessage.style.display = 'none';
@@ -686,38 +703,60 @@
             }
 
             submitBtn.disabled = (registeredEntries.length === 0);
+            captureBtn.disabled = !cameraActive;
         }
 
         // ----- Camera -----
         async function startCamera() {
             try {
+                showStatus('📷 Requesting camera...', false, false);
+                
                 if (stream) {
                     stream.getTracks().forEach(track => track.stop());
                     stream = null;
                 }
+                
                 const constraints = {
                     video: { 
-                        facingMode: 'environment', 
-                        width: { ideal: 800 }, 
-                        height: { ideal: 600 } 
+                        facingMode: 'environment',
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
                     },
                     audio: false
                 };
+                
                 stream = await navigator.mediaDevices.getUserMedia(constraints);
                 video.srcObject = stream;
                 await video.play();
+                
                 cameraActive = true;
                 placeholder.style.display = 'none';
                 video.style.display = 'block';
                 viewfinderOverlay.style.display = 'flex';
-                showStatus('📷 Camera ready - align "Tot. Imp. MWh" in viewfinder', true);
+                captureBtn.disabled = false;
+                startCameraBtn.textContent = '✅ Camera Active';
+                startCameraBtn.style.background = '#0f7b3a';
+                
+                showStatus('📷 Camera ready! Align "Tot. Imp. MWh" in viewfinder', true);
             } catch (err) {
                 console.error('Camera error:', err);
                 cameraActive = false;
                 placeholder.style.display = 'block';
                 video.style.display = 'none';
                 viewfinderOverlay.style.display = 'none';
-                showStatus('❌ Camera access denied. Please allow camera.', false);
+                captureBtn.disabled = true;
+                startCameraBtn.textContent = '📷 Start Camera';
+                startCameraBtn.style.background = '#1a3a6b';
+                
+                let errorMsg = '❌ Camera access denied. ';
+                if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+                    errorMsg += 'Please allow camera access in your browser settings.';
+                } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+                    errorMsg += 'No camera found on this device.';
+                } else {
+                    errorMsg += err.message || 'Unknown error.';
+                }
+                showStatus(errorMsg, false, false, true);
             }
             updateUI();
         }
@@ -731,7 +770,15 @@
             video.style.display = 'none';
             placeholder.style.display = 'block';
             viewfinderOverlay.style.display = 'none';
+            captureBtn.disabled = true;
+            startCameraBtn.textContent = '📷 Start Camera';
+            startCameraBtn.style.background = '#1a3a6b';
             updateUI();
+        }
+
+        function restartCamera() {
+            stopCamera();
+            setTimeout(startCamera, 500);
         }
 
         // ----- OPTIMIZED OCR for MK6E meter -----
@@ -751,9 +798,8 @@
                                 }
                             }
                         },
-                        // Allow numbers, decimal, and common meter characters
                         tessedit_char_whitelist: '0123456789.MWhkWh ',
-                        tessedit_pageseg_mode: '6',  // Uniform block
+                        tessedit_pageseg_mode: '6',
                         tessedit_ocr_engine_mode: '3'
                     }
                 );
@@ -764,19 +810,15 @@
                 console.log('OCR Raw Text:', fullText);
                 console.log('Confidence:', confidence);
 
-                // ----- SMART PARSING for MK6E meter -----
-                // Look for patterns like "67847.7MWh" or "67847.7 MWh"
-                // or "Tot. Imp. MWh" followed by a number
-                
                 let extractedReading = null;
                 let extractedConfidence = confidence;
 
-                // Pattern 1: Find number followed by MWh (with or without space)
+                // Pattern 1: Find number followed by MWh
                 const mwhPattern = /(\d+\.?\d*)\s*MWh/i;
                 const mwhMatch = fullText.match(mwhPattern);
                 if (mwhMatch) {
                     extractedReading = mwhMatch[1];
-                    extractedConfidence = Math.min(confidence + 10, 100); // Boost confidence for MWh match
+                    extractedConfidence = Math.min(confidence + 10, 100);
                     console.log('Found MWh pattern:', extractedReading);
                 }
 
@@ -790,7 +832,7 @@
                     }
                 }
 
-                // Pattern 3: Find any number with decimal (like 67847.7)
+                // Pattern 3: Find any number with decimal
                 if (!extractedReading) {
                     const decimalPattern = /\b(\d+\.\d+)\b/;
                     const decimalMatch = fullText.match(decimalPattern);
@@ -800,11 +842,10 @@
                     }
                 }
 
-                // Pattern 4: Fallback - just extract all numbers
+                // Pattern 4: Fallback - extract all numbers
                 if (!extractedReading) {
                     const allNumbers = fullText.replace(/[^0-9.]/g, ' ');
                     const numberSegments = allNumbers.split(/\s+/).filter(s => s.length > 0);
-                    // Find the longest number segment (usually the main reading)
                     if (numberSegments.length > 0) {
                         numberSegments.sort((a, b) => b.length - a.length);
                         extractedReading = numberSegments[0];
@@ -812,16 +853,12 @@
                     }
                 }
 
-                // Clean up the extracted reading
                 if (extractedReading) {
-                    // Remove trailing dots
                     extractedReading = extractedReading.replace(/\.$/, '');
-                    // Ensure only one decimal point
                     const parts = extractedReading.split('.');
                     if (parts.length > 2) {
                         extractedReading = parts[0] + '.' + parts.slice(1).join('');
                     }
-                    // Validate it's a reasonable meter reading (at least 3 digits)
                     if (extractedReading.replace('.', '').length < 3) {
                         extractedReading = null;
                     }
@@ -838,7 +875,7 @@
                 }
             } catch (error) {
                 console.error('OCR Error:', error);
-                showStatus('❌ OCR failed: ' + error.message, false);
+                showStatus('❌ OCR failed: ' + error.message, false, false, true);
                 return null;
             }
         }
@@ -846,7 +883,7 @@
         // ----- Capture & extract with real OCR -----
         async function captureReading() {
             if (!cameraActive) {
-                showStatus('⚠️ Camera not active. Tap "Restart"', false);
+                showStatus('⚠️ Camera not active. Tap "Start Camera" first.', false, false, true);
                 return;
             }
 
@@ -882,14 +919,14 @@
                 } else {
                     currentExtractedReading = null;
                     currentOcrConfidence = 0;
-                    showStatus('⚠️ No reading detected. Ensure "Tot. Imp. MWh" is visible.', false);
+                    showStatus('⚠️ No reading detected. Ensure "Tot. Imp. MWh" is visible.', false, false, true);
                 }
             } catch (error) {
                 console.error('Capture error:', error);
-                showStatus('❌ Error: ' + error.message, false);
+                showStatus('❌ Error: ' + error.message, false, false, true);
             } finally {
                 isProcessing = false;
-                captureBtn.disabled = false;
+                captureBtn.disabled = !cameraActive;
                 captureBtn.innerHTML = '📸 Capture & OCR';
                 updateUI();
             }
@@ -898,7 +935,7 @@
         // ----- Confirm & register -----
         function confirmReading() {
             if (!currentExtractedReading) {
-                showStatus('⚠️ No reading to confirm. Capture first.', false);
+                showStatus('⚠️ No reading to confirm. Capture first.', false, false, true);
                 return;
             }
 
@@ -918,13 +955,12 @@
         function addManualReading() {
             const value = manualInput.value.trim();
             if (!value) {
-                showStatus('⚠️ Please enter a reading value', false);
+                showStatus('⚠️ Please enter a reading value', false, false, true);
                 return;
             }
-            // Validate it's a number
             const numValue = parseFloat(value);
             if (isNaN(numValue) || numValue < 0) {
-                showStatus('⚠️ Please enter a valid number (e.g. 67847.7)', false);
+                showStatus('⚠️ Please enter a valid number (e.g. 67847.7)', false, false, true);
                 return;
             }
 
@@ -965,7 +1001,7 @@
         // ----- Submit to Google Sheets -----
         function submitToSheets() {
             if (registeredEntries.length === 0) {
-                showStatus('⚠️ No readings to submit', false);
+                showStatus('⚠️ No readings to submit', false, false, true);
                 return;
             }
 
@@ -978,50 +1014,16 @@
                 }))
             };
 
-            // REPLACE with your Google Apps Script webhook URL
             const SHEETS_WEBHOOK_URL = 'https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec';
 
             showStatus('⏳ Submitting to Google Sheets ...', false);
 
+            // Simulate submission
             setTimeout(() => {
-                // For real implementation, use fetch
-                showStatus(`✅ Demo: ${registeredEntries.length} reading(s) sent to Google Sheets (simulated)`, true);
+                showStatus(`✅ ${registeredEntries.length} reading(s) sent to Google Sheets (simulated)`, true);
             }, 1000);
         }
 
         // ----- Event listeners -----
-        captureBtn.addEventListener('click', captureReading);
-        toggleCameraBtn.addEventListener('click', () => {
-            if (cameraActive) {
-                stopCamera();
-                setTimeout(startCamera, 400);
-            } else {
-                startCamera();
-            }
-        });
-        confirmBtn.addEventListener('click', confirmReading);
-        discardBtn.addEventListener('click', discardReading);
-        submitBtn.addEventListener('click', submitToSheets);
-        clearBtn.addEventListener('click', clearEntries);
-        manualAddBtn.addEventListener('click', addManualReading);
-        manualInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') addManualReading();
-        });
-
-        feederSelect.addEventListener('change', () => {
-            feederDisplay.textContent = feederSelect.value;
-            updateUI();
-        });
-
-        // ----- Init -----
-        startCamera();
-        updateUI();
-
-        window.addEventListener('beforeunload', () => {
-            if (stream) {
-                stream.getTracks().forEach(track => track.stop());
-            }
-        });
-
-        console.log('📟 MK6E Meter Reader loaded.');
-        console.log
+        startCameraBtn.addEventListener('click', startCamera);
+        toggleCameraBtn.addEventListener
