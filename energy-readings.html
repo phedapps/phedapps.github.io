@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Meter Reader · MK6E Optimized</title>
+    <title>Meter Reader · Wide Viewfinder</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
@@ -96,6 +96,7 @@
             box-shadow: 0 0 0 3px rgba(42, 125, 225, 0.15);
         }
 
+        /* ===== CAMERA CONTAINER WITH RECTANGULAR VIEWFINDER ===== */
         .camera-box {
             background: #0b1b33;
             border-radius: 28px;
@@ -107,33 +108,25 @@
             align-items: center;
             justify-content: center;
             border: 1px solid #d0dcec;
-            min-height: 300px;
         }
 
         .camera-box video {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            display: none;
+            display: block;
         }
 
         .camera-box .placeholder {
-            color: rgba(255, 255, 255, 0.7);
+            color: rgba(255, 255, 255, 0.5);
             font-size: 15px;
             font-weight: 500;
             text-align: center;
             padding: 20px;
-            line-height: 1.6;
-            z-index: 5;
+            line-height: 1.5;
         }
 
-        .camera-box .placeholder .icon {
-            font-size: 48px;
-            display: block;
-            margin-bottom: 12px;
-        }
-
-        /* 4:1 Viewfinder */
+        /* ----- RECTANGULAR VIEWFINDER OVERLAY (4:1 ratio) ----- */
         .viewfinder-overlay {
             position: absolute;
             top: 0;
@@ -142,16 +135,16 @@
             height: 100%;
             pointer-events: none;
             z-index: 10;
-            display: none;
+            display: flex;
             align-items: center;
             justify-content: center;
         }
 
         .viewfinder-box {
             position: relative;
-            width: 92%;
-            padding-bottom: 23%;
-            border: 3px solid rgba(0, 255, 100, 0.8);
+            width: 90%;          /* 90% of container width */
+            padding-bottom: 22.5%; /* 90% / 4 = 22.5% to maintain 4:1 ratio */
+            border: 3px solid rgba(0, 255, 100, 0.7);
             border-radius: 12px;
             box-shadow: 
                 0 0 0 9999px rgba(0, 0, 0, 0.5),
@@ -159,6 +152,7 @@
             animation: pulse-border 2s ease-in-out infinite;
         }
 
+        /* Corner brackets for precision */
         .viewfinder-box::before,
         .viewfinder-box::after {
             content: '';
@@ -186,6 +180,7 @@
             border-radius: 0 0 4px 0;
         }
 
+        /* Additional corner brackets (bottom-left and top-right) */
         .viewfinder-box .corner-bl {
             position: absolute;
             bottom: -2px;
@@ -208,6 +203,7 @@
             border-radius: 0 4px 0 0;
         }
 
+        /* Scan line animation */
         .viewfinder-box .scan-line {
             position: absolute;
             left: 5%;
@@ -221,7 +217,7 @@
         }
 
         @keyframes pulse-border {
-            0%, 100% { border-color: rgba(0, 255, 100, 0.8); }
+            0%, 100% { border-color: rgba(0, 255, 100, 0.7); }
             50% { border-color: rgba(0, 255, 100, 0.3); }
         }
 
@@ -231,6 +227,7 @@
             100% { top: 8%; opacity: 0.3; }
         }
 
+        /* Label inside viewfinder */
         .viewfinder-label {
             position: absolute;
             bottom: -32px;
@@ -247,6 +244,8 @@
             border: 1px solid rgba(0, 255, 100, 0.3);
             text-transform: uppercase;
         }
+
+        /* ===== END VIEWFINDER ===== */
 
         .camera-actions {
             display: flex;
@@ -308,15 +307,6 @@
 
         .btn-outline:hover {
             background: #f0f4fc;
-        }
-
-        .btn-danger {
-            background: #b13e3e;
-            color: white;
-        }
-
-        .btn-danger:hover {
-            background: #922f2f;
         }
 
         .reading-panel {
@@ -457,27 +447,10 @@
             font-weight: 500;
             margin-top: 12px;
             text-align: center;
-            display: none;
-        }
-
-        .toast.success {
-            background: #0f7b3a;
-            display: block;
         }
 
         .toast.ocr-progress {
             background: #2a4a7a;
-            display: block;
-        }
-
-        .toast.error {
-            background: #7a2a2a;
-            display: block;
-        }
-
-        .toast.info {
-            background: #1a3a6b;
-            display: block;
         }
 
         .footer-note {
@@ -500,53 +473,9 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        .manual-input-area {
-            margin-top: 10px;
-            display: flex;
-            gap: 8px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
-        .manual-input-area input {
-            flex: 2;
-            padding: 10px 14px;
-            border: 1px solid #d0dcec;
-            border-radius: 16px;
-            font-size: 16px;
-            font-weight: 500;
-            min-width: 100px;
-        }
-
-        .manual-input-area input:focus {
-            outline: none;
-            border-color: #2a7de1;
-            box-shadow: 0 0 0 3px rgba(42, 125, 225, 0.15);
-        }
-
-        .btn-manual {
-            background: #6c7a9a;
-            color: white;
-            padding: 10px 18px;
-            border: none;
-            border-radius: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.15s;
-        }
-
-        .btn-manual:hover {
-            background: #4a5a7a;
-        }
-
         @media (max-width: 480px) {
             .app-card { padding: 20px 16px; }
             .viewfinder-box { width: 92%; }
-        }
-
-        .btn-active {
-            background: #0f7b3a !important;
-            color: white !important;
         }
     </style>
 </head>
@@ -555,7 +484,7 @@
 <div class="app-card" id="app">
     <h1>
         📟 Meter Reader
-        <small>MK6E</small>
+        <small>Wide View</small>
     </h1>
 
     <div class="feeder-section">
@@ -569,29 +498,29 @@
         </select>
     </div>
 
+    <!-- CAMERA WITH 4:1 VIEWFINDER -->
     <div class="camera-box" id="cameraContainer">
         <video id="video" autoplay playsinline muted></video>
         <canvas id="captureCanvas" style="display:none;"></canvas>
         <div class="placeholder" id="cameraPlaceholder">
-            <span class="icon">📷</span>
-            Camera ready<br />
-            <span style="font-weight:400; font-size:13px;">Tap "Start Camera" below</span>
+            📷 Camera ready<br />
+            <span style="font-weight:400; font-size:13px;">Tap "Capture" to read meter</span>
         </div>
 
+        <!-- 4:1 Rectangular Viewfinder Overlay -->
         <div class="viewfinder-overlay" id="viewfinderOverlay">
             <div class="viewfinder-box" id="viewfinderBox">
                 <div class="corner-bl"></div>
                 <div class="corner-tr"></div>
                 <div class="scan-line"></div>
-                <div class="viewfinder-label">📐 Align "Tot. Imp. MWh" reading here</div>
+                <div class="viewfinder-label">📐 Align meter display here</div>
             </div>
         </div>
     </div>
 
     <div class="camera-actions">
-        <button class="btn btn-primary" id="startCameraBtn">📷 Start Camera</button>
-        <button class="btn btn-primary" id="captureBtn" disabled>📸 Capture & OCR</button>
-        <button class="btn btn-outline" id="toggleCameraBtn">🔄 Restart</button>
+        <button class="btn btn-primary" id="captureBtn">📸 Capture & OCR</button>
+        <button class="btn btn-outline" id="toggleCameraBtn">📷 Restart</button>
     </div>
 
     <div class="reading-panel">
@@ -614,11 +543,6 @@
             </button>
         </div>
 
-        <div class="manual-input-area">
-            <input type="text" id="manualReadingInput" placeholder="Enter reading manually e.g. 67847.7" />
-            <button class="btn-manual" id="manualAddBtn">➕ Add</button>
-        </div>
-
         <div class="entries-list" id="entriesList">
             <div style="color:#8a9bb5; font-size:13px; text-align:center; padding:6px 0;">
                 No readings registered yet
@@ -631,23 +555,20 @@
         <button class="btn-clear" id="clearEntriesBtn">🗑️ Clear</button>
     </div>
 
-    <div id="statusMessage" class="toast">Ready</div>
+    <div id="statusMessage" class="toast" style="display:none;">Ready</div>
     <div class="footer-note">
-        ⚡ Optimized for MK6E Genius meters · Extracts numbers like <strong>67847.7</strong> from "Tot. Imp. MWh"
+        ⚡ 4:1 wide viewfinder · Uses Tesseract.js OCR · <strong>Only numbers</strong> extracted
     </div>
 </div>
 
 <script>
     (function() {
-        'use strict';
-        
         // ----- DOM refs -----
         const video = document.getElementById('video');
         const canvas = document.getElementById('captureCanvas');
         const ctx = canvas.getContext('2d');
         const cameraContainer = document.getElementById('cameraContainer');
         const placeholder = document.getElementById('cameraPlaceholder');
-        const startCameraBtn = document.getElementById('startCameraBtn');
         const captureBtn = document.getElementById('captureBtn');
         const toggleCameraBtn = document.getElementById('toggleCameraBtn');
         const feederSelect = document.getElementById('feederSelect');
@@ -662,8 +583,6 @@
         const clearBtn = document.getElementById('clearEntriesBtn');
         const statusMessage = document.getElementById('statusMessage');
         const viewfinderOverlay = document.getElementById('viewfinderOverlay');
-        const manualInput = document.getElementById('manualReadingInput');
-        const manualAddBtn = document.getElementById('manualAddBtn');
 
         // ----- State -----
         let stream = null;
@@ -675,16 +594,14 @@
         let isProcessing = false;
 
         // ----- Helpers -----
-        function showStatus(msg, type = 'info') {
+        function showStatus(msg, isSuccess = false, isOcr = false) {
             statusMessage.style.display = 'block';
             statusMessage.textContent = msg;
-            statusMessage.className = 'toast ' + type;
+            statusMessage.className = 'toast' + (isSuccess ? ' success' : '') + (isOcr ? ' ocr-progress' : '');
             clearTimeout(statusMessage._hideTimer);
-            if (type !== 'ocr-progress') {
-                statusMessage._hideTimer = setTimeout(() => {
-                    statusMessage.style.display = 'none';
-                }, 5000);
-            }
+            statusMessage._hideTimer = setTimeout(() => {
+                statusMessage.style.display = 'none';
+            }, 5000);
         }
 
         function updateUI() {
@@ -725,67 +642,40 @@
             }
 
             submitBtn.disabled = (registeredEntries.length === 0);
-            captureBtn.disabled = !cameraActive;
         }
 
         // ----- Camera -----
         async function startCamera() {
             try {
-                showStatus('📷 Requesting camera...', 'info');
-                
-                // Clean up any existing stream
                 if (stream) {
                     stream.getTracks().forEach(track => track.stop());
                     stream = null;
                 }
-                
                 const constraints = {
                     video: { 
-                        facingMode: 'environment',
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 }
+                        facingMode: 'environment', 
+                        width: { ideal: 800 }, 
+                        height: { ideal: 600 } 
                     },
                     audio: false
                 };
-                
                 stream = await navigator.mediaDevices.getUserMedia(constraints);
                 video.srcObject = stream;
                 await video.play();
-                
                 cameraActive = true;
                 placeholder.style.display = 'none';
                 video.style.display = 'block';
                 viewfinderOverlay.style.display = 'flex';
-                captureBtn.disabled = false;
-                startCameraBtn.textContent = '✅ Camera Active';
-                startCameraBtn.className = 'btn btn-active';
-                
-                showStatus('📷 Camera ready! Align "Tot. Imp. MWh" in viewfinder', 'success');
-                updateUI();
-                
+                showStatus('📷 Camera ready - align meter in the viewfinder', true);
             } catch (err) {
                 console.error('Camera error:', err);
                 cameraActive = false;
                 placeholder.style.display = 'block';
                 video.style.display = 'none';
                 viewfinderOverlay.style.display = 'none';
-                captureBtn.disabled = true;
-                startCameraBtn.textContent = '📷 Start Camera';
-                startCameraBtn.className = 'btn btn-primary';
-                
-                let errorMsg = '❌ ';
-                if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-                    errorMsg += 'Camera access denied. Please allow camera access in your browser settings and refresh.';
-                } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
-                    errorMsg += 'No camera found on this device. Please connect a camera.';
-                } else if (err.name === 'NotReadableError') {
-                    errorMsg += 'Camera is in use by another application. Please close other apps using the camera.';
-                } else {
-                    errorMsg += err.message || 'Unknown error. Please try again.';
-                }
-                showStatus(errorMsg, 'error');
-                updateUI();
+                showStatus('❌ Camera access denied. Please allow camera.', false);
             }
+            updateUI();
         }
 
         function stopCamera() {
@@ -797,21 +687,13 @@
             video.style.display = 'none';
             placeholder.style.display = 'block';
             viewfinderOverlay.style.display = 'none';
-            captureBtn.disabled = true;
-            startCameraBtn.textContent = '📷 Start Camera';
-            startCameraBtn.className = 'btn btn-primary';
             updateUI();
         }
 
-        function restartCamera() {
-            stopCamera();
-            setTimeout(startCamera, 500);
-        }
-
-        // ----- OPTIMIZED OCR for MK6E meter -----
+        // ----- Real OCR with Tesseract.js -----
         async function performOCR(imageData) {
             try {
-                showStatus('🔍 OCR processing...', 'ocr-progress');
+                showStatus('🔍 OCR processing...', false, true);
                 
                 const result = await Tesseract.recognize(
                     imageData,
@@ -821,88 +703,49 @@
                             if (m.status === 'recognizing text') {
                                 const progress = Math.round(m.progress * 100);
                                 if (progress % 10 === 0) {
-                                    showStatus(`🔍 OCR ${progress}%...`, 'ocr-progress');
+                                    showStatus(`🔍 OCR ${progress}%...`, false, true);
                                 }
                             }
                         },
-                        tessedit_char_whitelist: '0123456789.MWhkWh ',
+                        tessedit_char_whitelist: '0123456789.',
                         tessedit_pageseg_mode: '6',
                         tessedit_ocr_engine_mode: '3'
                     }
                 );
 
-                const fullText = result.data.text;
+                const text = result.data.text;
                 const confidence = result.data.confidence;
                 
-                console.log('OCR Raw Text:', fullText);
+                console.log('OCR Raw:', text);
                 console.log('Confidence:', confidence);
 
-                let extractedReading = null;
-                let extractedConfidence = confidence;
-
-                // Pattern 1: Find number followed by MWh
-                const mwhPattern = /(\d+\.?\d*)\s*MWh/i;
-                const mwhMatch = fullText.match(mwhPattern);
-                if (mwhMatch) {
-                    extractedReading = mwhMatch[1];
-                    extractedConfidence = Math.min(confidence + 10, 100);
-                    console.log('Found MWh pattern:', extractedReading);
+                const numberMatch = text.match(/[\d.]+/g);
+                let extractedNumbers = '';
+                if (numberMatch) {
+                    extractedNumbers = numberMatch.join('').replace(/\.{2,}/g, '.');
+                    extractedNumbers = extractedNumbers.replace(/^\.+|\.+$/g, '');
                 }
 
-                // Pattern 2: Find "Tot. Imp. MWh" and then a number
-                if (!extractedReading) {
-                    const totPattern = /Tot\.?\s*Imp\.?\s*MWh\s*([\d.]+)/i;
-                    const totMatch = fullText.match(totPattern);
-                    if (totMatch) {
-                        extractedReading = totMatch[1];
-                        console.log('Found Tot. Imp. MWh pattern:', extractedReading);
-                    }
-                }
-
-                // Pattern 3: Find any number with decimal
-                if (!extractedReading) {
-                    const decimalPattern = /\b(\d+\.\d+)\b/;
-                    const decimalMatch = fullText.match(decimalPattern);
-                    if (decimalMatch) {
-                        extractedReading = decimalMatch[1];
-                        console.log('Found decimal pattern:', extractedReading);
-                    }
-                }
-
-                // Pattern 4: Fallback - extract all numbers
-                if (!extractedReading) {
-                    const allNumbers = fullText.replace(/[^0-9.]/g, ' ');
-                    const numberSegments = allNumbers.split(/\s+/).filter(s => s.length > 0);
-                    if (numberSegments.length > 0) {
-                        numberSegments.sort((a, b) => b.length - a.length);
-                        extractedReading = numberSegments[0];
-                        console.log('Fallback number extraction:', extractedReading);
-                    }
-                }
-
-                if (extractedReading) {
-                    extractedReading = extractedReading.replace(/\.$/, '');
-                    const parts = extractedReading.split('.');
-                    if (parts.length > 2) {
-                        extractedReading = parts[0] + '.' + parts.slice(1).join('');
-                    }
-                    if (extractedReading.replace('.', '').length < 3) {
-                        extractedReading = null;
-                    }
-                }
-
-                if (extractedReading) {
+                if (extractedNumbers.length > 0) {
                     return {
-                        reading: extractedReading,
-                        confidence: extractedConfidence,
-                        raw: fullText
+                        reading: extractedNumbers,
+                        confidence: confidence,
+                        raw: text
                     };
                 } else {
+                    const digitsOnly = text.replace(/[^0-9]/g, '');
+                    if (digitsOnly.length > 0) {
+                        return {
+                            reading: digitsOnly,
+                            confidence: confidence * 0.7,
+                            raw: text
+                        };
+                    }
                     return null;
                 }
             } catch (error) {
                 console.error('OCR Error:', error);
-                showStatus('❌ OCR failed: ' + error.message, 'error');
+                showStatus('❌ OCR failed: ' + error.message, false);
                 return null;
             }
         }
@@ -910,12 +753,12 @@
         // ----- Capture & extract with real OCR -----
         async function captureReading() {
             if (!cameraActive) {
-                showStatus('⚠️ Camera not active. Tap "Start Camera" first.', 'error');
+                showStatus('⚠️ Camera not active. Tap "Restart"', false);
                 return;
             }
 
             if (isProcessing) {
-                showStatus('⏳ Please wait, processing...', 'info');
+                showStatus('⏳ Please wait, processing...', false);
                 return;
             }
 
@@ -924,22 +767,14 @@
             captureBtn.innerHTML = '<span class="spinner"></span> OCR...';
 
             try {
-                // Ensure video is ready
-                if (video.readyState < 2) {
-                    await new Promise(resolve => {
-                        video.addEventListener('loadeddata', resolve, { once: true });
-                        setTimeout(resolve, 1000);
-                    });
-                }
-                
                 canvas.width = video.videoWidth || 640;
                 canvas.height = video.videoHeight || 480;
                 ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
                 
-                const imageData = canvas.toDataURL('image/jpeg', 0.95);
+                const imageData = canvas.toDataURL('image/jpeg', 0.9);
                 const ocrResult = await performOCR(imageData);
                 
-                if (ocrResult && ocrResult.reading) {
+                if (ocrResult && ocrResult.reading && ocrResult.reading.length >= 2) {
                     currentExtractedReading = ocrResult.reading;
                     currentOcrConfidence = ocrResult.confidence || 0;
                     lastCaptureTime = Date.now();
@@ -950,18 +785,18 @@
                     if (currentOcrConfidence > 0) {
                         msg += ` (${Math.round(currentOcrConfidence)}% confidence)`;
                     }
-                    showStatus(msg, 'success');
+                    showStatus(msg, true);
                 } else {
                     currentExtractedReading = null;
                     currentOcrConfidence = 0;
-                    showStatus('⚠️ No reading detected. Ensure "Tot. Imp. MWh" is visible and well-lit.', 'error');
+                    showStatus('⚠️ No numbers detected. Align meter in the viewfinder.', false);
                 }
             } catch (error) {
                 console.error('Capture error:', error);
-                showStatus('❌ Error: ' + error.message, 'error');
+                showStatus('❌ Error: ' + error.message, false);
             } finally {
                 isProcessing = false;
-                captureBtn.disabled = !cameraActive;
+                captureBtn.disabled = false;
                 captureBtn.innerHTML = '📸 Capture & OCR';
                 updateUI();
             }
@@ -970,7 +805,7 @@
         // ----- Confirm & register -----
         function confirmReading() {
             if (!currentExtractedReading) {
-                showStatus('⚠️ No reading to confirm. Capture first.', 'error');
+                showStatus('⚠️ No reading to confirm. Capture first.', false);
                 return;
             }
 
@@ -982,28 +817,7 @@
             currentExtractedReading = null;
             currentOcrConfidence = 0;
             lastCaptureTime = null;
-            showStatus(`✅ Registered ${reading} for ${feeder}`, 'success');
-            updateUI();
-        }
-
-        // ----- Manual entry -----
-        function addManualReading() {
-            const value = manualInput.value.trim();
-            if (!value) {
-                showStatus('⚠️ Please enter a reading value', 'error');
-                return;
-            }
-            const numValue = parseFloat(value);
-            if (isNaN(numValue) || numValue < 0) {
-                showStatus('⚠️ Please enter a valid number (e.g. 67847.7)', 'error');
-                return;
-            }
-
-            const feeder = feederSelect.value;
-            const time = new Date().toLocaleTimeString();
-            registeredEntries.push({ feeder, reading: value, time });
-            manualInput.value = '';
-            showStatus(`✅ Manually added ${value} for ${feeder}`, 'success');
+            showStatus(`✅ Registered ${reading} for ${feeder}`, true);
             updateUI();
         }
 
@@ -1013,22 +827,22 @@
                 currentExtractedReading = null;
                 currentOcrConfidence = 0;
                 lastCaptureTime = null;
-                showStatus('🗑️ Reading discarded', 'info');
+                showStatus('🗑️ Reading discarded', false);
                 updateUI();
             } else {
-                showStatus('ℹ️ No reading to discard', 'info');
+                showStatus('ℹ️ No reading to discard', false);
             }
         }
 
         // ----- Clear all entries -----
         function clearEntries() {
             if (registeredEntries.length === 0) {
-                showStatus('ℹ️ No entries to clear', 'info');
+                showStatus('ℹ️ No entries to clear', false);
                 return;
             }
             if (confirm('Clear all registered readings?')) {
                 registeredEntries = [];
-                showStatus('🗑️ All entries cleared', 'info');
+                showStatus('🗑️ All entries cleared', false);
                 updateUI();
             }
         }
@@ -1036,7 +850,7 @@
         // ----- Submit to Google Sheets -----
         function submitToSheets() {
             if (registeredEntries.length === 0) {
-                showStatus('⚠️ No readings to submit', 'error');
+                showStatus('⚠️ No readings to submit', false);
                 return;
             }
 
@@ -1044,4 +858,55 @@
                 entries: registeredEntries.map(e => ({
                     feeder: e.feeder,
                     reading: e.reading,
-                    timestamp
+                    timestamp: e.time,
+                    date: new Date().toISOString().split('T')[0]
+                }))
+            };
+
+            // REPLACE with your Google Apps Script webhook URL
+            const SHEETS_WEBHOOK_URL = 'https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec';
+
+            showStatus('⏳ Submitting to Google Sheets ...', false);
+
+            setTimeout(() => {
+                // For real implementation, use fetch
+                showStatus(`✅ Demo: ${registeredEntries.length} reading(s) sent to Google Sheets (simulated)`, true);
+            }, 1000);
+        }
+
+        // ----- Event listeners -----
+        captureBtn.addEventListener('click', captureReading);
+        toggleCameraBtn.addEventListener('click', () => {
+            if (cameraActive) {
+                stopCamera();
+                setTimeout(startCamera, 400);
+            } else {
+                startCamera();
+            }
+        });
+        confirmBtn.addEventListener('click', confirmReading);
+        discardBtn.addEventListener('click', discardReading);
+        submitBtn.addEventListener('click', submitToSheets);
+        clearBtn.addEventListener('click', clearEntries);
+
+        feederSelect.addEventListener('change', () => {
+            feederDisplay.textContent = feederSelect.value;
+            updateUI();
+        });
+
+        // ----- Init -----
+        startCamera();
+        updateUI();
+
+        window.addEventListener('beforeunload', () => {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+        });
+
+        console.log('📟 Meter Reader with 4:1 wide viewfinder loaded.');
+        console.log('ℹ️ Replace SHEETS_WEBHOOK_URL with your Google Apps Script endpoint.');
+    })();
+</script>
+</body>
+</html>
