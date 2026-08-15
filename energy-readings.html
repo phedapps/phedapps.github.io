@@ -457,14 +457,27 @@
             font-weight: 500;
             margin-top: 12px;
             text-align: center;
+            display: none;
+        }
+
+        .toast.success {
+            background: #0f7b3a;
+            display: block;
         }
 
         .toast.ocr-progress {
             background: #2a4a7a;
+            display: block;
         }
 
         .toast.error {
             background: #7a2a2a;
+            display: block;
+        }
+
+        .toast.info {
+            background: #1a3a6b;
+            display: block;
         }
 
         .footer-note {
@@ -529,6 +542,11 @@
         @media (max-width: 480px) {
             .app-card { padding: 20px 16px; }
             .viewfinder-box { width: 92%; }
+        }
+
+        .btn-active {
+            background: #0f7b3a !important;
+            color: white !important;
         }
     </style>
 </head>
@@ -613,7 +631,7 @@
         <button class="btn-clear" id="clearEntriesBtn">🗑️ Clear</button>
     </div>
 
-    <div id="statusMessage" class="toast" style="display:none;">Ready</div>
+    <div id="statusMessage" class="toast">Ready</div>
     <div class="footer-note">
         ⚡ Optimized for MK6E Genius meters · Extracts numbers like <strong>67847.7</strong> from "Tot. Imp. MWh"
     </div>
@@ -621,6 +639,8 @@
 
 <script>
     (function() {
+        'use strict';
+        
         // ----- DOM refs -----
         const video = document.getElementById('video');
         const canvas = document.getElementById('captureCanvas');
@@ -655,14 +675,16 @@
         let isProcessing = false;
 
         // ----- Helpers -----
-        function showStatus(msg, isSuccess = false, isOcr = false, isError = false) {
+        function showStatus(msg, type = 'info') {
             statusMessage.style.display = 'block';
             statusMessage.textContent = msg;
-            statusMessage.className = 'toast' + (isSuccess ? ' success' : '') + (isOcr ? ' ocr-progress' : '') + (isError ? ' error' : '');
+            statusMessage.className = 'toast ' + type;
             clearTimeout(statusMessage._hideTimer);
-            statusMessage._hideTimer = setTimeout(() => {
-                statusMessage.style.display = 'none';
-            }, 5000);
+            if (type !== 'ocr-progress') {
+                statusMessage._hideTimer = setTimeout(() => {
+                    statusMessage.style.display = 'none';
+                }, 5000);
+            }
         }
 
         function updateUI() {
@@ -709,8 +731,9 @@
         // ----- Camera -----
         async function startCamera() {
             try {
-                showStatus('📷 Requesting camera...', false, false);
+                showStatus('📷 Requesting camera...', 'info');
                 
+                // Clean up any existing stream
                 if (stream) {
                     stream.getTracks().forEach(track => track.stop());
                     stream = null;
@@ -735,9 +758,11 @@
                 viewfinderOverlay.style.display = 'flex';
                 captureBtn.disabled = false;
                 startCameraBtn.textContent = '✅ Camera Active';
-                startCameraBtn.style.background = '#0f7b3a';
+                startCameraBtn.className = 'btn btn-active';
                 
-                showStatus('📷 Camera ready! Align "Tot. Imp. MWh" in viewfinder', true);
+                showStatus('📷 Camera ready! Align "Tot. Imp. MWh" in viewfinder', 'success');
+                updateUI();
+                
             } catch (err) {
                 console.error('Camera error:', err);
                 cameraActive = false;
@@ -746,19 +771,21 @@
                 viewfinderOverlay.style.display = 'none';
                 captureBtn.disabled = true;
                 startCameraBtn.textContent = '📷 Start Camera';
-                startCameraBtn.style.background = '#1a3a6b';
+                startCameraBtn.className = 'btn btn-primary';
                 
-                let errorMsg = '❌ Camera access denied. ';
+                let errorMsg = '❌ ';
                 if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-                    errorMsg += 'Please allow camera access in your browser settings.';
+                    errorMsg += 'Camera access denied. Please allow camera access in your browser settings and refresh.';
                 } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
-                    errorMsg += 'No camera found on this device.';
+                    errorMsg += 'No camera found on this device. Please connect a camera.';
+                } else if (err.name === 'NotReadableError') {
+                    errorMsg += 'Camera is in use by another application. Please close other apps using the camera.';
                 } else {
-                    errorMsg += err.message || 'Unknown error.';
+                    errorMsg += err.message || 'Unknown error. Please try again.';
                 }
-                showStatus(errorMsg, false, false, true);
+                showStatus(errorMsg, 'error');
+                updateUI();
             }
-            updateUI();
         }
 
         function stopCamera() {
@@ -772,7 +799,7 @@
             viewfinderOverlay.style.display = 'none';
             captureBtn.disabled = true;
             startCameraBtn.textContent = '📷 Start Camera';
-            startCameraBtn.style.background = '#1a3a6b';
+            startCameraBtn.className = 'btn btn-primary';
             updateUI();
         }
 
@@ -784,7 +811,7 @@
         // ----- OPTIMIZED OCR for MK6E meter -----
         async function performOCR(imageData) {
             try {
-                showStatus('🔍 OCR processing...', false, true);
+                showStatus('🔍 OCR processing...', 'ocr-progress');
                 
                 const result = await Tesseract.recognize(
                     imageData,
@@ -794,7 +821,7 @@
                             if (m.status === 'recognizing text') {
                                 const progress = Math.round(m.progress * 100);
                                 if (progress % 10 === 0) {
-                                    showStatus(`🔍 OCR ${progress}%...`, false, true);
+                                    showStatus(`🔍 OCR ${progress}%...`, 'ocr-progress');
                                 }
                             }
                         },
@@ -875,7 +902,7 @@
                 }
             } catch (error) {
                 console.error('OCR Error:', error);
-                showStatus('❌ OCR failed: ' + error.message, false, false, true);
+                showStatus('❌ OCR failed: ' + error.message, 'error');
                 return null;
             }
         }
@@ -883,12 +910,12 @@
         // ----- Capture & extract with real OCR -----
         async function captureReading() {
             if (!cameraActive) {
-                showStatus('⚠️ Camera not active. Tap "Start Camera" first.', false, false, true);
+                showStatus('⚠️ Camera not active. Tap "Start Camera" first.', 'error');
                 return;
             }
 
             if (isProcessing) {
-                showStatus('⏳ Please wait, processing...', false);
+                showStatus('⏳ Please wait, processing...', 'info');
                 return;
             }
 
@@ -897,6 +924,14 @@
             captureBtn.innerHTML = '<span class="spinner"></span> OCR...';
 
             try {
+                // Ensure video is ready
+                if (video.readyState < 2) {
+                    await new Promise(resolve => {
+                        video.addEventListener('loadeddata', resolve, { once: true });
+                        setTimeout(resolve, 1000);
+                    });
+                }
+                
                 canvas.width = video.videoWidth || 640;
                 canvas.height = video.videoHeight || 480;
                 ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
@@ -915,15 +950,15 @@
                     if (currentOcrConfidence > 0) {
                         msg += ` (${Math.round(currentOcrConfidence)}% confidence)`;
                     }
-                    showStatus(msg, true);
+                    showStatus(msg, 'success');
                 } else {
                     currentExtractedReading = null;
                     currentOcrConfidence = 0;
-                    showStatus('⚠️ No reading detected. Ensure "Tot. Imp. MWh" is visible.', false, false, true);
+                    showStatus('⚠️ No reading detected. Ensure "Tot. Imp. MWh" is visible and well-lit.', 'error');
                 }
             } catch (error) {
                 console.error('Capture error:', error);
-                showStatus('❌ Error: ' + error.message, false, false, true);
+                showStatus('❌ Error: ' + error.message, 'error');
             } finally {
                 isProcessing = false;
                 captureBtn.disabled = !cameraActive;
@@ -935,7 +970,7 @@
         // ----- Confirm & register -----
         function confirmReading() {
             if (!currentExtractedReading) {
-                showStatus('⚠️ No reading to confirm. Capture first.', false, false, true);
+                showStatus('⚠️ No reading to confirm. Capture first.', 'error');
                 return;
             }
 
@@ -947,7 +982,7 @@
             currentExtractedReading = null;
             currentOcrConfidence = 0;
             lastCaptureTime = null;
-            showStatus(`✅ Registered ${reading} for ${feeder}`, true);
+            showStatus(`✅ Registered ${reading} for ${feeder}`, 'success');
             updateUI();
         }
 
@@ -955,12 +990,12 @@
         function addManualReading() {
             const value = manualInput.value.trim();
             if (!value) {
-                showStatus('⚠️ Please enter a reading value', false, false, true);
+                showStatus('⚠️ Please enter a reading value', 'error');
                 return;
             }
             const numValue = parseFloat(value);
             if (isNaN(numValue) || numValue < 0) {
-                showStatus('⚠️ Please enter a valid number (e.g. 67847.7)', false, false, true);
+                showStatus('⚠️ Please enter a valid number (e.g. 67847.7)', 'error');
                 return;
             }
 
@@ -968,7 +1003,7 @@
             const time = new Date().toLocaleTimeString();
             registeredEntries.push({ feeder, reading: value, time });
             manualInput.value = '';
-            showStatus(`✅ Manually added ${value} for ${feeder}`, true);
+            showStatus(`✅ Manually added ${value} for ${feeder}`, 'success');
             updateUI();
         }
 
@@ -978,22 +1013,22 @@
                 currentExtractedReading = null;
                 currentOcrConfidence = 0;
                 lastCaptureTime = null;
-                showStatus('🗑️ Reading discarded', false);
+                showStatus('🗑️ Reading discarded', 'info');
                 updateUI();
             } else {
-                showStatus('ℹ️ No reading to discard', false);
+                showStatus('ℹ️ No reading to discard', 'info');
             }
         }
 
         // ----- Clear all entries -----
         function clearEntries() {
             if (registeredEntries.length === 0) {
-                showStatus('ℹ️ No entries to clear', false);
+                showStatus('ℹ️ No entries to clear', 'info');
                 return;
             }
             if (confirm('Clear all registered readings?')) {
                 registeredEntries = [];
-                showStatus('🗑️ All entries cleared', false);
+                showStatus('🗑️ All entries cleared', 'info');
                 updateUI();
             }
         }
@@ -1001,7 +1036,7 @@
         // ----- Submit to Google Sheets -----
         function submitToSheets() {
             if (registeredEntries.length === 0) {
-                showStatus('⚠️ No readings to submit', false, false, true);
+                showStatus('⚠️ No readings to submit', 'error');
                 return;
             }
 
@@ -1009,21 +1044,4 @@
                 entries: registeredEntries.map(e => ({
                     feeder: e.feeder,
                     reading: e.reading,
-                    timestamp: e.time,
-                    date: new Date().toISOString().split('T')[0]
-                }))
-            };
-
-            const SHEETS_WEBHOOK_URL = 'https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec';
-
-            showStatus('⏳ Submitting to Google Sheets ...', false);
-
-            // Simulate submission
-            setTimeout(() => {
-                showStatus(`✅ ${registeredEntries.length} reading(s) sent to Google Sheets (simulated)`, true);
-            }, 1000);
-        }
-
-        // ----- Event listeners -----
-        startCameraBtn.addEventListener('click', startCamera);
-        toggleCameraBtn.addEventListener
+                    timestamp
