@@ -255,10 +255,11 @@
   // ============================================
   // CONFIGURATION
   // ============================================
-  const GOOGLE_SHEETS_API_URL = 'https://script.google.com/macros/s/AKfycbwaHSxVwHh_vYvlxlj6shc2o2fW_2LoIfPBEoLHM3iBGJ18ewThZSf1EdMc7HhyeVQ/exec';
+  const GOOGLE_SHEETS_API_URL = 'https://script.google.com/macros/s/AKfycbwAb74LVdhugNXyYLs58gF04Z1UCDVhi9ky66l3QSWp1vmrfCJkC803gsQwnh6E0iA/exec';
   
   let feederData = [];
   let dataLoaded = false;
+  let fileName = 'Loading...';
   
   async function loadData() {
     try {
@@ -268,9 +269,11 @@
       if (!response.ok) throw new Error('Network response was not ok');
       const data = await response.json();
       feederData = data.feeders || [];
+      // Get file name from API response, or use a fallback
+      fileName = data.fileName || 'Feeder Data File';
       dataLoaded = true;
       document.getElementById('loadingSpinner').style.display = 'none';
-      document.getElementById('dataStatus').textContent = `✅ Data loaded: ${feederData.length} feeders from Google Sheets`;
+      document.getElementById('dataStatus').textContent = `✅ Data loaded: ${feederData.length} feeders from "${fileName}"`;
       document.getElementById('dataStatus').style.color = '#28a745';
       populateFilters();
       return data;
@@ -430,7 +433,6 @@
     const affectedDTRs = parseFloat(document.getElementById('E18').value) || 0;
     
     const feederDataItem = feederData.find(f => f.feeder === feeder);
-    const maxLoadFromData = feederDataItem ? feederDataItem.maxLoad : 'N/A';
     const avgLoad = feederDataItem ? feederDataItem.avgLoad : 'N/A';
     
     // Calculation uses peakLoad (user entered)
