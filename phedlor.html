@@ -33,11 +33,9 @@
     .filter-status.error { background: #f8d7da; color: #721c24; }
     .filter-status.info { background: #d1ecf1; color: #0c5460; }
     
-    /* feeder load rows toggle for print */
     .feeder-load-row.hide-print { display: none; }
     .btn-toggle-load { margin-bottom: 10px; }
     
-    /* validity & credit */
     .valid-until {
       margin-top: 20px;
       font-weight: 600;
@@ -50,7 +48,6 @@
       border-left: 4px solid #007BFF;
     }
     
-    /* ---- COPYRIGHT NOTICE (professional, no background) ---- */
     .copyright-notice {
       margin-top: 30px;
       padding-top: 14px;
@@ -77,9 +74,8 @@
       color: #2c5a6e;
     }
     
-    /* ---- SOFT BLUE result card ---- */
     .result-card-softblue {
-      background: #6495ED !important;   /* soft blue */
+      background: #6495ED !important;
       border: 1px solid #b8d4e8;
       box-shadow: 0 4px 12px rgba(0,80,120,0.08);
     }
@@ -87,7 +83,6 @@
       background: transparent !important;
     }
 
-    /* title row with date */
     .title-row {
       display: flex;
       justify-content: space-between;
@@ -110,7 +105,6 @@
       white-space: nowrap;
     }
 
-    /* extra spacing for print/export */
     @media print, .export-pdf {
       .title-row {
         margin-bottom: 25px !important;
@@ -154,12 +148,11 @@
   <div id="loadingSpinner" class="spinner"></div>
 </div>
 
-<!-- Step indicator -->
+<!-- Step indicator: now 3 steps -->
 <div class="step-indicator">
   <div class="indicator active" id="ind1" onclick="showStep('step1', 1)">Step 1</div>
   <div class="indicator" id="ind2" onclick="showStep('step2', 2)">Step 2</div>
-  <div class="indicator" id="ind3" onclick="showStep('step3', 3)">Step 3</div>
-  <div class="indicator" id="ind4" onclick="showStep('step4', 4)">Result</div>
+  <div class="indicator" id="ind3" onclick="showStep('step3', 3)">Result</div>
 </div>
 
 <!-- Step 1 -->
@@ -215,35 +208,14 @@
   </div>
 </div>
 
-<!-- Step 2 -->
+<!-- Step 2: all operational inputs + Peak Load -->
 <div class="step" id="step2" style="display:none;">
   <div class="row g-3">
     <div class="col-12 col-md-6">
-      <label class="form-label">HT Lines (span)</label>
-      <input id="B5" type="text" class="form-control" />
-    </div>
-    <div class="col-12 col-md-6">
-      <label class="form-label">HT/LT Lines (span)</label>
-      <input id="C5" type="text" class="form-control" />
-    </div>
-    <div class="col-12 col-md-6">
-      <label class="form-label">LT Lines (span)</label>
-      <input id="D5" type="text" class="form-control" />
-    </div>
-    <div class="col-12 col-md-6">
-      <label class="form-label">Peak Load (MW)</label>
+      <label class="form-label">Peak Load (MW) <span class="text-danger">*</span></label>
       <input id="E5" type="number" class="form-control" value="0" step="0.1" />
+      <small class="text-muted">Enter the peak load manually. This value will be used for calculation.</small>
     </div>
-  </div>
-  <div class="d-flex justify-content-between mt-3">
-    <button class="btn btn-secondary" id="back2">⬅️ Back</button>
-    <button class="btn btn-primary" id="next2">Next ➡️</button>
-  </div>
-</div>
-
-<!-- Step 3 -->
-<div class="step" id="step3" style="display:none;">
-  <div class="row g-3">
     <div class="col-12 col-md-6">
       <label class="form-label">Time to take outage and Isolate the line (hr)</label>
       <input id="E8" type="number" class="form-control" value="1" />
@@ -266,16 +238,16 @@
     </div>
   </div>
   <div class="d-flex justify-content-between mt-3">
-    <button class="btn btn-secondary" id="back3">⬅️ Back</button>
+    <button class="btn btn-secondary" id="back2">⬅️ Back</button>
     <button class="btn btn-success" id="finish">✅ Finish</button>
   </div>
 </div>
 
-<!-- Step 4 -->
-<div class="step" id="step4" style="display:none;">
+<!-- Step 3: Result -->
+<div class="step" id="step3" style="display:none;">
   <div id="result" class="mt-4"></div>
   <div class="d-flex justify-content-between mt-3">
-    <button class="btn btn-secondary" id="back4">⬅️ Back</button>
+    <button class="btn btn-secondary" id="back3">⬅️ Back</button>
   </div>
 </div>
 
@@ -288,7 +260,6 @@
   let feederData = [];
   let dataLoaded = false;
   
-  // Load data from Google Sheets
   async function loadData() {
     try {
       document.getElementById('dataStatus').textContent = 'Loading data from Google Sheets...';
@@ -380,7 +351,8 @@
            • ${bandName} — ₦${bandValue}/kwh<br>
            • Maximum Load: ${data.maxLoad} MW<br>
            • Average Load: ${data.avgLoad} MW`;
-        document.getElementById("E5").value = data.maxLoad || 0;
+        const peakInput = document.getElementById("E5");
+        if (data.maxLoad) peakInput.value = data.maxLoad;
       }
     } else {
       feederInfoDiv.innerHTML = "";
@@ -427,7 +399,6 @@
     return dateObj.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
   }
 
-  // helper to get current date string
   function getCurrentDateString() {
     const now = new Date();
     return now.toLocaleDateString('en-US', { 
@@ -448,7 +419,10 @@
     const bandOption = bandSelect.options[bandSelect.selectedIndex];
     const bandName = bandOption ? bandOption.text : "";
     const tariff = parseFloat(bandOption ? bandOption.value : 0);
+    
+    // Use the manually entered peak load (from E5)
     const peakLoad = parseFloat(document.getElementById('E5').value) || 0;
+    
     const timeWork = parseFloat(document.getElementById('E16').value) || 0;
     const timePermit = parseFloat(document.getElementById('E8').value) || 0;
     const totalDays = parseFloat(document.getElementById('E15').value) || 0;
@@ -456,9 +430,10 @@
     const affectedDTRs = parseFloat(document.getElementById('E18').value) || 0;
     
     const feederDataItem = feederData.find(f => f.feeder === feeder);
-    const maxLoad = feederDataItem ? feederDataItem.maxLoad : 'N/A';
+    const maxLoadFromData = feederDataItem ? feederDataItem.maxLoad : 'N/A';
     const avgLoad = feederDataItem ? feederDataItem.avgLoad : 'N/A';
     
+    // Calculation uses peakLoad (user entered)
     const part1 = (peakLoad * 1000) * timePermit * tariff * 1.075;
     const part2 = (affectedDTRs / totalDTRs) * (peakLoad * 1000) * timeWork * totalDays * tariff * 1.075;
     const fixedCost = 40000;
@@ -467,10 +442,10 @@
     const calculatedOn = getCurrentDateString();
     const currentYear = new Date().getFullYear();
     
+    // Build the result HTML — the "Maximum Load" row now shows the user-entered peak load
     document.getElementById('result').innerHTML = `
       <div id="resultCard" class="card shadow-sm result-card-softblue">
         <div class="card-body">
-          <!-- title row with date on the same line -->
           <div class="title-row">
             <h3 class="card-title">📋 LOR Summary</h3>
             <span class="calc-date-badge">📅 ${calculatedOn}</span>
@@ -484,8 +459,9 @@
                 <tr><th>Region</th><td>${region}</td></tr>
                 <tr><th>Feeder</th><td>${feeder}</td></tr>
                 <tr><th>Voltage Level</th><td>${voltage}KV</td></tr>
-                <tr class="feeder-load-row show-print"><th>Maximum Load</th><td>${maxLoad} MW</td></tr>
-                <tr class="feeder-load-row show-print"><th>Average Load</th><td>${avgLoad} MW</td></tr>
+                <!-- Maximum Load row now displays the user-entered peak load (replaces data value) -->
+                <tr class="feeder-load-row show-print"><th>Maximum Load</th><td>${peakLoad} MW <span class="text-muted">(user entered)</span></td></tr>
+                <tr class="feeder-load-row show-print"><th>Average Load (from data)</th><td>${avgLoad} MW</td></tr>
                 <tr><th>Tariff</th><td>${bandName} (₦${tariff})</td></tr>
                 <tr><th>Time to do the work (hr)</th><td>${timeWork}</td></tr>
                 <tr><th>Total number of days</th><td>${totalDays}</td></tr>
@@ -520,7 +496,6 @@
             <span class="valid-until">⏳ This LOR is valid until ${validUntil}.</span>
           </div>
           
-          <!-- PROFESSIONAL COPYRIGHT NOTICE (no background) -->
           <div class="copyright-notice">
             <span class="copyright-symbol">©</span> 
             <span class="designer-name">Obot Akpan</span> 
@@ -560,7 +535,7 @@
       html2pdf().set(opt).from(element).save();
     });
     
-    showStep('step4', 4);
+    showStep('step3', 3);
   }
   
   // ============================================
@@ -582,9 +557,7 @@
       showStep("step2", 2);
     };
     document.getElementById('back2').onclick = () => showStep("step1", 1);
-    document.getElementById('next2').onclick = () => showStep("step3", 3);
     document.getElementById('back3').onclick = () => showStep("step2", 2);
-    document.getElementById('back4').onclick = () => showStep("step3", 3);
     document.getElementById('finish').onclick = calculateLOR;
     updateFeeders();
   });
