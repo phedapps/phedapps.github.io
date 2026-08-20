@@ -5,7 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DTR Information Search</title>
   <style>
-    * { box-sizing: border-box; margin: 0; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+    }
     body {
       font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
       padding: 24px 16px;
@@ -16,14 +19,14 @@
       align-items: center;
     }
     .container {
-      max-width: 480px;
+      max-width: 600px;
       width: 100%;
       background: white;
       border-radius: 24px;
       padding: 24px 20px 32px;
       box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+      margin-bottom: 20px;
     }
-    /* ===== HEADER ===== */
     .header {
       display: flex;
       flex-direction: column;
@@ -57,8 +60,6 @@
       color: #4d627a;
       font-weight: 400;
     }
-
-    /* ===== SEARCH SECTION ===== */
     .search-section {
       margin-bottom: 16px;
       position: relative;
@@ -128,8 +129,6 @@
       font-weight: 500;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
-
-    /* ===== SUGGESTIONS DROPDOWN ===== */
     .suggestions-box {
       position: absolute;
       top: calc(100% + 4px);
@@ -170,13 +169,14 @@
       background: #f0f7ff;
     }
     .suggestion-item .suggestion-main {
-      font-weight: 500;
+      font-weight: 600;
       color: #0b1a33;
     }
     .suggestion-item .suggestion-sub {
       font-size: 0.78rem;
       color: #4a5c7a;
       margin-left: 8px;
+      font-weight: 500;
     }
     .suggestion-item .suggestion-detail {
       font-size: 0.75rem;
@@ -194,13 +194,9 @@
       color: #7a8ba8;
       font-size: 0.9rem;
     }
-
-    /* ===== RESULTS / DETAIL VIEW ===== */
     .results-container {
       margin-top: 4px;
     }
-
-    /* ===== WELCOME MESSAGE ===== */
     .welcome-message {
       text-align: center;
       padding: 40px 20px;
@@ -218,8 +214,9 @@
     .welcome-message p {
       font-size: 0.9rem;
     }
-
-    /* ===== DETAIL VIEW CARD ===== */
+    .welcome-message.hidden {
+      display: none;
+    }
     .detail-card {
       background: #f8faff;
       border-radius: 14px;
@@ -253,14 +250,20 @@
       padding: 2px 12px;
       border-radius: 20px;
       display: inline-block;
+      margin-top: 4px;
     }
     .detail-card .detail-row {
       display: flex;
       flex-wrap: wrap;
-      gap: 4px 16px;
-      padding: 4px 0;
+      align-items: center;
+      gap: 6px 10px;
+      padding: 8px 0;
       font-size: 0.9rem;
       color: #1f2a44;
+      border-bottom: 1px solid #f0f4fc;
+    }
+    .detail-card .detail-row:last-of-type {
+      border-bottom: none;
     }
     .detail-card .detail-row .label {
       color: #7a8ba8;
@@ -269,6 +272,7 @@
     }
     .detail-card .detail-row .value {
       font-weight: 500;
+      flex: 1;
     }
     .detail-card .badge {
       display: inline-block;
@@ -277,39 +281,127 @@
       padding: 2px 12px;
       border-radius: 20px;
     }
-    .badge-active { background: #d4edda; color: #155724; }
-    .badge-inactive { background: #f8d7da; color: #721c24; }
-    .badge-new { background: #cce5ff; color: #004085; }
-    .badge-public { background: #d1ecf1; color: #0c5460; }
-    .badge-private { background: #fff3cd; color: #856404; }
-
-    .detail-card .location-row {
-      margin-top: 8px;
-      padding-top: 8px;
-      border-top: 1px solid #eef2f7;
-      font-size: 0.8rem;
-      color: #7a8ba8;
+    .badge-region {
+      background: #d1ecf1;
+      color: #0c5460;
     }
-
-    /* ===== RESPONSIVE ===== */
+    .badge-network {
+      background: #cce5ff;
+      color: #004085;
+    }
+    .copy-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px 6px;
+      border-radius: 6px;
+      color: #7a8ba8;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.75rem;
+      flex-shrink: 0;
+      margin-left: auto;
+    }
+    .copy-btn:hover {
+      background: #e8f0fe;
+      color: #1a6bff;
+    }
+    .copy-btn:active {
+      transform: scale(0.9);
+    }
+    .copy-btn svg {
+      width: 18px;
+      height: 18px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .copy-btn.copied {
+      color: #28a745;
+    }
+    .copy-btn.copied svg {
+      stroke: #28a745;
+    }
+    .copy-toast {
+      position: fixed;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #0b1a33;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+      opacity: 0;
+      transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+      z-index: 999;
+      pointer-events: none;
+      max-width: 90%;
+      text-align: center;
+    }
+    .copy-toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+    .copy-hint {
+      font-size: 0.7rem;
+      color: #7a8ba8;
+      text-align: center;
+      margin-top: 8px;
+      opacity: 0.7;
+    }
+    .footer {
+      text-align: center;
+      padding: 16px 20px;
+      color: #7a8ba8;
+      font-size: 0.8rem;
+      font-weight: 400;
+      border-top: 1px solid #eef2f7;
+      margin-top: 8px;
+    }
+    .footer .designer {
+      color: #1a6bff;
+      font-weight: 600;
+    }
     @media (max-width: 480px) {
       .detail-card .dtr-header {
         flex-direction: column;
         gap: 6px;
       }
       .detail-card .detail-row {
-        flex-direction: column;
-        gap: 2px;
+        flex-wrap: wrap;
+        gap: 4px 8px;
+        padding: 6px 0;
       }
       .detail-card .detail-row .label {
-        min-width: auto;
+        min-width: 65px;
+        font-size: 0.8rem;
+      }
+      .detail-card .detail-row .value {
+        font-size: 0.85rem;
+      }
+      .copy-btn {
+        padding: 2px 4px;
+        margin-left: auto;
+      }
+      .copy-btn span {
+        display: none;
+      }
+      .copy-btn svg {
+        width: 16px;
+        height: 16px;
       }
     }
   </style>
 </head>
 <body>
 <div class="container">
-  <!-- ===== HEADER ===== -->
   <div class="header">
     <div class="logo-container">
       <img src="PHED logo.png" alt="PHED Logo" onerror="this.style.display='none'">
@@ -320,7 +412,6 @@
     </div>
   </div>
 
-  <!-- ===== SEARCH ===== -->
   <div class="search-section">
     <div class="search-input-wrapper" id="searchWrapper">
       <input type="text" id="searchInput" placeholder="Loading transformer data..." disabled>
@@ -332,25 +423,28 @@
     </div>
   </div>
 
-  <!-- ===== RESULTS ===== -->
   <div class="results-container" id="resultsContainer">
-    <!-- Welcome message (shown initially) -->
     <div class="welcome-message" id="welcomeMessage">
       <div class="icon">🔌</div>
       <h3>Search for Transformers</h3>
       <p>Start typing to find DTR information</p>
     </div>
-
-    <!-- Detail view (shown when a transformer is selected) -->
     <div id="detailView" style="display:none;"></div>
+    <div class="copy-hint" id="copyHint" style="display:none;">📋 Click the copy icon next to any value to copy it</div>
+  </div>
+
+  <div class="footer">
+    Designed by <span class="designer">Obot Akpan</span>
   </div>
 </div>
 
+<div id="copyToast" class="copy-toast">📋 Copied to clipboard!</div>
+
 <script>
   // ============================================================
-  // CONFIG
+  // CONFIG – your Google Apps Script web app URL
   // ============================================================
-  const searchDataURL = "https://script.google.com/macros/s/AKfycbxHY_PYmo4wwzmasQAKtO73hHofXJF0ms9olsZBVbw4UDFPUg5TywlqiySPlHfy28oc/exec";
+  const searchDataURL = "https://script.google.com/macros/s/AKfycbwUaCqFSNSMnjUiuUE65EPL75CFnAOTGXLx8olkakjb620S2s2izxLNlNlAwOOPaVwn/exec";
 
   // ============================================================
   // DOM REFS
@@ -360,6 +454,8 @@
   const suggestionsBox = document.getElementById('suggestions');
   const welcomeMessage = document.getElementById('welcomeMessage');
   const detailView = document.getElementById('detailView');
+  const copyHint = document.getElementById('copyHint');
+  const copyToast = document.getElementById('copyToast');
 
   // ============================================================
   // STATE
@@ -367,17 +463,82 @@
   let transformers = [];
   let isDataLoaded = false;
   let selectedTransformer = null;
+  let toastTimeout = null;
 
   // ============================================================
-  // LOAD DATA - WITH BETTER ERROR HANDLING
+  // COPY TO CLIPBOARD
+  // ============================================================
+  function copyToClipboard(text, buttonElement) {
+    const copyFn = () => {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+          showToast('📋 Copied: "' + text + '"');
+          if (buttonElement) {
+            buttonElement.classList.add('copied');
+            setTimeout(() => buttonElement.classList.remove('copied'), 1500);
+          }
+        }).catch(() => {
+          fallbackCopy(text, buttonElement);
+        });
+      } else {
+        fallbackCopy(text, buttonElement);
+      }
+    };
+    copyFn();
+  }
+
+  function fallbackCopy(text, buttonElement) {
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    textarea.style.left = '-9999px';
+    textarea.style.top = '-9999px';
+    document.body.appendChild(textarea);
+    textarea.select();
+    try {
+      const successful = document.execCommand('copy');
+      if (successful) {
+        showToast('📋 Copied: "' + text + '"');
+        if (buttonElement) {
+          buttonElement.classList.add('copied');
+          setTimeout(() => buttonElement.classList.remove('copied'), 1500);
+        }
+      } else {
+        showToast('⚠️ Could not copy. Please select and copy manually.');
+      }
+    } catch (err) {
+      showToast('⚠️ Could not copy. Please select and copy manually.');
+    }
+    document.body.removeChild(textarea);
+  }
+
+  function showToast(message) {
+    copyToast.textContent = message;
+    copyToast.classList.add('show');
+    clearTimeout(toastTimeout);
+    toastTimeout = setTimeout(() => {
+      copyToast.classList.remove('show');
+    }, 2000);
+  }
+
+  // ============================================================
+  // SVG COPY ICON
+  // ============================================================
+  function getCopyIcon() {
+    return `<svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
+  }
+
+  // ============================================================
+  // LOAD DATA
   // ============================================================
   function loadTransformerData() {
-    // Show loading state in search box
     searchWrapper.classList.add('loading');
     searchInput.disabled = true;
     searchInput.placeholder = 'Loading transformer data...';
-    welcomeMessage.classList.add('hidden');
+    welcomeMessage.classList.remove('hidden');
     detailView.style.display = 'none';
+    copyHint.style.display = 'none';
 
     fetch(searchDataURL)
       .then(res => {
@@ -385,82 +546,118 @@
         return res.json();
       })
       .then(data => {
-        console.log('Raw data received:', data);
-        console.log('Data type:', typeof data);
-        console.log('Is array?', Array.isArray(data));
-        console.log('Data length:', data ? data.length : 'null/undefined');
+        console.log('Raw data:', data);
         
-        // Handle different data formats
-        if (data && typeof data === 'object') {
-          // Check if data has a results property (common in some APIs)
-          if (data.results && Array.isArray(data.results)) {
-            transformers = data.results;
-          } 
-          // Check if data has a data property
-          else if (data.data && Array.isArray(data.data)) {
-            transformers = data.data;
-          }
-          // Check if data itself is an array
-          else if (Array.isArray(data)) {
-            transformers = data;
-          }
-          // Check if data is an object with values
-          else if (typeof data === 'object' && !Array.isArray(data)) {
-            // Try to convert object to array of values
-            const values = Object.values(data);
-            if (values.length > 0 && Array.isArray(values[0])) {
-              // It might be a sheet data structure
-              transformers = values;
-            } else {
-              // Single object, wrap in array
-              transformers = [data];
+        let rawArray = null;
+        if (Array.isArray(data)) {
+          rawArray = data;
+        } else if (data && typeof data === 'object') {
+          if (Array.isArray(data.results)) rawArray = data.results;
+          else if (Array.isArray(data.data)) rawArray = data.data;
+          else if (Array.isArray(data.rows)) rawArray = data.rows;
+          else if (Array.isArray(data.values)) rawArray = data.values;
+          else {
+            const keys = Object.keys(data);
+            for (const key of keys) {
+              if (Array.isArray(data[key]) && data[key].length > 0) {
+                rawArray = data[key];
+                break;
+              }
             }
           }
-        } else {
-          transformers = [];
         }
-        
-        // If transformers is empty, try to parse differently
-        if (transformers.length === 0 && data) {
-          console.warn('No transformers found in data, trying to parse as CSV-like structure');
-          // Try to parse as array of arrays (common for sheet data)
-          if (Array.isArray(data)) {
-            transformers = data;
+
+        if (!rawArray || !rawArray.length) {
+          if (data && typeof data === 'object') {
+            const values = Object.values(data);
+            if (values.length && Array.isArray(values[0])) {
+              rawArray = values;
+            } else if (values.length && typeof values[0] === 'object') {
+              rawArray = values;
+            }
           }
         }
-        
+
+        if (Array.isArray(rawArray) && rawArray.length > 0) {
+          const firstRow = rawArray[0];
+          const isHeaderRow = Array.isArray(firstRow) && 
+            firstRow.some(val => typeof val === 'string' && 
+              ['Region', 'Network', 'FeederID', 'FeederName', 'DTRID', 'DTR_Name'].includes(val.trim()));
+          
+          let dataRows = rawArray;
+          if (isHeaderRow) {
+            dataRows = rawArray.slice(1);
+          }
+
+          transformers = dataRows.map(row => {
+            if (Array.isArray(row)) {
+              return {
+                region: String(row[0] || '').trim(),
+                network: String(row[1] || '').trim(),
+                feederId: String(row[2] || '').trim(),
+                feederName: String(row[3] || '').trim(),
+                dtrId: String(row[4] || '').trim(),
+                dtrName: String(row[5] || '').trim()
+              };
+            } else if (row && typeof row === 'object') {
+              return {
+                region: String(row.Region || row.region || row[0] || '').trim(),
+                network: String(row.Network || row.network || row[1] || '').trim(),
+                feederId: String(row.FeederID || row.feederId || row.FeederId || row[2] || '').trim(),
+                feederName: String(row.FeederName || row.feederName || row.Feeder || row.feeder || row[3] || '').trim(),
+                dtrId: String(row.DTRID || row.dtrId || row.DTR_ID || row[4] || '').trim(),
+                dtrName: String(row.DTR_Name || row.dtrName || row.DTRNAME || row.DTR_NAME || row[5] || '').trim()
+              };
+            }
+            return null;
+          }).filter(item => item && item.dtrName && item.dtrName !== '');
+        }
+
+        if (transformers.length === 0 && Array.isArray(rawArray) && rawArray.length > 0) {
+          transformers = rawArray.map(row => {
+            if (Array.isArray(row)) {
+              return {
+                region: String(row[0] || '').trim(),
+                network: String(row[1] || '').trim(),
+                feederId: String(row[2] || '').trim(),
+                feederName: String(row[3] || '').trim(),
+                dtrId: String(row[4] || '').trim(),
+                dtrName: String(row[5] || '').trim()
+              };
+            }
+            return null;
+          }).filter(item => item && (item.dtrName || item.dtrId));
+        }
+
         isDataLoaded = true;
-        
-        // Remove loading state
         searchWrapper.classList.remove('loading');
         searchInput.disabled = false;
         searchInput.placeholder = 'Search by name, ID, feeder...';
-        
         console.log(`✅ Loaded ${transformers.length} transformer records`);
-        console.log('First record sample:', transformers[0]);
         
-        // Show welcome message
-        welcomeMessage.classList.remove('hidden');
-        
-        // If there's already text in search, show suggestions
-        if (searchInput.value.trim()) {
-          performSearch(searchInput.value.trim());
+        if (transformers.length === 0) {
+          welcomeMessage.innerHTML = `
+            <div class="icon">⚠️</div>
+            <h3>No Data Found</h3>
+            <p>No transformer records were found in the data.</p>
+          `;
+        } else {
+          welcomeMessage.classList.remove('hidden');
+          if (searchInput.value.trim()) {
+            performSearch(searchInput.value.trim());
+          }
         }
       })
       .catch(err => {
-        console.error("Transformer data load error:", err);
-        
-        // Remove loading state
+        console.error("Load error:", err);
         searchWrapper.classList.remove('loading');
         searchInput.disabled = false;
-        searchInput.placeholder = 'Error loading data - refresh page';
-        
+        searchInput.placeholder = 'Error loading data – refresh page';
         welcomeMessage.classList.remove('hidden');
         welcomeMessage.innerHTML = `
           <div class="icon">⚠️</div>
           <h3>Error Loading Data</h3>
-          <p>${err.message || 'Could not load transformer data. Please refresh the page.'}</p>
-          <p style="font-size:0.8rem; margin-top:8px; color:#999;">Check console for details</p>
+          <p>${err.message || 'Could not load transformer data. Please refresh.'}</p>
         `;
       });
   }
@@ -469,10 +666,6 @@
   // SEARCH / SUGGESTIONS
   // ============================================================
   function performSearch(keyword) {
-    console.log('Searching for:', keyword);
-    console.log('Data loaded:', isDataLoaded);
-    console.log('Transformers count:', transformers.length);
-    
     if (!isDataLoaded || !keyword || keyword.length < 1) {
       suggestionsBox.style.display = 'none';
       return;
@@ -485,36 +678,18 @@
     }
 
     const searchTerm = keyword.toLowerCase().trim();
-    
     const matches = transformers.filter(item => {
-      // Handle different data formats (object or array)
-      let name = '', dtrId = '', f11 = '', f33 = '', f11id = '', f33id = '', town = '';
-      
-      if (typeof item === 'object' && item !== null) {
-        // Object format
-        name = String(item.DTR_NAME || item.name || item.TransformerName || '').toLowerCase();
-        dtrId = String(item.DTRID || item.dtrId || item.ID || '').toLowerCase();
-        f11 = String(item.FEEDER11NAME || item.feeder11 || item.Feeder11 || '').toLowerCase();
-        f33 = String(item.FEEDER33NAME || item.feeder33 || item.Feeder33 || '').toLowerCase();
-        f11id = String(item.FEEDER11ID || item.feeder11Id || '').toLowerCase();
-        f33id = String(item.FEEDER33ID || item.feeder33Id || '').toLowerCase();
-        town = String(item.TOWNAREA || item.town || item.Town || '').toLowerCase();
-      } else if (Array.isArray(item)) {
-        // Array format (sheet data)
-        // Try to map by index - this depends on your sheet structure
-        name = String(item[3] || '').toLowerCase(); // Assuming Transformer Name is at index 3
-        dtrId = String(item[4] || '').toLowerCase(); // Assuming DTR ID is at index 4
-        f11 = String(item[0] || '').toLowerCase(); // Assuming Feeder Name is at index 0
-        town = String(item[16] || '').toLowerCase(); // Assuming Town is at index 16
-      }
-      
-      return name.includes(searchTerm) || dtrId.includes(searchTerm) ||
-             f11.includes(searchTerm) || f33.includes(searchTerm) ||
-             f11id.includes(searchTerm) || f33id.includes(searchTerm) ||
-             town.includes(searchTerm);
+      const name = (item.dtrName || '').toLowerCase();
+      const id = (item.dtrId || '').toLowerCase();
+      const feeder = (item.feederName || '').toLowerCase();
+      const region = (item.region || '').toLowerCase();
+      const network = (item.network || '').toLowerCase();
+      const feederId = (item.feederId || '').toLowerCase();
+      return name.includes(searchTerm) || id.includes(searchTerm) ||
+             feeder.includes(searchTerm) || region.includes(searchTerm) ||
+             network.includes(searchTerm) || feederId.includes(searchTerm);
     });
 
-    console.log('Matches found:', matches.length);
     displaySuggestions(matches, searchTerm);
   }
 
@@ -523,7 +698,6 @@
   // ============================================================
   function displaySuggestions(matches, searchTerm) {
     suggestionsBox.innerHTML = '';
-    
     if (matches.length === 0) {
       suggestionsBox.innerHTML = `<div class="no-suggestions">No transformers found</div>`;
       suggestionsBox.style.display = 'block';
@@ -533,28 +707,15 @@
     matches.forEach(item => {
       const div = document.createElement('div');
       div.className = 'suggestion-item';
-      
-      let name = 'Unnamed', dtrId = 'No ID', feeder = 'N/A', town = 'N/A', capacity = 'N/A';
-      
-      // Handle different data formats
-      if (typeof item === 'object' && item !== null) {
-        name = item.DTR_NAME || item.name || item.TransformerName || 'Unnamed';
-        dtrId = item.DTRID || item.dtrId || item.ID || 'No ID';
-        feeder = item.FEEDER11NAME || item.FEEDER33NAME || item.feeder || item.Feeder || 'N/A';
-        town = item.TOWNAREA || item.town || item.Town || 'N/A';
-        capacity = item.CAPACITY || item.capacity || 'N/A';
-      } else if (Array.isArray(item)) {
-        // Array format - map by index
-        name = item[3] || 'Unnamed';
-        dtrId = item[4] || 'No ID';
-        feeder = item[0] || 'N/A';
-        town = item[16] || 'N/A';
-        capacity = item[5] || 'N/A';
-      }
 
-      // Highlight matching text
+      const name = item.dtrName || 'Unnamed';
+      const id = item.dtrId || 'No ID';
+      const feeder = item.feederName || 'N/A';
+      const region = item.region || 'N/A';
+      const network = item.network || 'N/A';
+
       const highlightedName = highlightText(String(name), searchTerm);
-      const highlightedId = highlightText(String(dtrId), searchTerm);
+      const highlightedId = highlightText(String(id), searchTerm);
 
       div.innerHTML = `
         <div>
@@ -562,22 +723,17 @@
           <span class="suggestion-sub">${highlightedId}</span>
         </div>
         <div class="suggestion-detail">
-          Feeder: ${feeder} • Town: ${town} • Capacity: ${capacity}
+          ${region} • ${network} • Feeder: ${feeder}
         </div>
       `;
-      
-      div.addEventListener('click', () => {
-        selectTransformer(item);
-      });
-      
+      div.addEventListener('click', () => selectTransformer(item));
       suggestionsBox.appendChild(div);
     });
-    
     suggestionsBox.style.display = 'block';
   }
 
   // ============================================================
-  // HIGHLIGHT TEXT
+  // HIGHLIGHT
   // ============================================================
   function highlightText(text, searchTerm) {
     if (!text) return 'N/A';
@@ -586,184 +742,173 @@
   }
 
   // ============================================================
-  // SELECT TRANSFORMER - Show full details
+  // SELECT TRANSFORMER – show full details with individual copy buttons
   // ============================================================
   function selectTransformer(item) {
     selectedTransformer = item;
     suggestionsBox.style.display = 'none';
-    
-    let name = 'Unnamed', dtrId = 'No ID', feeder = 'N/A', feederId = 'N/A';
-    let voltage = 'N/A', capacity = 'N/A', town = 'N/A', mounting = 'N/A';
-    let manufacturer = 'N/A', serial = 'N/A', mfgDate = 'N/A', metered = 'N/A';
-    let meteringType = 'N/A', uprisers = 'N/A', status = 'N/A', type = 'N/A';
-    let lat = '', lng = '';
-    
-    // Handle different data formats
-    if (typeof item === 'object' && item !== null) {
-      name = item.DTR_NAME || item.name || item.TransformerName || 'Unnamed';
-      dtrId = item.DTRID || item.dtrId || item.ID || 'No ID';
-      feeder = item.FEEDER11NAME || item.FEEDER33NAME || item.feeder || item.Feeder || 'N/A';
-      feederId = item.FEEDER11ID || item.FEEDER33ID || item.feederId || 'N/A';
-      voltage = item.VOLTAGE || item.voltage || 'N/A';
-      capacity = item.CAPACITY || item.capacity || 'N/A';
-      town = item.TOWNAREA || item.town || item.Town || 'N/A';
-      mounting = item.MOUNTING || item.mounting || 'N/A';
-      manufacturer = item.DTRMANUFACTURE || item.manufacturer || 'N/A';
-      serial = item.SERIALNUMBER || item.serialNumber || 'N/A';
-      mfgDate = item.MANUFACTURINGDATE || item.manufacturingDate || 'N/A';
-      metered = item.METERED || item.metered || 'N/A';
-      meteringType = item.METERINGTYPE || item.meteringType || 'N/A';
-      uprisers = item.NUMUPRISERS || item.numUprisers || 'N/A';
-      status = item.DTR_STATUS || item.status || 'N/A';
-      type = item.DTRTYPE || item.type || 'N/A';
-      lat = item.LATITUDE || item.latitude || '';
-      lng = item.LONGITUDE || item.longitude || '';
-    } else if (Array.isArray(item)) {
-      // Array format - map by index
-      // Based on your sheet structure: 
-      // 0: feeder, 1: feederId, 2: voltage, 3: name, 4: dtrId, 5: capacity, 
-      // 6: manufacturer, 7: serial, 8: mfgDate, 9: mounting, 10: uprisers, 
-      // 11: metered, 12: meteringType, 13: lat, 14: lng, 15: status, 16: town
-      feeder = item[0] || 'N/A';
-      feederId = item[1] || 'N/A';
-      voltage = item[2] || 'N/A';
-      name = item[3] || 'Unnamed';
-      dtrId = item[4] || 'No ID';
-      capacity = item[5] || 'N/A';
-      manufacturer = item[6] || 'N/A';
-      serial = item[7] || 'N/A';
-      mfgDate = item[8] || 'N/A';
-      mounting = item[9] || 'N/A';
-      uprisers = item[10] || 'N/A';
-      metered = item[11] || 'N/A';
-      meteringType = item[12] || 'N/A';
-      lat = item[13] || '';
-      lng = item[14] || '';
-      status = item[15] || 'N/A';
-      town = item[16] || 'N/A';
-      type = item[17] || 'N/A';
-    }
-    
-    // Set the search input to the name
+
+    const name = item.dtrName || 'Unnamed';
+    const id = item.dtrId || 'No ID';
+    const feeder = item.feederName || 'N/A';
+    const feederId = item.feederId || 'N/A';
+    const region = item.region || 'N/A';
+    const network = item.network || 'N/A';
+
     searchInput.value = name;
     welcomeMessage.classList.add('hidden');
     detailView.style.display = 'block';
-    
-    // Get status badge class
-    let statusBadge = '';
-    const statusText = String(status);
-    if (statusText.toLowerCase().includes('active')) statusBadge = 'badge-active';
-    else if (statusText.toLowerCase().includes('inactive')) statusBadge = 'badge-inactive';
-    else if (statusText.toLowerCase().includes('new')) statusBadge = 'badge-new';
+    copyHint.style.display = 'block';
 
-    // Get type badge
-    let typeBadge = '';
-    const typeText = String(type);
-    if (typeText.toLowerCase().includes('public')) typeBadge = 'badge-public';
-    else if (typeText.toLowerCase().includes('private')) typeBadge = 'badge-private';
+    // Helper to create a copy button
+    function createCopyButton(value, label) {
+      const btn = document.createElement('button');
+      btn.className = 'copy-btn';
+      btn.innerHTML = getCopyIcon() + `<span>Copy</span>`;
+      btn.title = `Copy ${label}`;
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        copyToClipboard(value, this);
+      });
+      return btn;
+    }
 
-    detailView.innerHTML = `
-      <div class="detail-card">
-        <div class="dtr-header">
-          <div>
-            <div class="dtr-name">${name}</div>
-            <span class="dtr-id">${dtrId}</span>
-          </div>
-          <div>
-            <span class="badge ${statusBadge}">${statusText}</span>
-            <span class="badge ${typeBadge}" style="margin-left:4px;">${typeText}</span>
-          </div>
-        </div>
+    // Build the detail card with individual copy buttons
+    const card = document.createElement('div');
+    card.className = 'detail-card';
 
-        <div class="detail-row">
-          <span><span class="label">📍 Feeder:</span> <span class="value">${feeder}</span></span>
-          <span><span class="label">Feeder ID:</span> <span class="value">${feederId}</span></span>
-        </div>
-        <div class="detail-row">
-          <span><span class="label">⚡ Voltage:</span> <span class="value">${voltage}</span></span>
-          <span><span class="label">📐 Capacity:</span> <span class="value">${capacity}</span></span>
-        </div>
-        <div class="detail-row">
-          <span><span class="label">🏘️ Town:</span> <span class="value">${town}</span></span>
-          <span><span class="label">🔧 Mounting:</span> <span class="value">${mounting}</span></span>
-        </div>
-        <div class="detail-row">
-          <span><span class="label">🏭 Manufacturer:</span> <span class="value">${manufacturer}</span></span>
-          <span><span class="label">🔢 Serial:</span> <span class="value">${serial}</span></span>
-        </div>
-        <div class="detail-row">
-          <span><span class="label">📅 Mfg Date:</span> <span class="value">${mfgDate}</span></span>
-          <span><span class="label">📊 Metered:</span> <span class="value">${metered}</span></span>
-        </div>
-        <div class="detail-row">
-          <span><span class="label">📋 Metering Type:</span> <span class="value">${meteringType}</span></span>
-          <span><span class="label">🔌 Uprisers:</span> <span class="value">${uprisers}</span></span>
-        </div>
-        ${lat && lng ? `
-          <div class="location-row">
-            📍 Coordinates: ${lat}, ${lng}
-          </div>
-        ` : ''}
+    // Header
+    const header = document.createElement('div');
+    header.className = 'dtr-header';
+    header.innerHTML = `
+      <div>
+        <div class="dtr-name">${name}</div>
+        <span class="dtr-id">${id}</span>
+      </div>
+      <div>
+        <span class="badge badge-region">${region}</span>
+        <span class="badge badge-network" style="margin-left:4px;">${network}</span>
       </div>
     `;
+    card.appendChild(header);
 
-    // Scroll to detail view
+    // Row: DTR Name
+    const nameRow = document.createElement('div');
+    nameRow.className = 'detail-row';
+    const nameLabel = document.createElement('span');
+    nameLabel.className = 'label';
+    nameLabel.textContent = '📌 DTR Name:';
+    const nameValue = document.createElement('span');
+    nameValue.className = 'value';
+    nameValue.textContent = name;
+    nameRow.appendChild(nameLabel);
+    nameRow.appendChild(nameValue);
+    nameRow.appendChild(createCopyButton(name, 'DTR Name'));
+    card.appendChild(nameRow);
+
+    // Row: DTR ID
+    const idRow = document.createElement('div');
+    idRow.className = 'detail-row';
+    const idLabel = document.createElement('span');
+    idLabel.className = 'label';
+    idLabel.textContent = '🏷️ DTR ID:';
+    const idValue = document.createElement('span');
+    idValue.className = 'value';
+    idValue.textContent = id;
+    idRow.appendChild(idLabel);
+    idRow.appendChild(idValue);
+    idRow.appendChild(createCopyButton(id, 'DTR ID'));
+    card.appendChild(idRow);
+
+    // Row: Feeder
+    const feederRow = document.createElement('div');
+    feederRow.className = 'detail-row';
+    const feederLabel = document.createElement('span');
+    feederLabel.className = 'label';
+    feederLabel.textContent = '📍 Feeder:';
+    const feederValue = document.createElement('span');
+    feederValue.className = 'value';
+    feederValue.textContent = feeder;
+    feederRow.appendChild(feederLabel);
+    feederRow.appendChild(feederValue);
+    feederRow.appendChild(createCopyButton(feeder, 'Feeder'));
+    card.appendChild(feederRow);
+
+    // Row: Feeder ID
+    const feederIdRow = document.createElement('div');
+    feederIdRow.className = 'detail-row';
+    const feederIdLabel = document.createElement('span');
+    feederIdLabel.className = 'label';
+    feederIdLabel.textContent = '🔢 Feeder ID:';
+    const feederIdValue = document.createElement('span');
+    feederIdValue.className = 'value';
+    feederIdValue.textContent = feederId;
+    feederIdRow.appendChild(feederIdLabel);
+    feederIdRow.appendChild(feederIdValue);
+    feederIdRow.appendChild(createCopyButton(feederId, 'Feeder ID'));
+    card.appendChild(feederIdRow);
+
+    // Row: Network
+    const networkRow = document.createElement('div');
+    networkRow.className = 'detail-row';
+    const networkLabel = document.createElement('span');
+    networkLabel.className = 'label';
+    networkLabel.textContent = '🏛️ Network:';
+    const networkValue = document.createElement('span');
+    networkValue.className = 'value';
+    networkValue.textContent = network;
+    networkRow.appendChild(networkLabel);
+    networkRow.appendChild(networkValue);
+    networkRow.appendChild(createCopyButton(network, 'Network'));
+    card.appendChild(networkRow);
+
+    // Row: Region
+    const regionRow = document.createElement('div');
+    regionRow.className = 'detail-row';
+    const regionLabel = document.createElement('span');
+    regionLabel.className = 'label';
+    regionLabel.textContent = '📌 Region:';
+    const regionValue = document.createElement('span');
+    regionValue.className = 'value';
+    regionValue.textContent = region;
+    regionRow.appendChild(regionLabel);
+    regionRow.appendChild(regionValue);
+    regionRow.appendChild(createCopyButton(region, 'Region'));
+    card.appendChild(regionRow);
+
+    detailView.innerHTML = '';
+    detailView.appendChild(card);
     detailView.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
-
-  // ============================================================
-  // CLOSE SUGGESTIONS
-  // ============================================================
-  function closeSuggestions() {
-    setTimeout(() => {
-      suggestionsBox.style.display = 'none';
-    }, 200);
   }
 
   // ============================================================
   // EVENT LISTENERS
   // ============================================================
-  
-  // Real-time search with debounce
   let searchTimeout;
   searchInput.addEventListener('input', function() {
     if (!isDataLoaded) return;
-    
     clearTimeout(searchTimeout);
     const keyword = this.value.trim();
-    
     if (!keyword) {
       suggestionsBox.style.display = 'none';
       return;
     }
-    
-    searchTimeout = setTimeout(() => {
-      performSearch(keyword);
-    }, 300);
+    searchTimeout = setTimeout(() => performSearch(keyword), 300);
   });
 
-  // Focus - show suggestions if there's text
   searchInput.addEventListener('focus', function() {
-    if (this.value.trim() && isDataLoaded) {
-      performSearch(this.value.trim());
-    }
+    if (this.value.trim() && isDataLoaded) performSearch(this.value.trim());
   });
 
-  // Click outside - close suggestions
   document.addEventListener('click', function(e) {
-    if (!e.target.closest('.search-section')) {
-      suggestionsBox.style.display = 'none';
-    }
+    if (!e.target.closest('.search-section')) suggestionsBox.style.display = 'none';
   });
 
-  // Enter key - select first suggestion
   searchInput.addEventListener('keydown', function(e) {
     if (e.key === 'Enter') {
       e.preventDefault();
-      const firstSuggestion = suggestionsBox.querySelector('.suggestion-item');
-      if (firstSuggestion) {
-        firstSuggestion.click();
-      }
+      const first = suggestionsBox.querySelector('.suggestion-item');
+      if (first) first.click();
     }
     if (e.key === 'Escape') {
       suggestionsBox.style.display = 'none';
@@ -775,8 +920,8 @@
   // INIT
   // ============================================================
   loadTransformerData();
-
-  console.log('🔍 DTR Information Search App (Live Search) loaded');
+  console.log('🔍 DTR Search (Calabar Region) loaded');
+  console.log('📋 Click the copy icon next to any value to copy it individually');
 </script>
 </body>
 </html>
