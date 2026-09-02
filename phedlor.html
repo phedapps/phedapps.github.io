@@ -4,18 +4,59 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>LOR Calculator</title>
+
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+
   <style>
     body { background: #f9f9f7; padding: 20px; }
     h1 { color: #333; margin: 20px 0; }
-    .step { padding: 20px; border: 1px solid #ddd; border-radius: 10px; background: white; margin-bottom: 20px; }
-    .step-indicator { display: flex; gap: 10px; margin-bottom: 20px; }
-    .indicator { flex: 1; text-align: center; padding: 8px; border-radius: 8px; background: #ddd; font-weight: bold; cursor: pointer; transition: 0.3s; }
+
+    .step {
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      background: white;
+      margin-bottom: 20px;
+    }
+
+    .step-indicator {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .indicator {
+      flex: 1;
+      text-align: center;
+      padding: 8px;
+      border-radius: 8px;
+      background: #ddd;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
     .indicator:hover { background: #bbb; }
-    .indicator.active { background: #007BFF; color: white; }
-    #result { margin-top: 20px; font-size: 16px; font-weight: bold; color: #007BFF; }
-    .data-source { font-size: 12px; color: #999; margin-top: 5px; }
-    .spinner { 
+
+    .indicator.active {
+      background: #007BFF;
+      color: white;
+    }
+
+    #result {
+      margin-top: 20px;
+      font-size: 16px;
+      font-weight: bold;
+      color: #007BFF;
+    }
+
+    .data-source {
+      font-size: 12px;
+      color: #999;
+      margin-top: 5px;
+    }
+
+    .spinner {
       border: 4px solid #f3f3f3;
       border-top: 4px solid #007BFF;
       border-radius: 50%;
@@ -24,18 +65,42 @@
       animation: spin 1s linear infinite;
       margin: 10px auto;
     }
+
     @keyframes spin {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
-    .filter-status { font-size: 14px; padding: 8px; margin-top: 10px; border-radius: 5px; }
-    .filter-status.success { background: #d4edda; color: #155724; }
-    .filter-status.error { background: #f8d7da; color: #721c24; }
-    .filter-status.info { background: #d1ecf1; color: #0c5460; }
-    
-    .feeder-load-row.hide-print { display: none; }
-    .btn-toggle-load { margin-bottom: 10px; }
-    
+
+    .filter-status {
+      font-size: 14px;
+      padding: 8px;
+      margin-top: 10px;
+      border-radius: 5px;
+    }
+
+    .filter-status.success {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .filter-status.error {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    .filter-status.info {
+      background: #d1ecf1;
+      color: #0c5460;
+    }
+
+    .feeder-load-row.hide-print {
+      display: none;
+    }
+
+    .btn-toggle-load {
+      margin-bottom: 10px;
+    }
+
     .valid-until {
       margin-top: 20px;
       font-weight: 400;
@@ -47,7 +112,7 @@
       display: inline-block;
       border-left: 4px solid #007BFF;
     }
-    
+
     .copyright-notice {
       margin-top: 30px;
       padding-top: 14px;
@@ -60,25 +125,29 @@
       padding-bottom: 6px;
       background: transparent !important;
     }
+
     .copyright-notice .copyright-symbol {
       font-size: 1.1rem;
       margin-right: 4px;
     }
+
     .copyright-notice .designer-name {
       font-weight: 700;
       color: #0a2b3a;
     }
+
     .copyright-notice .rights-text {
       font-weight: 400;
       font-size: 0.85rem;
       color: #2c5a6e;
     }
-    
+
     .result-card-softblue {
       background: #6495ED !important;
       border: 1px solid #b8d4e8;
       box-shadow: 0 4px 12px rgba(0,80,120,0.08);
     }
+
     .result-card-softblue .card-body {
       background: transparent !important;
     }
@@ -91,9 +160,11 @@
       gap: 10px;
       margin-bottom: 20px;
     }
+
     .title-row .card-title {
       margin-bottom: 0;
     }
+
     .calc-date-badge {
       font-weight: 500;
       font-size: 0.95rem;
@@ -105,466 +176,1879 @@
       white-space: nowrap;
     }
 
+    /* =========================================
+       HINT STYLES
+       ========================================= */
+
+    .hint-btn {
+      border: none;
+      background: transparent;
+      padding: 0;
+      margin-left: 6px;
+      cursor: pointer;
+      font-size: 17px;
+      line-height: 1;
+      vertical-align: middle;
+      transition: transform 0.2s ease;
+    }
+
+    .hint-btn:hover {
+      transform: scale(1.2);
+    }
+
+    .hint-btn:focus {
+      outline: none;
+    }
+
+    .calculation-hint {
+      display: none;
+      margin-top: 10px;
+      padding: 10px 12px;
+      background: #f1f8ff;
+      border-left: 4px solid #007BFF;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: normal;
+      color: #234;
+      line-height: 1.5;
+    }
+
+    .calculation-hint.show {
+      display: block;
+    }
+
+    .calculation-hint .formula-title {
+      font-weight: 700;
+      color: #0056b3;
+      margin-bottom: 4px;
+    }
+
     @media print, .export-pdf {
       .title-row {
         margin-bottom: 25px !important;
       }
+
       .result-card-softblue .card-body {
         padding: 25px 20px !important;
       }
+
       .table-responsive {
         margin-top: 10px;
       }
     }
 
     @media print {
-      .no-print { display: none !important; }
-      .feeder-load-row.hide-print { display: none !important; }
-      .feeder-load-row.show-print { display: table-row !important; }
-      .valid-until { background: #f0f0f0 !important; border-left: 4px solid #333 !important; }
-      .result-card-softblue { background: #e6f0fa !important; }
-      .calc-date-badge { background: #d0dce8 !important; border-color: #aaa !important; color: #1a1a1a !important; }
-      .title-row { margin-bottom: 25px !important; }
-      .result-card-softblue .card-body { padding: 25px 20px !important; }
-      .table-responsive { margin-top: 10px; }
+      .no-print {
+        display: none !important;
+      }
+
+      .feeder-load-row.hide-print {
+        display: none !important;
+      }
+
+      .feeder-load-row.show-print {
+        display: table-row !important;
+      }
+
+      .valid-until {
+        background: #f0f0f0 !important;
+        border-left: 4px solid #333 !important;
+      }
+
+      .result-card-softblue {
+        background: #e6f0fa !important;
+      }
+
+      .calc-date-badge {
+        background: #d0dce8 !important;
+        border-color: #aaa !important;
+        color: #1a1a1a !important;
+      }
+
+      .title-row {
+        margin-bottom: 25px !important;
+      }
+
+      .result-card-softblue .card-body {
+        padding: 25px 20px !important;
+      }
+
+      .table-responsive {
+        margin-top: 10px;
+      }
+
       .copyright-notice {
         border-top-color: #7a9bb5 !important;
         color: #1a2e3f !important;
         background: transparent !important;
       }
-      .copyright-notice .designer-name { color: #0a1f2e !important; }
-      .copyright-notice .rights-text { color: #1f4055 !important; }
+
+      .copyright-notice .designer-name {
+        color: #0a1f2e !important;
+      }
+
+      .copyright-notice .rights-text {
+        color: #1f4055 !important;
+      }
     }
   </style>
 </head>
+
 <body class="container">
-  
-<div style="text-align: center;">
-  <img src="PHED logo.png" alt="PHED" 
-       style="width: 300px; height: auto; margin-bottom: 10px; display: block; margin-left: auto; margin-right: auto;" 
-       onerror="this.style.display='none'" />
-  <h1>LOR CALCULATOR</h1>
-  <div id="dataStatus" class="data-source">Loading data from Google Sheets...</div>
-  <div id="loadingSpinner" class="spinner"></div>
-</div>
 
-<!-- Step indicator: now 3 steps -->
-<div class="step-indicator">
-  <div class="indicator active" id="ind1" onclick="showStep('step1', 1)">Step 1</div>
-  <div class="indicator" id="ind2" onclick="showStep('step2', 2)">Step 2</div>
-  <div class="indicator" id="ind3" onclick="showStep('step3', 3)">Result</div>
-</div>
+  <div style="text-align: center;">
 
-<!-- Step 1 -->
-<div class="step" id="step1">
-  <div class="row g-3">
-    <div class="col-12 col-md-6 col-lg-4">
-      <label class="form-label">Region</label>
-      <select id="region" class="form-control" required>
-        <option value="" disabled selected>Select Region *</option>
-      </select>
+    <img
+      src="PHED logo.png"
+      alt="PHED"
+      style="width: 300px; height: auto; margin-bottom: 10px; display: block; margin-left: auto; margin-right: auto;"
+      onerror="this.style.display='none'"
+    />
+
+    <h1>LOR CALCULATOR</h1>
+
+    <div id="dataStatus" class="data-source">
+      Loading data from Google Sheets...
     </div>
-    <div class="col-12 col-md-6 col-lg-4">
-      <label class="form-label">Voltage Level</label>
-      <select id="voltage" class="form-control" required>
-        <option value="" disabled selected>Select Voltage Level *</option>
-      </select>
-    </div>
-    <div class="col-12 col-md-6 col-lg-4">
-      <label class="form-label">Feeder</label>
-      <select id="feeder" class="form-control" required>
-        <option value="" disabled selected>Select a Feeder *</option>
-      </select>
-    </div>
-    <div class="col-12 col-md-6 col-lg-4">
-      <label class="form-label">Band</label>
-      <select id="band" class="form-control" required>
-        <option value="" disabled selected>Select a Band *</option>
-        <option value="231.79">Bilateral</option>
-        <option value="209.5">Band A-Non MD</option>
-        <option value="209.5">Band A-MD1</option>
-        <option value="209.5">Band A-MD2</option>
-        <option value="68.96">Band B-Non MD</option>
-        <option value="67.18">Band B-MD1</option>
-        <option value="67.12">Band B-MD2</option>
-        <option value="56.38">Band C-Non MD</option>
-        <option value="54.64">Band C-MD1</option>
-        <option value="54.64">Band C-MD2</option>
-        <option value="39.67">Band D-Non MD</option>
-        <option value="55.43">Band D-MD1</option>
-        <option value="55.43">Band D-MD2</option>
-        <option value="39.44">Band E-Non MD</option>
-        <option value="55.43">Band E-MD1</option>
-        <option value="55.43">Band E-MD2</option>
-      </select>
-    </div>
-    <div class="col-12">
-      <div id="feederInfo" class="text-center mt-3"></div>
-    </div>
+
+    <div id="loadingSpinner" class="spinner"></div>
+
   </div>
-  <div id="filterStatus" class="filter-status info mt-3">Select Region and Voltage to see available feeders</div>
-  <div class="d-flex justify-content-end mt-3">
-    <button class="btn btn-primary" id="next1">Next ➡️</button>
-  </div>
-</div>
 
-<!-- Step 2: all operational inputs + Peak Load -->
-<div class="step" id="step2" style="display:none;">
-  <div class="row g-3">
-    <div class="col-12 col-md-6">
-      <label class="form-label">Peak Load (MW) <span class="text-danger">*</span></label>
-      <input id="E5" type="number" class="form-control" value="0" step="0.1" />
-    </div>
-    <div class="col-12 col-md-6">
-      <label class="form-label">Time to take outage and Isolate the line (hr)</label>
-      <input id="E8" type="number" class="form-control" value="1" />
-    </div>
-    <div class="col-12 col-md-6">
-      <label class="form-label">Total number of days to do the work</label>
-      <input id="E15" type="number" class="form-control" value="1" />
-    </div>
-    <div class="col-12 col-md-6">
-      <label class="form-label">Time to do the work (hr)</label>
-      <input id="E16" type="number" class="form-control" value="0" />
-    </div>
-    <div class="col-12 col-md-6">
-      <label class="form-label">Total Number of DTRs on the feeder</label>
-      <input id="E17" type="number" class="form-control" value="1" />
-    </div>
-    <div class="col-12 col-md-6">
-      <label class="form-label">Total number of DTRs Affected</label>
-      <input id="E18" type="number" class="form-control" value="0" />
-    </div>
-  </div>
-  <div class="d-flex justify-content-between mt-3">
-    <button class="btn btn-secondary" id="back2">⬅️ Back</button>
-    <button class="btn btn-success" id="finish">✅ Finish</button>
-  </div>
-</div>
 
-<!-- Step 3: Result -->
-<div class="step" id="step3" style="display:none;">
-  <div id="result" class="mt-4"></div>
-  <div class="d-flex justify-content-between mt-3">
-    <button class="btn btn-secondary" id="back3">⬅️ Back</button>
+  <!-- Step indicator -->
+  <div class="step-indicator">
+
+    <div
+      class="indicator active"
+      id="ind1"
+      onclick="showStep('step1', 1)">
+      Step 1
+    </div>
+
+    <div
+      class="indicator"
+      id="ind2"
+      onclick="showStep('step2', 2)">
+      Step 2
+    </div>
+
+    <div
+      class="indicator"
+      id="ind3"
+      onclick="showStep('step3', 3)">
+      Result
+    </div>
+
   </div>
-</div>
 
-<script>
-  // ============================================
-  // CONFIGURATION
-  // ============================================
-  const GOOGLE_SHEETS_API_URL = 'https://script.google.com/macros/s/AKfycbwAb74LVdhugNXyYLs58gF04Z1UCDVhi9ky66l3QSWp1vmrfCJkC803gsQwnh6E0iA/exec';
-  
-  let feederData = [];
-  let dataLoaded = false;
-  let fileName = 'Loading...';
-  
-  async function loadData() {
-    try {
-      document.getElementById('dataStatus').textContent = 'Loading data from Google Sheets...';
-      document.getElementById('loadingSpinner').style.display = 'block';
-      const response = await fetch(GOOGLE_SHEETS_API_URL);
-      if (!response.ok) throw new Error('Network response was not ok');
-      const data = await response.json();
-      feederData = data.feeders || [];
-      // Get file name from API response, or use a fallback
-      fileName = data.fileName || 'Feeder Data File';
-      dataLoaded = true;
-      document.getElementById('loadingSpinner').style.display = 'none';
-      document.getElementById('dataStatus').textContent = `✅ Data loaded: ${feederData.length} feeders from "${fileName}"`;
-      document.getElementById('dataStatus').style.color = '#28a745';
-      populateFilters();
-      return data;
-    } catch (error) {
-      console.error('Error loading data:', error);
-      document.getElementById('loadingSpinner').style.display = 'none';
-      document.getElementById('dataStatus').textContent = '❌ Failed to load data from Google Sheets. Please check the API URL.';
-      document.getElementById('dataStatus').style.color = '#dc3545';
-      return [];
-    }
-  }
-  
-  function populateFilters() {
-    const regionSelect = document.getElementById('region');
-    const voltageSelect = document.getElementById('voltage');
-    regionSelect.innerHTML = '<option value="" disabled selected>Select Region *</option>';
-    voltageSelect.innerHTML = '<option value="" disabled selected>Select Voltage Level *</option>';
-    const regions = [...new Set(feederData.map(f => f.region))].filter(Boolean);
-    const voltages = [...new Set(feederData.map(f => f.voltage))].filter(Boolean);
-    regions.sort().forEach(r => {
-      const opt = document.createElement('option');
-      opt.value = r; opt.textContent = r;
-      regionSelect.appendChild(opt);
-    });
-    voltages.sort().forEach(v => {
-      const opt = document.createElement('option');
-      opt.value = v; opt.textContent = v + 'KV';
-      voltageSelect.appendChild(opt);
-    });
-  }
-  
-  function updateFeeders() {
-    const region = document.getElementById('region').value;
-    const voltage = document.getElementById('voltage').value;
-    const feederSelect = document.getElementById('feeder');
-    const filterStatus = document.getElementById('filterStatus');
-    feederSelect.innerHTML = '<option value="" disabled selected>Select a Feeder *</option>';
-    document.getElementById('feederInfo').innerHTML = '';
-    if (region && voltage) {
-      const filtered = feederData.filter(f => f.region === region && f.voltage === voltage && f.status === 'ACTIVE');
-      filtered.sort((a,b) => a.feeder.localeCompare(b.feeder));
-      filtered.forEach(f => {
-        const opt = document.createElement('option');
-        opt.value = f.feeder;
-        opt.textContent = f.feeder;
-        opt.dataset.maxLoad = f.maxLoad;
-        opt.dataset.avgLoad = f.avgLoad;
-        feederSelect.appendChild(opt);
-      });
-      if (filtered.length > 0) {
-        filterStatus.className = 'filter-status success';
-        filterStatus.innerHTML = `✅ Found <strong>${filtered.length}</strong> feeder(s) for <strong>${region}</strong> - <strong>${voltage}KV</strong>`;
-      } else {
-        filterStatus.className = 'filter-status error';
-        filterStatus.innerHTML = `❌ No active ${voltage}KV feeders found in ${region}`;
-      }
-    } else {
-      filterStatus.className = 'filter-status info';
-      filterStatus.innerHTML = 'Select Region and Voltage to see available feeders';
-    }
-  }
-  
-  function updateFeederInfo() {
-    const feeder = document.getElementById('feeder').value;
-    const voltage = document.getElementById('voltage').value;
-    const region = document.getElementById('region').value;
-    const feederInfoDiv = document.getElementById('feederInfo');
-    const bandSelect = document.getElementById('band');
-    const bandOption = bandSelect.options[bandSelect.selectedIndex];
-    const bandName = bandOption ? bandOption.text : "";
-    const bandValue = bandOption ? bandOption.value : "";
-    if (feeder && bandName) {
-      const data = feederData.find(f => f.feeder === feeder);
-      if (data) {
-        feederInfoDiv.innerHTML = 
-          `🟢 <b>${feeder} ${voltage}KV Feeder</b><br>
-           • Region: ${data.region}<br>
-           • ${bandName} — ₦${bandValue}/kwh<br>
-           • Maximum Load: ${data.maxLoad} MW<br>
-           • Average Load: ${data.avgLoad} MW`;
-        const peakInput = document.getElementById("E5");
-        if (data.maxLoad) peakInput.value = data.maxLoad;
-      }
-    } else {
-      feederInfoDiv.innerHTML = "";
-    }
-  }
-  
-  function showStep(stepId, stepIndex) {
-    if (stepIndex > 1 && (!document.getElementById('region').value || 
-        !document.getElementById('voltage').value || 
-        !document.getElementById('feeder').value || 
-        !document.getElementById('band').value)) {
-      alert("Please complete all required fields!");
-      return;
-    }
-    document.querySelectorAll(".step").forEach(s => s.style.display = "none");
-    document.getElementById(stepId).style.display = "block";
-    document.querySelectorAll(".indicator").forEach(ind => ind.classList.remove("active"));
-    document.getElementById("ind" + stepIndex).classList.add("active");
-  }
-  
-  let showFeederLoad = true;
-  function toggleFeederLoadVisibility() {
-    showFeederLoad = !showFeederLoad;
-    const rows = document.querySelectorAll('.feeder-load-row');
-    const btn = document.getElementById('toggleLoadBtn');
-    rows.forEach(row => {
-      if (showFeederLoad) {
-        row.classList.remove('hide-print');
-        row.classList.add('show-print');
-      } else {
-        row.classList.add('hide-print');
-        row.classList.remove('show-print');
-      }
-    });
-    if (btn) btn.textContent = showFeederLoad ? '🙈' : '👁️';
-  }
-  
-  function getLastDayOfCurrentMonth() {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = now.getMonth();
-    const lastDay = new Date(year, month + 1, 0).getDate();
-    const dateObj = new Date(year, month, lastDay);
-    return dateObj.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-  }
 
-  function getCurrentDateString() {
-    const now = new Date();
-    return now.toLocaleDateString('en-US', { 
-      weekday: 'long', 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  }
-  
-  function calculateLOR() {
-    const region = document.getElementById('region').value;
-    const feeder = document.getElementById('feeder').value;
-    const voltage = document.getElementById('voltage').value;
-    const bandSelect = document.getElementById('band');
-    const bandOption = bandSelect.options[bandSelect.selectedIndex];
-    const bandName = bandOption ? bandOption.text : "";
-    const tariff = parseFloat(bandOption ? bandOption.value : 0);
-    
-    // Use the manually entered peak load (from E5)
-    const peakLoad = parseFloat(document.getElementById('E5').value) || 0;
-    
-    const timeWork = parseFloat(document.getElementById('E16').value) || 0;
-    const timePermit = parseFloat(document.getElementById('E8').value) || 0;
-    const totalDays = parseFloat(document.getElementById('E15').value) || 0;
-    const totalDTRs = parseFloat(document.getElementById('E17').value) || 1;
-    const affectedDTRs = parseFloat(document.getElementById('E18').value) || 0;
-    
-    const feederDataItem = feederData.find(f => f.feeder === feeder);
-    const avgLoad = feederDataItem ? feederDataItem.avgLoad : 'N/A';
-    
-    // Calculation uses peakLoad (user entered)
-    const part1 = (peakLoad * 1000) * timePermit * tariff * 1.075;
-    const part2 = (affectedDTRs / totalDTRs) * (peakLoad * 1000) * timeWork * totalDays * tariff * 1.075;
-    const fixedCost = 40000 * totalDays;
-    const sectionATotal = part1 + part2 + fixedCost;
-    const validUntil = getLastDayOfCurrentMonth();
-    const calculatedOn = getCurrentDateString();
-    const currentYear = new Date().getFullYear();
-    
-    // Build the result HTML — the "Maximum Load" row now shows the user-entered peak load
-    document.getElementById('result').innerHTML = `
-      <div id="resultCard" class="card shadow-sm result-card-softblue">
-        <div class="card-body">
-          <div class="title-row">
-            <h3 class="card-title">📋 LOR Summary</h3>
-            <span class="calc-date-badge">📅 ${calculatedOn}</span>
-          </div>
-          <div class="d-flex justify-content-end no-print mt-1 mb-3">
-            <button id="toggleLoadBtn" class="btn btn-outline-secondary btn-sm btn-toggle-load" onclick="toggleFeederLoadVisibility()">🙈 Hide Feeder Load from Print</button>
-          </div>
-          <div class="table-responsive">
-            <table class="table table-bordered table-striped align-middle">
-              <tbody>
-                <tr><th>Region</th><td>${region}</td></tr>
-                <tr><th>Feeder</th><td>${feeder}</td></tr>
-                <tr><th>Voltage Level</th><td>${voltage}KV</td></tr>
-                <!-- Maximum Load row now displays the user-entered peak load (replaces data value) -->
-                <tr class="feeder-load-row show-print"><th>Maximum Load</th><td>${peakLoad} MW </td></tr>
-                <tr class="feeder-load-row show-print"><th>Average Load (from data)</th><td>${avgLoad} MW</td></tr>
-                <tr><th>Tariff</th><td>${bandName} (₦${tariff})</td></tr>
-                <tr><th>Time to do the work (hr)</th><td>${timeWork}</td></tr>
-                <tr><th>Total number of days</th><td>${totalDays}</td></tr>
-                <tr><th>Total Number of DTRs</th><td>${totalDTRs}</td></tr>
-                <tr><th>DTRs Affected</th><td>${affectedDTRs}</td></tr>
-                <tr><th>Time for permit and Isolation (hr)</th><td>${timePermit}</td></tr>
-              </tbody>
-            </table>
-          </div>
-          
-          <h3 class="mt-4">💰 LOR Breakdown</h3>
-          <ul class="list-group mb-3">
-            <li class="list-group-item d-flex justify-content-between">
-              <span>Part 1</span>
-              <span>₦${part1.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-            </li>
-            <li class="list-group-item d-flex justify-content-between">
-              <span>Part 2</span>
-              <span>₦${part2.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-            </li>
-            <li class="list-group-item d-flex justify-content-between">
-              <span>Part 3 (Fixed Cost)</span>
-              <span>₦${fixedCost.toLocaleString()}</span>
-            </li>
-            <li class="list-group-item d-flex justify-content-between fw-bold list-group-item-success">
-              <span>Total</span>
-              <span>₦${sectionATotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-            </li>
-          </ul>
-          
-          <div class="text-center">
-            <span class="valid-until">⏳ This LOR is valid until ${validUntil}.</span>
-          </div>
-          
-          <div class="copyright-notice">
-            <span class="copyright-symbol">©</span> 
-            <span class="designer-name">Obot Akpan</span> 
-            <span class="rights-text">— All Rights Reserved. ${currentYear}</span>
-          </div>
-          
-          <div class="d-flex justify-content-center mt-3 no-print">
-            <button id="exportPDF" class="btn btn-danger">📄 Export to PDF</button>
-          </div>
-        </div>
+  <!-- =========================================
+       STEP 1
+       ========================================= -->
+
+  <div class="step" id="step1">
+
+    <div class="row g-3">
+
+      <div class="col-12 col-md-6 col-lg-4">
+
+        <label class="form-label">
+          Region
+        </label>
+
+        <select
+          id="region"
+          class="form-control"
+          required>
+
+          <option value="" disabled selected>
+            Select Region *
+          </option>
+
+        </select>
+
       </div>
-    `;
-    
-    showFeederLoad = true;
-    const btn = document.getElementById('toggleLoadBtn');
-    if (btn) btn.textContent = '🙈';
-    
-    document.getElementById('exportPDF').addEventListener('click', () => {
-      const rows = document.querySelectorAll('.feeder-load-row');
-      rows.forEach(row => {
-        if (showFeederLoad) {
-          row.classList.remove('hide-print');
-          row.classList.add('show-print');
-        } else {
-          row.classList.add('hide-print');
-          row.classList.remove('show-print');
-        }
-      });
-      const element = document.getElementById('resultCard');
-      const opt = {
-        margin: 10,
-        filename: `LOR_Calculation_${region}_${feeder}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, ignoreElements: (el) => el.classList.contains('no-print') },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-      };
-      html2pdf().set(opt).from(element).save();
-    });
-    
-    showStep('step3', 3);
-  }
-  
-  // ============================================
-  // INIT
-  // ============================================
-  document.addEventListener('DOMContentLoaded', async function() {
-    await loadData();
-    document.getElementById('region').addEventListener('change', updateFeeders);
-    document.getElementById('voltage').addEventListener('change', updateFeeders);
-    document.getElementById('feeder').addEventListener('change', updateFeederInfo);
-    document.getElementById('band').addEventListener('change', updateFeederInfo);
-    
-    document.getElementById('next1').onclick = () => {
-      if (!document.getElementById('region').value || !document.getElementById('voltage').value || 
-          !document.getElementById('feeder').value || !document.getElementById('band').value) {
-        alert("Please complete all required fields!");
-        return;
-      }
-      showStep("step2", 2);
-    };
-    document.getElementById('back2').onclick = () => showStep("step1", 1);
-    document.getElementById('back3').onclick = () => showStep("step2", 2);
-    document.getElementById('finish').onclick = calculateLOR;
-    updateFeeders();
-  });
-</script>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
+
+      <div class="col-12 col-md-6 col-lg-4">
+
+        <label class="form-label">
+          Voltage Level
+        </label>
+
+        <select
+          id="voltage"
+          class="form-control"
+          required>
+
+          <option value="" disabled selected>
+            Select Voltage Level *
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <div class="col-12 col-md-6 col-lg-4">
+
+        <label class="form-label">
+          Feeder
+        </label>
+
+        <select
+          id="feeder"
+          class="form-control"
+          required>
+
+          <option value="" disabled selected>
+            Select a Feeder *
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <div class="col-12 col-md-6 col-lg-4">
+
+        <label class="form-label">
+          Band
+        </label>
+
+        <select
+          id="band"
+          class="form-control"
+          required>
+
+          <option value="" disabled selected>
+            Select a Band *
+          </option>
+
+          <option value="231.79">
+            Bilateral
+          </option>
+
+          <option value="209.5">
+            Band A-Non MD
+          </option>
+
+          <option value="209.5">
+            Band A-MD1
+          </option>
+
+          <option value="209.5">
+            Band A-MD2
+          </option>
+
+          <option value="68.96">
+            Band B-Non MD
+          </option>
+
+          <option value="67.18">
+            Band B-MD1
+          </option>
+
+          <option value="67.12">
+            Band B-MD2
+          </option>
+
+          <option value="56.38">
+            Band C-Non MD
+          </option>
+
+          <option value="54.64">
+            Band C-MD1
+          </option>
+
+          <option value="54.64">
+            Band C-MD2
+          </option>
+
+          <option value="39.67">
+            Band D-Non MD
+          </option>
+
+          <option value="55.43">
+            Band D-MD1
+          </option>
+
+          <option value="55.43">
+            Band D-MD2
+          </option>
+
+          <option value="39.44">
+            Band E-Non MD
+          </option>
+
+          <option value="55.43">
+            Band E-MD1
+          </option>
+
+          <option value="55.43">
+            Band E-MD2
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <div class="col-12">
+
+        <div
+          id="feederInfo"
+          class="text-center mt-3">
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <div
+      id="filterStatus"
+      class="filter-status info mt-3">
+
+      Select Region and Voltage to see available feeders
+
+    </div>
+
+
+    <div class="d-flex justify-content-end mt-3">
+
+      <button
+        class="btn btn-primary"
+        id="next1">
+
+        Next ➡️
+
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <!-- =========================================
+       STEP 2
+       ========================================= -->
+
+  <div
+    class="step"
+    id="step2"
+    style="display:none;">
+
+    <div class="row g-3">
+
+      <div class="col-12 col-md-6">
+
+        <label class="form-label">
+          Peak Load (MW)
+          <span class="text-danger">*</span>
+        </label>
+
+        <input
+          id="E5"
+          type="number"
+          class="form-control"
+          value="0"
+          step="0.1" />
+
+      </div>
+
+
+      <div class="col-12 col-md-6">
+
+        <label class="form-label">
+          Time to take outage and Isolate the line (hr)
+        </label>
+
+        <input
+          id="E8"
+          type="number"
+          class="form-control"
+          value="1" />
+
+      </div>
+
+
+      <div class="col-12 col-md-6">
+
+        <label class="form-label">
+          Total number of days to do the work
+        </label>
+
+        <input
+          id="E15"
+          type="number"
+          class="form-control"
+          value="1" />
+
+      </div>
+
+
+      <div class="col-12 col-md-6">
+
+        <label class="form-label">
+          Time to do the work (hr)
+        </label>
+
+        <input
+          id="E16"
+          type="number"
+          class="form-control"
+          value="0" />
+
+      </div>
+
+
+      <div class="col-12 col-md-6">
+
+        <label class="form-label">
+          Total Number of DTRs on the feeder
+        </label>
+
+        <input
+          id="E17"
+          type="number"
+          class="form-control"
+          value="1" />
+
+      </div>
+
+
+      <div class="col-12 col-md-6">
+
+        <label class="form-label">
+          Total number of DTRs Affected
+        </label>
+
+        <input
+          id="E18"
+          type="number"
+          class="form-control"
+          value="0" />
+
+      </div>
+
+    </div>
+
+
+    <div class="d-flex justify-content-between mt-3">
+
+      <button
+        class="btn btn-secondary"
+        id="back2">
+
+        ⬅️ Back
+
+      </button>
+
+
+      <button
+        class="btn btn-success"
+        id="finish">
+
+        ✅ Finish
+
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <!-- =========================================
+       STEP 3 - RESULT
+       ========================================= -->
+
+  <div
+    class="step"
+    id="step3"
+    style="display:none;">
+
+    <div
+      id="result"
+      class="mt-4">
+    </div>
+
+
+    <div class="d-flex justify-content-between mt-3">
+
+      <button
+        class="btn btn-secondary"
+        id="back3">
+
+        ⬅️ Back
+
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <script>
+
+    // ============================================
+    // CONFIGURATION
+    // ============================================
+
+    const GOOGLE_SHEETS_API_URL =
+      'https://script.google.com/macros/s/AKfycbwAb74LVdhugNXyYLs58gF04Z1UCDVhi9ky66l3QSWp1vmrfCJkC803gsQwnh6E0iA/exec';
+
+
+    let feederData = [];
+
+    let dataLoaded = false;
+
+    let fileName = 'Loading...';
+
+
+    // ============================================
+    // LOAD DATA
+    // ============================================
+
+    async function loadData() {
+
+      try {
+
+        document.getElementById('dataStatus').textContent =
+          'Loading data from Google Sheets...';
+
+        document.getElementById('loadingSpinner').style.display =
+          'block';
+
+
+        const response =
+          await fetch(GOOGLE_SHEETS_API_URL);
+
+
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+
+
+        const data =
+          await response.json();
+
+
+        feederData =
+          data.feeders || [];
+
+
+        fileName =
+          data.fileName || 'Feeder Data File';
+
+
+        dataLoaded = true;
+
+
+        document.getElementById('loadingSpinner').style.display =
+          'none';
+
+
+        document.getElementById('dataStatus').textContent =
+          `✅ Data loaded: ${feederData.length} feeders from "${fileName}"`;
+
+
+        document.getElementById('dataStatus').style.color =
+          '#28a745';
+
+
+        populateFilters();
+
+
+        return data;
+
+
+      } catch (error) {
+
+        console.error('Error loading data:', error);
+
+
+        document.getElementById('loadingSpinner').style.display =
+          'none';
+
+
+        document.getElementById('dataStatus').textContent =
+          '❌ Failed to load data from Google Sheets. Please check the API URL.';
+
+
+        document.getElementById('dataStatus').style.color =
+          '#dc3545';
+
+
+        return [];
+
+      }
+
+    }
+
+
+    // ============================================
+    // POPULATE FILTERS
+    // ============================================
+
+    function populateFilters() {
+
+      const regionSelect =
+        document.getElementById('region');
+
+
+      const voltageSelect =
+        document.getElementById('voltage');
+
+
+      regionSelect.innerHTML =
+        '<option value="" disabled selected>Select Region *</option>';
+
+
+      voltageSelect.innerHTML =
+        '<option value="" disabled selected>Select Voltage Level *</option>';
+
+
+      const regions =
+        [...new Set(
+          feederData.map(
+            f => f.region
+          )
+        )].filter(Boolean);
+
+
+      const voltages =
+        [...new Set(
+          feederData.map(
+            f => f.voltage
+          )
+        )].filter(Boolean);
+
+
+      regions.sort().forEach(r => {
+
+        const opt =
+          document.createElement('option');
+
+
+        opt.value = r;
+
+        opt.textContent = r;
+
+
+        regionSelect.appendChild(opt);
+
+      });
+
+
+      voltages.sort().forEach(v => {
+
+        const opt =
+          document.createElement('option');
+
+
+        opt.value = v;
+
+        opt.textContent = v + 'KV';
+
+
+        voltageSelect.appendChild(opt);
+
+      });
+
+    }
+
+
+    // ============================================
+    // UPDATE FEEDERS
+    // ============================================
+
+    function updateFeeders() {
+
+      const region =
+        document.getElementById('region').value;
+
+
+      const voltage =
+        document.getElementById('voltage').value;
+
+
+      const feederSelect =
+        document.getElementById('feeder');
+
+
+      const filterStatus =
+        document.getElementById('filterStatus');
+
+
+      feederSelect.innerHTML =
+        '<option value="" disabled selected>Select a Feeder *</option>';
+
+
+      document.getElementById('feederInfo').innerHTML =
+        '';
+
+
+      if (region && voltage) {
+
+        const filtered =
+          feederData.filter(
+            f =>
+              f.region === region &&
+              f.voltage === voltage &&
+              f.status === 'ACTIVE'
+          );
+
+
+        filtered.sort(
+          (a, b) =>
+            a.feeder.localeCompare(b.feeder)
+        );
+
+
+        filtered.forEach(f => {
+
+          const opt =
+            document.createElement('option');
+
+
+          opt.value = f.feeder;
+
+          opt.textContent = f.feeder;
+
+          opt.dataset.maxLoad = f.maxLoad;
+
+          opt.dataset.avgLoad = f.avgLoad;
+
+
+          feederSelect.appendChild(opt);
+
+        });
+
+
+        if (filtered.length > 0) {
+
+          filterStatus.className =
+            'filter-status success';
+
+
+          filterStatus.innerHTML =
+            `✅ Found <strong>${filtered.length}</strong> feeder(s) for <strong>${region}</strong> - <strong>${voltage}KV</strong>`;
+
+
+        } else {
+
+          filterStatus.className =
+            'filter-status error';
+
+
+          filterStatus.innerHTML =
+            `❌ No active ${voltage}KV feeders found in ${region}`;
+
+        }
+
+
+      } else {
+
+        filterStatus.className =
+          'filter-status info';
+
+
+        filterStatus.innerHTML =
+          'Select Region and Voltage to see available feeders';
+
+      }
+
+    }
+
+
+    // ============================================
+    // UPDATE FEEDER INFO
+    // ============================================
+
+    function updateFeederInfo() {
+
+      const feeder =
+        document.getElementById('feeder').value;
+
+
+      const voltage =
+        document.getElementById('voltage').value;
+
+
+      const region =
+        document.getElementById('region').value;
+
+
+      const feederInfoDiv =
+        document.getElementById('feederInfo');
+
+
+      const bandSelect =
+        document.getElementById('band');
+
+
+      const bandOption =
+        bandSelect.options[
+          bandSelect.selectedIndex
+        ];
+
+
+      const bandName =
+        bandOption
+          ? bandOption.text
+          : "";
+
+
+      const bandValue =
+        bandOption
+          ? bandOption.value
+          : "";
+
+
+      if (feeder && bandName) {
+
+        const data =
+          feederData.find(
+            f => f.feeder === feeder
+          );
+
+
+        if (data) {
+
+          feederInfoDiv.innerHTML =
+
+            `🟢 <b>${feeder} ${voltage}KV Feeder</b><br>
+             • Region: ${data.region}<br>
+             • ${bandName} — ₦${bandValue}/kwh<br>
+             • Maximum Load: ${data.maxLoad} MW<br>
+             • Average Load: ${data.avgLoad} MW`;
+
+
+          const peakInput =
+            document.getElementById("E5");
+
+
+          if (data.maxLoad) {
+
+            peakInput.value =
+              data.maxLoad;
+
+          }
+
+        }
+
+      } else {
+
+        feederInfoDiv.innerHTML = "";
+
+      }
+
+    }
+
+
+    // ============================================
+    // SHOW STEP
+    // ============================================
+
+
+    function showStep(stepId, stepIndex) {
+
+      if (
+        stepIndex > 1 &&
+        (
+          !document.getElementById('region').value ||
+          !document.getElementById('voltage').value ||
+          !document.getElementById('feeder').value ||
+          !document.getElementById('band').value
+        )
+      ) {
+
+        alert(
+          "Please complete all required fields!"
+        );
+
+        return;
+
+      }
+
+
+      document
+        .querySelectorAll(".step")
+        .forEach(
+          s => s.style.display = "none"
+        );
+
+
+      document.getElementById(stepId).style.display =
+        "block";
+
+
+      document
+        .querySelectorAll(".indicator")
+        .forEach(
+          ind => ind.classList.remove("active")
+        );
+
+
+      document
+        .getElementById("ind" + stepIndex)
+        .classList.add("active");
+
+    }
+
+
+    // ============================================
+    // FEEDER LOAD VISIBILITY
+    // ============================================
+
+    let showFeederLoad = true;
+
+
+    function toggleFeederLoadVisibility() {
+
+      showFeederLoad =
+        !showFeederLoad;
+
+
+      const rows =
+        document.querySelectorAll(
+          '.feeder-load-row'
+        );
+
+
+      const btn =
+        document.getElementById(
+          'toggleLoadBtn'
+        );
+
+
+      rows.forEach(row => {
+
+        if (showFeederLoad) {
+
+          row.classList.remove(
+            'hide-print'
+          );
+
+          row.classList.add(
+            'show-print'
+          );
+
+
+        } else {
+
+          row.classList.add(
+            'hide-print'
+          );
+
+          row.classList.remove(
+            'show-print'
+          );
+
+        }
+
+      });
+
+
+      if (btn) {
+
+        btn.textContent =
+          showFeederLoad
+            ? '🙈 Hide Feeder Load from Print'
+            : '👁️ Show Feeder Load for Print';
+
+      }
+
+    }
+
+
+    // ============================================
+    // TOGGLE HINT
+    // ============================================
+
+    function toggleHint(hintId) {
+
+      const hint =
+        document.getElementById(hintId);
+
+
+      if (!hint) return;
+
+
+      hint.classList.toggle('show');
+
+    }
+
+
+    // ============================================
+    // LAST DAY OF CURRENT MONTH
+    // ============================================
+
+    function getLastDayOfCurrentMonth() {
+
+      const now =
+        new Date();
+
+
+      const year =
+        now.getFullYear();
+
+
+      const month =
+        now.getMonth();
+
+
+      const lastDay =
+        new Date(
+          year,
+          month + 1,
+          0
+        ).getDate();
+
+
+      const dateObj =
+        new Date(
+          year,
+          month,
+          lastDay
+        );
+
+
+      return dateObj.toLocaleDateString(
+        'en-US',
+        {
+          month: 'long',
+          day: 'numeric',
+          year: 'numeric'
+        }
+      );
+
+    }
+
+
+    // ============================================
+    // CURRENT DATE
+    // ============================================
+
+    function getCurrentDateString() {
+
+      const now =
+        new Date();
+
+
+      return now.toLocaleDateString(
+        'en-US',
+        {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        }
+      );
+
+    }
+
+
+    // ============================================
+    // CALCULATE LOR
+    // ============================================
+
+    function calculateLOR() {
+
+      const region =
+        document.getElementById('region').value;
+
+
+      const feeder =
+        document.getElementById('feeder').value;
+
+
+      const voltage =
+        document.getElementById('voltage').value;
+
+
+      const bandSelect =
+        document.getElementById('band');
+
+
+      const bandOption =
+        bandSelect.options[
+          bandSelect.selectedIndex
+        ];
+
+
+      const bandName =
+        bandOption
+          ? bandOption.text
+          : "";
+
+
+      const tariff =
+        parseFloat(
+          bandOption
+            ? bandOption.value
+            : 0
+        );
+
+
+      // Use the manually entered peak load (from E5)
+      const peakLoad =
+        parseFloat(
+          document.getElementById('E5').value
+        ) || 0;
+
+
+      const timeWork =
+        parseFloat(
+          document.getElementById('E16').value
+        ) || 0;
+
+
+      const timePermit =
+        parseFloat(
+          document.getElementById('E8').value
+        ) || 0;
+
+
+      const totalDays =
+        parseFloat(
+          document.getElementById('E15').value
+        ) || 0;
+
+
+      const totalDTRs =
+        parseFloat(
+          document.getElementById('E17').value
+        ) || 1;
+
+
+      const affectedDTRs =
+        parseFloat(
+          document.getElementById('E18').value
+        ) || 0;
+
+
+      const feederDataItem =
+        feederData.find(
+          f => f.feeder === feeder
+        );
+
+
+      const avgLoad =
+        feederDataItem
+          ? feederDataItem.avgLoad
+          : 'N/A';
+
+
+      // ============================================
+      // ORIGINAL CALCULATIONS — UNCHANGED
+      // ============================================
+
+      const part1 =
+        (peakLoad * 1000) *
+        timePermit *
+        tariff *
+        1.075;
+
+
+      const part2 =
+        (affectedDTRs / totalDTRs) *
+        (peakLoad * 1000) *
+        timeWork *
+        totalDays *
+        tariff *
+        1.075;
+
+
+      const fixedCost =
+        40000 * totalDays;
+
+
+      const sectionATotal =
+        part1 +
+        part2 +
+        fixedCost;
+
+
+      const validUntil =
+        getLastDayOfCurrentMonth();
+
+
+      const calculatedOn =
+        getCurrentDateString();
+
+
+      const currentYear =
+        new Date().getFullYear();
+
+
+      // ============================================
+      // FORMATTING
+      // ============================================
+
+      const formattedPeakLoad =
+        peakLoad.toLocaleString(
+          undefined,
+          {
+            maximumFractionDigits: 2
+          }
+        );
+
+
+      const formattedTariff =
+        tariff.toLocaleString(
+          undefined,
+          {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+          }
+        );
+
+
+      const formattedPart1 =
+        part1.toLocaleString(
+          undefined,
+          {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+          }
+        );
+
+
+      const formattedPart2 =
+        part2.toLocaleString(
+          undefined,
+          {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+          }
+        );
+
+
+      const formattedFixedCost =
+        fixedCost.toLocaleString(
+          undefined,
+          {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+          }
+        );
+
+
+      const formattedTotal =
+        sectionATotal.toLocaleString(
+          undefined,
+          {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+          }
+        );
+
+
+      // ============================================
+      // BUILD RESULT
+      // ============================================
+
+      document.getElementById('result').innerHTML = `
+
+        <div
+          id="resultCard"
+          class="card shadow-sm result-card-softblue">
+
+          <div class="card-body">
+
+            <div class="title-row">
+
+              <h3 class="card-title">
+                📋 LOR Summary
+              </h3>
+
+              <span class="calc-date-badge">
+                📅 ${calculatedOn}
+              </span>
+
+            </div>
+
+
+            <div class="d-flex justify-content-end no-print mt-1 mb-3">
+
+              <button
+                id="toggleLoadBtn"
+                class="btn btn-outline-secondary btn-sm btn-toggle-load"
+                onclick="toggleFeederLoadVisibility()">
+
+                🙈 Hide Feeder Load from Print
+
+              </button>
+
+            </div>
+
+
+            <!-- SUMMARY TABLE -->
+
+            <div class="table-responsive">
+
+              <table class="table table-bordered table-striped align-middle">
+
+                <tbody>
+
+                  <tr>
+                    <th>Region</th>
+                    <td>${region}</td>
+                  </tr>
+
+                  <tr>
+                    <th>Feeder</th>
+                    <td>${feeder}</td>
+                  </tr>
+
+                  <tr>
+                    <th>Voltage Level</th>
+                    <td>${voltage}KV</td>
+                  </tr>
+
+                  <tr class="feeder-load-row show-print">
+                    <th>Maximum Load</th>
+                    <td>${peakLoad} MW</td>
+                  </tr>
+
+                  <tr class="feeder-load-row show-print">
+                    <th>Average Load (from data)</th>
+                    <td>${avgLoad} MW</td>
+                  </tr>
+
+                  <tr>
+                    <th>Tariff</th>
+                    <td>${bandName} (₦${tariff})</td>
+                  </tr>
+
+                  <tr>
+                    <th>Time to do the work (hr)</th>
+                    <td>${timeWork}</td>
+                  </tr>
+
+                  <tr>
+                    <th>Total number of days</th>
+                    <td>${totalDays}</td>
+                  </tr>
+
+                  <tr>
+                    <th>Total Number of DTRs</th>
+                    <td>${totalDTRs}</td>
+                  </tr>
+
+                  <tr>
+                    <th>DTRs Affected</th>
+                    <td>${affectedDTRs}</td>
+                  </tr>
+
+                  <tr>
+                    <th>Time for permit and Isolation (hr)</th>
+                    <td>${timePermit}</td>
+                  </tr>
+
+                </tbody>
+
+              </table>
+
+            </div>
+
+
+            <!-- =====================================
+                 LOR BREAKDOWN
+                 ===================================== -->
+
+            <h3 class="mt-4">
+              💰 LOR Breakdown
+            </h3>
+
+
+            <ul class="list-group mb-3">
+
+
+              <!-- =================================
+                   PART 1
+                   ================================= -->
+
+              <li class="list-group-item">
+
+                <div class="d-flex justify-content-between align-items-center">
+
+                  <span>
+
+                    Part 1
+
+                    <button
+                      type="button"
+                      class="hint-btn no-print"
+                      onclick="toggleHint('hint1')"
+                      title="Show calculation">
+
+                      💡
+
+                    </button>
+
+                  </span>
+
+
+                  <span>
+                    ₦${formattedPart1}
+                  </span>
+
+                </div>
+
+
+                <div
+                  id="hint1"
+                  class="calculation-hint no-print">
+
+                  <div class="formula-title">
+                    Calculation:
+                  </div>
+
+                  Peak Load × 1,000 × Time for Permit & Isolation × Tariff + 7.5% VAT
+
+                  <br><br>
+
+                  ${formattedPeakLoad} MW × 1,000 ×
+                  ${timePermit} hr ×
+                  ₦${formattedTariff}/kWh
+                  + 7.5% VAT
+
+                  <br><br>
+
+                  <strong>
+                    = ₦${formattedPart1}
+                  </strong>
+
+                </div>
+
+              </li>
+
+
+              <!-- =================================
+                   PART 2
+                   ================================= -->
+
+              <li class="list-group-item">
+
+                <div class="d-flex justify-content-between align-items-center">
+
+                  <span>
+
+                    Part 2
+
+                    <button
+                      type="button"
+                      class="hint-btn no-print"
+                      onclick="toggleHint('hint2')"
+                      title="Show calculation">
+
+                      💡
+
+                    </button>
+
+                  </span>
+
+
+                  <span>
+                    ₦${formattedPart2}
+                  </span>
+
+                </div>
+
+
+                <div
+                  id="hint2"
+                  class="calculation-hint no-print">
+
+                  <div class="formula-title">
+                    Calculation:
+                  </div>
+
+                  (Affected DTRs ÷ Total DTRs) × Peak Load × 1,000 × Time to do Work × Number of Days × Tariff + 7.5% VAT
+
+                  <br><br>
+
+                  (${affectedDTRs} ÷ ${totalDTRs}) ×
+                  ${formattedPeakLoad} MW × 1,000 ×
+                  ${timeWork} hr ×
+                  ${totalDays} day${totalDays == 1 ? '' : 's'} ×
+                  ₦${formattedTariff}/kWh
+                  + 7.5% VAT
+
+                  <br><br>
+
+                  <strong>
+                    = ₦${formattedPart2}
+                  </strong>
+
+                </div>
+
+              </li>
+
+
+              <!-- =================================
+                   PART 3
+                   ================================= -->
+
+              <li class="list-group-item"> <div class="d-flex justify-content-between align-items-center"> <span> Part 3 (Fixed Cost) <button type="button" class="hint-btn no-print" onclick="toggleHint('hint3')" title="Show calculation"> 💡 </button> </span> <span> ₦${formattedFixedCost} </span> </div> <div id="hint3" class="calculation-hint no-print"> <div class="formula-title"> Fixed Cost Calculation: </div> <div> Supervision: ₦10,000 × ${totalDays} day${totalDays == 1 ? '' : 's'} </div> <div> One (1) Engineer: ₦25,000 × ${totalDays} day${totalDays == 1 ? '' : 's'} </div> <div> Transportation: ₦5,000 × ${totalDays} day${totalDays == 1 ? '' : 's'} </div> <br> <div> Daily Fixed Cost = ₦10,000 + ₦25,000 + ₦5,000 = ₦40,000/day </div> <br> <strong> Total Fixed Cost = ₦40,000 × ${totalDays} day${totalDays == 1 ? '' : 's'} = ₦${formattedFixedCost} </strong> </div> </li>
+
+              <!-- =================================
+                   TOTAL
+                   ================================= -->
+
+              <li class="list-group-item list-group-item-success">
+
+                <div class="d-flex justify-content-between align-items-center fw-bold">
+
+                  <span>
+
+                    Total
+
+                    <button
+                      type="button"
+                      class="hint-btn no-print"
+                      onclick="toggleHint('hintTotal')"
+                      title="Show calculation">
+
+                      💡
+
+                    </button>
+
+                  </span>
+
+
+                  <span>
+                    ₦${formattedTotal}
+                  </span>
+
+                </div>
+
+
+                <div
+                  id="hintTotal"
+                  class="calculation-hint no-print">
+
+                  <div class="formula-title">
+                    Calculation:
+                  </div>
+
+                  Part 1 + Part 2 + Part 3
+
+                  <br><br>
+
+                  ₦${formattedPart1}
+                  +
+                  ₦${formattedPart2}
+                  +
+                  ₦${formattedFixedCost}
+
+                  <br><br>
+
+                  <strong>
+                    = ₦${formattedTotal}
+                  </strong>
+
+                </div>
+
+              </li>
+
+
+            </ul>
+
+
+            <!-- VALIDITY -->
+
+            <div class="text-center">
+
+              <span class="valid-until">
+
+                ⏳ This LOR is valid until ${validUntil}.
+
+              </span>
+
+            </div>
+
+
+            <!-- COPYRIGHT -->
+
+            <div class="copyright-notice">
+
+              <span class="copyright-symbol">
+                ©
+              </span>
+
+              <span class="designer-name">
+                Obot Akpan
+              </span>
+
+              <span class="rights-text">
+                — All Rights Reserved. ${currentYear}
+              </span>
+
+            </div>
+
+
+            <!-- PDF EXPORT -->
+
+            <div class="d-flex justify-content-center mt-3 no-print">
+
+              <button
+                id="exportPDF"
+                class="btn btn-danger">
+
+                📄 Export to PDF
+
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      `;
+
+
+      // ============================================
+      // RESET FEEDER LOAD VISIBILITY
+      // ============================================
+
+      showFeederLoad = true;
+
+
+      const btn =
+        document.getElementById(
+          'toggleLoadBtn'
+        );
+
+
+      if (btn) {
+
+        btn.textContent =
+          '🙈 Hide Feeder Load from Print';
+
+      }
+
+
+      // ============================================
+      // PDF EXPORT
+      // ============================================
+
+      document
+        .getElementById('exportPDF')
+        .addEventListener(
+          'click',
+          () => {
+
+            const rows =
+              document.querySelectorAll(
+                '.feeder-load-row'
+              );
+
+
+            rows.forEach(row => {
+
+              if (showFeederLoad) {
+
+                row.classList.remove(
+                  'hide-print'
+                );
+
+                row.classList.add(
+                  'show-print'
+                );
+
+
+              } else {
+
+                row.classList.add(
+                  'hide-print'
+                );
+
+                row.classList.remove(
+                  'show-print'
+                );
+
+              }
+
+            });
+
+
+            const element =
+              document.getElementById(
+                'resultCard'
+              );
+
+
+            const opt = {
+
+              margin: 10,
+
+              filename:
+                `LOR_Calculation_${region}_${feeder}.pdf`,
+
+              image: {
+                type: 'jpeg',
+                quality: 0.98
+              },
+
+              html2canvas: {
+                scale: 2,
+
+                ignoreElements:
+                  (el) =>
+                    el.classList.contains(
+                      'no-print'
+                    )
+              },
+
+              jsPDF: {
+                unit: 'mm',
+                format: 'a4',
+                orientation: 'portrait'
+              }
+
+            };
+
+
+            html2pdf()
+              .set(opt)
+              .from(element)
+              .save();
+
+          }
+        );
+
+
+      // ============================================
+      // SHOW RESULT
+      // ============================================
+
+      showStep(
+        'step3',
+        3
+      );
+
+    }
+
+
+    // ============================================
+    // INIT
+    // ============================================
+
+    document.addEventListener(
+      'DOMContentLoaded',
+      async function () {
+
+        await loadData();
+
+
+        document
+          .getElementById('region')
+          .addEventListener(
+            'change',
+            updateFeeders
+          );
+
+
+        document
+          .getElementById('voltage')
+          .addEventListener(
+            'change',
+            updateFeeders
+          );
+
+
+        document
+          .getElementById('feeder')
+          .addEventListener(
+            'change',
+            updateFeederInfo
+          );
+
+
+        document
+          .getElementById('band')
+          .addEventListener(
+            'change',
+            updateFeederInfo
+          );
+
+
+        document
+          .getElementById('next1')
+          .onclick = () => {
+
+            if (
+              !document.getElementById('region').value ||
+              !document.getElementById('voltage').value ||
+              !document.getElementById('feeder').value ||
+              !document.getElementById('band').value
+            ) {
+
+              alert(
+                "Please complete all required fields!"
+              );
+
+              return;
+
+            }
+
+
+            showStep(
+              "step2",
+              2
+            );
+
+          };
+
+
+        document
+          .getElementById('back2')
+          .onclick = () =>
+            showStep(
+              "step1",
+              1
+            );
+
+
+        document
+          .getElementById('back3')
+          .onclick = () =>
+            showStep(
+              "step2",
+              2
+            );
+
+
+        document
+          .getElementById('finish')
+          .onclick =
+          calculateLOR;
+
+
+        updateFeeders();
+
+      }
+    );
+
+  </script>
+
+
+  <script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+  </script>
+
+
+  <script
+    src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js">
+  </script>
+
 </body>
 </html>
