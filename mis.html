@@ -1,0 +1,2644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Customer Information Search</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+      padding: 24px 16px;
+      background: #f2f5f9;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .container {
+      max-width: 680px;
+      width: 100%;
+      background: white;
+      border-radius: 24px;
+      padding: 24px 20px 32px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+      margin-bottom: 20px;
+    }
+
+    /* =========================
+       HEADER
+    ========================= */
+
+    .header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid #eef2f7;
+    }
+
+    .logo-container {
+      margin-bottom: 2px;
+    }
+
+    .logo-container img {
+      width: 140px;
+      height: auto;
+      object-fit: contain;
+      border-radius: 12px;
+      display: block;
+    }
+
+    .header-text {
+      text-align: center;
+    }
+
+    .header-text h2 {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #0b1a33;
+      margin: 0;
+      line-height: 1.2;
+    }
+
+    .header-text .subtitle {
+      font-size: 0.8rem;
+      color: #4d627a;
+      font-weight: 400;
+      margin-top: 3px;
+    }
+
+    /* =========================
+       SEARCH
+    ========================= */
+
+    .search-section {
+      margin-bottom: 16px;
+      position: relative;
+    }
+
+    .search-input-wrapper {
+      position: relative;
+    }
+
+    #searchInput {
+      width: 100%;
+      padding: 14px 16px 14px 44px;
+      border: 2px solid #d9e0eb;
+      border-radius: 14px;
+      font-size: 1rem;
+      outline: none;
+      transition: 0.2s;
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="%237a8ba8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>');
+      background-repeat: no-repeat;
+      background-position: 14px center;
+      background-size: 20px;
+    }
+
+    #searchInput:focus {
+      border-color: #1a6bff;
+      box-shadow: 0 0 0 3px rgba(26,107,255,0.15);
+      background-color: white;
+    }
+
+    #searchInput::placeholder {
+      color: #a0b0c8;
+    }
+
+    #searchInput:disabled {
+      background-color: #f2f5f9;
+      cursor: not-allowed;
+      opacity: 0.7;
+    }
+
+    .search-input-wrapper.loading #searchInput {
+      padding-right: 50px;
+      border-color: #1a6bff;
+      background-image: none;
+      background-color: #f8faff;
+    }
+
+    .search-input-wrapper.loading #searchInput::placeholder {
+      color: #1a6bff;
+    }
+
+    /* =========================
+       LOADING
+    ========================= */
+
+    .search-loading {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: none;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .search-input-wrapper.loading .search-loading {
+      display: flex;
+    }
+
+    .spinner-small {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      border: 2.5px solid #eef2f7;
+      border-radius: 50%;
+      border-top-color: #1a6bff;
+      animation: spin 0.7s linear infinite;
+    }
+
+    .loading-text {
+      font-size: 0.8rem;
+      color: #1a6bff;
+      font-weight: 500;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* =========================
+       SUGGESTIONS
+    ========================= */
+
+    .suggestions-box {
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0;
+      width: 100%;
+      background: white;
+      border: 1px solid #d0d8e3;
+      border-radius: 14px;
+      max-height: 320px;
+      overflow-y: auto;
+      z-index: 100;
+      box-shadow: 0 12px 28px rgba(0,0,0,0.12);
+      display: none;
+      padding: 4px 0;
+    }
+
+    .suggestions-box::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .suggestions-box::-webkit-scrollbar-track {
+      background: #f2f5f9;
+      border-radius: 8px;
+    }
+
+    .suggestions-box::-webkit-scrollbar-thumb {
+      background: #d0d8e3;
+      border-radius: 8px;
+    }
+
+    .suggestion-item {
+      padding: 12px 16px;
+      cursor: pointer;
+      border-bottom: 1px solid #f0f4fc;
+      font-size: 0.95rem;
+      transition: 0.1s;
+    }
+
+    .suggestion-item:last-child {
+      border-bottom: none;
+    }
+
+    .suggestion-item:hover {
+      background: #f0f7ff;
+    }
+
+    .suggestion-main {
+      font-weight: 600;
+      color: #0b1a33;
+    }
+
+    .suggestion-sub {
+      font-size: 0.78rem;
+      color: #4a5c7a;
+      margin-left: 8px;
+      font-weight: 500;
+    }
+
+    .suggestion-detail {
+      font-size: 0.75rem;
+      color: #7a8ba8;
+      margin-top: 3px;
+    }
+
+    .highlight {
+      background: #e8f0fe;
+      padding: 0 2px;
+      border-radius: 2px;
+    }
+
+    .no-suggestions {
+      padding: 16px;
+      text-align: center;
+      color: #7a8ba8;
+      font-size: 0.9rem;
+    }
+
+    /* =========================
+       WELCOME
+    ========================= */
+
+    .welcome-message {
+      text-align: center;
+      padding: 40px 20px;
+      color: #7a8ba8;
+    }
+
+    .welcome-message .icon {
+      font-size: 3rem;
+      margin-bottom: 8px;
+    }
+
+    .welcome-message h3 {
+      font-size: 1.1rem;
+      color: #0b1a33;
+      margin-bottom: 4px;
+    }
+
+    .welcome-message p {
+      font-size: 0.9rem;
+    }
+
+    .welcome-message.hidden {
+      display: none;
+    }
+
+    /* =========================
+       DETAIL CARD
+    ========================= */
+
+    .detail-card {
+      background: #f8faff;
+      border-radius: 14px;
+      padding: 20px;
+      border: 1px solid #eef2f7;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .customer-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+      padding-bottom: 14px;
+      border-bottom: 2px solid #eef2f7;
+    }
+
+    .customer-name {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #0b1a33;
+    }
+
+    .account-number {
+      font-size: 0.82rem;
+      color: #3b6cb7;
+      font-weight: 600;
+      background: #e8f0fe;
+      padding: 3px 12px;
+      border-radius: 20px;
+      display: inline-block;
+      margin-top: 5px;
+    }
+
+    /* =========================
+       SECTION TITLE
+    ========================= */
+
+    .section-title {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #1a6bff;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      margin-top: 16px;
+      margin-bottom: 4px;
+      padding-bottom: 5px;
+      border-bottom: 1px solid #e5ebf3;
+    }
+
+    .section-title:first-of-type {
+      margin-top: 0;
+    }
+
+    /* =========================
+       DETAIL ROW
+    ========================= */
+
+    .detail-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px 10px;
+      padding: 8px 0;
+      font-size: 0.9rem;
+      color: #1f2a44;
+      border-bottom: 1px solid #f0f4fc;
+    }
+
+    .detail-row:last-child {
+      border-bottom: none;
+    }
+
+    .detail-row .label {
+      color: #7a8ba8;
+      font-weight: 500;
+      min-width: 145px;
+    }
+
+    .detail-row .value {
+      font-weight: 500;
+      flex: 1;
+      word-break: break-word;
+    }
+
+    /* =========================
+       BADGES
+    ========================= */
+
+    .badge {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 3px 12px;
+      border-radius: 20px;
+      white-space: nowrap;
+    }
+
+    .badge-region {
+      background: #d1ecf1;
+      color: #0c5460;
+    }
+
+    .badge-active {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .badge-inactive {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    .badge-complete {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .badge-check {
+      background: #fff3cd;
+      color: #856404;
+    }
+
+    .badge-corrected {
+      background: #cce5ff;
+      color: #004085;
+    }
+
+    .badge-none {
+      background: #eef2f7;
+      color: #5c6f89;
+    }
+
+    /* =========================
+       COPY BUTTON
+    ========================= */
+
+    .copy-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px 6px;
+      border-radius: 6px;
+      color: #7a8ba8;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.75rem;
+      flex-shrink: 0;
+      margin-left: auto;
+    }
+
+    .copy-btn:hover {
+      background: #e8f0fe;
+      color: #1a6bff;
+    }
+
+    .copy-btn:active {
+      transform: scale(0.9);
+    }
+
+    .copy-btn svg {
+      width: 18px;
+      height: 18px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .copy-btn.copied {
+      color: #28a745;
+    }
+
+    /* =========================
+       COPY TOAST
+    ========================= */
+
+    .copy-toast {
+      position: fixed;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #0b1a33;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+      opacity: 0;
+      transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+      z-index: 999;
+      pointer-events: none;
+      max-width: 90%;
+      text-align: center;
+    }
+
+    .copy-toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .copy-hint {
+      font-size: 0.7rem;
+      color: #7a8ba8;
+      text-align: center;
+      margin-top: 8px;
+      opacity: 0.7;
+    }
+
+    /* =========================
+       FOOTER
+    ========================= */
+
+    .footer {
+      text-align: center;
+      padding: 16px 20px;
+      color: #7a8ba8;
+      font-size: 0.8rem;
+      font-weight: 400;
+      border-top: 1px solid #eef2f7;
+      margin-top: 8px;
+    }
+
+    .footer .designer {
+      color: #1a6bff;
+      font-weight: 600;
+    }
+
+    /* =========================
+       MOBILE
+    ========================= */
+
+    @media (max-width: 480px) {
+
+      .container {
+        padding: 20px 15px 28px;
+        border-radius: 20px;
+      }
+
+      .customer-header {
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .detail-row {
+        gap: 4px 8px;
+        padding: 7px 0;
+      }
+
+      .detail-row .label {
+        min-width: 110px;
+        font-size: 0.8rem;
+      }
+
+      .detail-row .value {
+        font-size: 0.85rem;
+      }
+
+      .copy-btn {
+        padding: 2px 4px;
+      }
+
+      .copy-btn span {
+        display: none;
+      }
+
+      .copy-btn svg {
+        width: 16px;
+        height: 16px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <!-- =========================
+       HEADER
+  ========================== -->
+
+  <div class="header">
+
+    <div class="logo-container">
+      <img
+        src="PHED logo.png"
+        alt="PHED Logo"
+        onerror="this.style.display='none'"
+      >
+    </div>
+
+    <div class="header-text">
+      <h2>Customer Information Search</h2>
+      <div class="subtitle">
+        Search by Account Number, Meter Number or Customer Name
+      </div>
+    </div>
+
+  </div>
+
+
+  <!-- =========================
+       SEARCH
+  ========================== -->
+
+  <div class="search-section">
+
+    <div class="search-input-wrapper" id="searchWrapper">
+
+      <input
+        type="text"
+        id="searchInput"
+        placeholder="Loading customer data..."
+        disabled
+        autocomplete="off"
+      >
+
+      <div class="search-loading">
+
+        <span class="spinner-small"></span>
+
+        <span class="loading-text">
+          Loading...
+        </span>
+
+      </div>
+
+      <div
+        id="suggestions"
+        class="suggestions-box">
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- =========================
+       RESULTS
+  ========================== -->
+
+  <div
+    class="results-container"
+    id="resultsContainer">
+
+    <div
+      class="welcome-message"
+      id="welcomeMessage">
+
+      <div class="icon">
+        🔎
+      </div>
+
+      <h3>
+        Search for a Customer
+      </h3>
+
+      <p>
+        Enter an account number, meter number or customer name
+      </p>
+
+    </div>
+
+
+    <div
+      id="detailView"
+      style="display:none;">
+    </div>
+
+
+    <div
+      class="copy-hint"
+      id="copyHint"
+      style="display:none;">
+
+      📋 Click the copy icon next to any value to copy it
+
+    </div>
+
+  </div>
+
+
+  <!-- =========================
+       FOOTER
+  ========================== -->
+
+  <div class="footer">
+
+    Designed by
+    <span class="designer">
+      Obot Akpan
+    </span>
+
+  </div>
+
+</div>
+
+
+<!-- COPY TOAST -->
+
+<div
+  id="copyToast"
+  class="copy-toast">
+
+  📋 Copied to clipboard!
+
+</div>
+
+
+<script>
+
+  // ============================================================
+  // GOOGLE APPS SCRIPT WEB APP URL
+  // ============================================================
+
+  const searchDataURL =
+  "https://script.google.com/macros/s/AKfycbwvpgNhyDE204oBq0T6SKv4GW0SznwgtTNo1GuruM8W50K4_rVHS8dT4BwFMU_An_Yb/exec";
+
+
+  // ============================================================
+  // DOM REFERENCES
+  // ============================================================
+
+  const searchWrapper =
+    document.getElementById("searchWrapper");
+
+  const searchInput =
+    document.getElementById("searchInput");
+
+  const suggestionsBox =
+    document.getElementById("suggestions");
+
+  const welcomeMessage =
+    document.getElementById("welcomeMessage");
+
+  const detailView =
+    document.getElementById("detailView");
+
+  const copyHint =
+    document.getElementById("copyHint");
+
+  const copyToast =
+    document.getElementById("copyToast");
+
+
+  // ============================================================
+  // STATE
+  // ============================================================
+
+  let customers = [];
+
+  let isDataLoaded = false;
+
+  let selectedCustomer = null;
+
+  let toastTimeout = null;
+
+
+  // ============================================================
+  // SAFE VALUE
+  // ============================================================
+
+  function cleanValue(value) {
+
+    if (
+      value === null ||
+      value === undefined ||
+      value === ""
+    ) {
+      return "N/A";
+    }
+
+    return String(value).trim();
+
+  }
+
+
+  // ============================================================
+  // NORMALIZE SEARCH VALUE
+  // ============================================================
+
+  function normalize(value) {
+
+    return String(value || "")
+      .toLowerCase()
+      .trim();
+
+  }
+
+
+  // ============================================================
+  // COPY TO CLIPBOARD
+  // ============================================================
+
+  function copyToClipboard(text, buttonElement) {
+
+    if (!text || text === "N/A") {
+      return;
+    }
+
+    if (
+      navigator.clipboard &&
+      navigator.clipboard.writeText
+    ) {
+
+      navigator.clipboard.writeText(text)
+
+        .then(() => {
+
+          showToast(
+            '📋 Copied: "' + text + '"'
+          );
+
+          if (buttonElement) {
+
+            buttonElement.classList.add("copied");
+
+            setTimeout(() => {
+
+              buttonElement.classList.remove("copied");
+
+            }, 1500);
+
+          }
+
+        })
+
+        .catch(() => {
+
+          fallbackCopy(text, buttonElement);
+
+        });
+
+    } else {
+
+      fallbackCopy(text, buttonElement);
+
+    }
+
+  }
+
+
+  // ============================================================
+  // FALLBACK COPY
+  // ============================================================
+
+  function fallbackCopy(text, buttonElement) {
+
+    const textarea =
+      document.createElement("textarea");
+
+    textarea.value = text;
+
+    textarea.style.position = "fixed";
+    textarea.style.opacity = "0";
+    textarea.style.left = "-9999px";
+    textarea.style.top = "-9999px";
+
+    document.body.appendChild(textarea);
+
+    textarea.select();
+
+    try {
+
+      const successful =
+        document.execCommand("copy");
+
+      if (successful) {
+
+        showToast(
+          '📋 Copied: "' + text + '"'
+        );
+
+        if (buttonElement) {
+
+          buttonElement.classList.add("copied");
+
+          setTimeout(() => {
+
+            buttonElement.classList.remove("copied");
+
+          }, 1500);
+
+        }
+
+      } else {
+
+        showToast(
+          "⚠️ Could not copy."
+        );
+
+      }
+
+    } catch (err) {
+
+      showToast(
+        "⚠️ Could not copy."
+      );
+
+    }
+
+    document.body.removeChild(textarea);
+
+  }
+
+
+  // ============================================================
+  // TOAST
+  // ============================================================
+
+  function showToast(message) {
+
+    copyToast.textContent = message;
+
+    copyToast.classList.add("show");
+
+    clearTimeout(toastTimeout);
+
+    toastTimeout = setTimeout(() => {
+
+      copyToast.classList.remove("show");
+
+    }, 2000);
+
+  }
+
+
+  // ============================================================
+  // COPY ICON
+  // ============================================================
+
+  function getCopyIcon() {
+
+    return `
+      <svg viewBox="0 0 24 24">
+
+        <rect
+          x="9"
+          y="9"
+          width="13"
+          height="13"
+          rx="2">
+        </rect>
+
+        <path
+          d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1">
+        </path>
+
+      </svg>
+    `;
+
+  }
+
+
+  // ============================================================
+  // CREATE CUSTOMER OBJECT
+  // ============================================================
+
+  function convertCustomer(row) {
+
+    /*
+      These names correspond directly to your Google Sheet
+      column headers.
+    */
+
+    return {
+
+      id: cleanValue(row.ID),
+
+      timestampDate:
+        cleanValue(row.TIMESTAMPDATE),
+
+      dateCaptured:
+        cleanValue(row.DATECAPTURED),
+
+      accountNumber:
+        cleanValue(row.ACCOUNTNUMBER),
+
+      meterNumber:
+        cleanValue(row.METERNUMBER),
+
+      customerName:
+        cleanValue(row.CUSTOMERNAME),
+
+      landlordName:
+        cleanValue(row.LANDLORDNAME),
+
+      customerEmail:
+        cleanValue(row.CUSTOMEREMAIL),
+
+      correctAddress:
+        cleanValue(row.CORRECTADDRESS),
+
+      customerPhone:
+        cleanValue(row.CUSTOMERPHONE),
+
+      status:
+        cleanValue(row.STATUS),
+
+      noOfSeparation:
+        cleanValue(row.NOOFSEPERATION),
+
+      separationForBilling:
+        cleanValue(row.SEPERATIONFORBILLING),
+
+      feederId:
+        cleanValue(row.FEEDERID),
+
+      feederName:
+        cleanValue(row.FEEDERNAME),
+
+      dtrId:
+        cleanValue(row.DTRID),
+
+      dtrName:
+        cleanValue(row.DTRNAME),
+
+      upriser:
+        cleanValue(row.UPRISER),
+
+      poleNo:
+        cleanValue(row.POLENO),
+
+      customerClass:
+        cleanValue(row.CUSTOMERCLASS),
+
+      buildType:
+        cleanValue(row.BUILDTYPE),
+
+      rooms:
+        cleanValue(row.ROOMS),
+
+      recommendation:
+        cleanValue(row.RECOMMENDATION),
+
+      infraction:
+        cleanValue(row.INFRACTION),
+
+      rpdBookingCode:
+        cleanValue(row.RPDBOOKINGCODE),
+
+      noOfNew:
+        cleanValue(row.NOOFNEW),
+
+      product:
+        cleanValue(row.PRODUCT),
+
+      disconnectionNoticeNumber:
+        cleanValue(row.DISCONNECTIONNOTICENUMBER),
+
+      latitude:
+        cleanValue(row.LATITUDE),
+
+      longitude:
+        cleanValue(row.LONGITUDE),
+
+      userFName:
+        cleanValue(row.USERFNAME),
+
+      userId:
+        cleanValue(row.USERID),
+
+      separationForMetering:
+        cleanValue(row.SEPARATIONFORMETERING),
+
+      emailId:
+        cleanValue(row.EMAILID),
+
+      departmentName:
+        cleanValue(row.DEPARTMENTNAME),
+
+      correctDtrId:
+        cleanValue(row.CORRECTDTRID),
+
+      isProcessed:
+        cleanValue(row.IS_PROCESSED),
+
+      remarks:
+        cleanValue(row.REMARKS),
+
+      dbFeederName:
+        cleanValue(row.DB_FEEDER_NAME),
+
+      dbFeederId:
+        cleanValue(row.DB_FEEDER_ID),
+
+      dbDtrName:
+        cleanValue(row.DB_DTR_NAME),
+
+      dbProduct:
+        cleanValue(row.DB_PRODUCT),
+
+      accountStatus:
+        cleanValue(row.ACCOUNTSTATUS),
+
+      dbDtrId:
+        cleanValue(row.DB_DTRID),
+
+      dbBand:
+        cleanValue(row.DB_BAND),
+
+      region:
+        cleanValue(row.REGION),
+
+      custNameChk:
+        cleanValue(row.Cust_Name_Chk),
+
+      addressChk:
+        cleanValue(row.Address_Chk),
+
+      phoneNoChk:
+        cleanValue(row.PhoneNo_Chk),
+
+      coordinateChk:
+        cleanValue(row.Coordinate_Chk),
+
+      accountNoChk:
+        cleanValue(row.AccountNo_Chk),
+
+      overallQA:
+        cleanValue(row.Overall_QA),
+
+      userStatus:
+        cleanValue(row["User Status"]),
+
+      cn:
+        cleanValue(row.CN),
+
+      updatedName:
+        cleanValue(row.UpdatedName),
+
+      updatedAddress:
+        cleanValue(row.UpdatedAddress),
+
+      updatedPhoneNo:
+        cleanValue(row.UpdatedPhoneNo)
+
+    };
+
+  }
+
+
+  // ============================================================
+  // LOAD CUSTOMER DATA
+  // ============================================================
+
+  function loadCustomerData() {
+
+    searchWrapper.classList.add("loading");
+
+    searchInput.disabled = true;
+
+    searchInput.placeholder =
+      "Loading customer data...";
+
+    welcomeMessage.classList.remove("hidden");
+
+    detailView.style.display = "none";
+
+    copyHint.style.display = "none";
+
+
+    fetch(searchDataURL)
+
+      .then(response => {
+
+        if (!response.ok) {
+
+          throw new Error(
+            "Network response was not ok: " +
+            response.status
+          );
+
+        }
+
+        return response.json();
+
+      })
+
+      .then(data => {
+
+        console.log(
+          "Raw customer data:",
+          data
+        );
+
+
+        let rawArray = null;
+
+
+        // --------------------------------------------------------
+        // HANDLE DIFFERENT JSON STRUCTURES
+        // --------------------------------------------------------
+
+        if (Array.isArray(data)) {
+
+          rawArray = data;
+
+        }
+
+        else if (
+          data &&
+          typeof data === "object"
+        ) {
+
+          if (Array.isArray(data.results)) {
+
+            rawArray = data.results;
+
+          }
+
+          else if (Array.isArray(data.data)) {
+
+            rawArray = data.data;
+
+          }
+
+          else if (Array.isArray(data.rows)) {
+
+            rawArray = data.rows;
+
+          }
+
+          else if (Array.isArray(data.values)) {
+
+            rawArray = data.values;
+
+          }
+
+          else {
+
+            const keys =
+              Object.keys(data);
+
+            for (const key of keys) {
+
+              if (
+                Array.isArray(data[key]) &&
+                data[key].length > 0
+              ) {
+
+                rawArray = data[key];
+
+                break;
+
+              }
+
+            }
+
+          }
+
+        }
+
+
+        if (
+          !rawArray ||
+          !rawArray.length
+        ) {
+
+          throw new Error(
+            "No customer records found."
+          );
+
+        }
+
+
+        // --------------------------------------------------------
+        // HANDLE ARRAY OF OBJECTS
+        // --------------------------------------------------------
+
+        if (
+          typeof rawArray[0] === "object" &&
+          !Array.isArray(rawArray[0])
+        ) {
+
+          customers =
+            rawArray
+              .map(row => convertCustomer(row))
+              .filter(item =>
+                item.accountNumber !== "N/A" ||
+                item.meterNumber !== "N/A" ||
+                item.customerName !== "N/A"
+              );
+
+        }
+
+
+        // --------------------------------------------------------
+        // HANDLE ARRAY-OF-ARRAYS
+        // --------------------------------------------------------
+
+        else if (
+          Array.isArray(rawArray[0])
+        ) {
+
+          const headers =
+            rawArray[0].map(header =>
+              String(header || "").trim()
+            );
+
+
+          const rows =
+            rawArray.slice(1);
+
+
+          customers =
+            rows.map(row => {
+
+              const object = {};
+
+              headers.forEach(
+                (header, index) => {
+
+                  object[header] =
+                    row[index];
+
+                }
+              );
+
+              return convertCustomer(object);
+
+            });
+
+        }
+
+
+        console.log(
+          `✅ Loaded ${customers.length} customer records`
+        );
+
+
+        isDataLoaded = true;
+
+        searchWrapper.classList.remove(
+          "loading"
+        );
+
+        searchInput.disabled = false;
+
+        searchInput.placeholder =
+          "Search account number, meter number or customer name...";
+
+
+        if (customers.length === 0) {
+
+          welcomeMessage.innerHTML = `
+
+            <div class="icon">
+              ⚠️
+            </div>
+
+            <h3>
+              No Data Found
+            </h3>
+
+            <p>
+              No customer records were found.
+            </p>
+
+          `;
+
+        }
+
+      })
+
+      .catch(error => {
+
+        console.error(
+          "Customer data load error:",
+          error
+        );
+
+
+        searchWrapper.classList.remove(
+          "loading"
+        );
+
+        searchInput.disabled = false;
+
+        searchInput.placeholder =
+          "Error loading data – refresh page";
+
+
+        welcomeMessage.classList.remove(
+          "hidden"
+        );
+
+
+        welcomeMessage.innerHTML = `
+
+          <div class="icon">
+            ⚠️
+          </div>
+
+          <h3>
+            Error Loading Data
+          </h3>
+
+          <p>
+            ${escapeHTML(
+              error.message ||
+              "Could not load customer data."
+            )}
+          </p>
+
+        `;
+
+      });
+
+  }
+
+
+  // ============================================================
+  // ESCAPE HTML
+  // ============================================================
+
+  function escapeHTML(value) {
+
+    return String(value || "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+
+  }
+
+
+  // ============================================================
+  // SEARCH
+  // ============================================================
+
+  function performSearch(keyword) {
+
+    if (
+      !isDataLoaded ||
+      !keyword
+    ) {
+
+      suggestionsBox.style.display =
+        "none";
+
+      return;
+
+    }
+
+
+    const searchTerm =
+      normalize(keyword);
+
+
+    const matches =
+      customers.filter(item => {
+
+        const account =
+          normalize(item.accountNumber);
+
+        const meter =
+          normalize(item.meterNumber);
+
+        const name =
+          normalize(item.customerName);
+
+        return (
+          account.includes(searchTerm) ||
+          meter.includes(searchTerm) ||
+          name.includes(searchTerm)
+        );
+
+      });
+
+
+    displaySuggestions(
+      matches,
+      searchTerm
+    );
+
+  }
+
+
+  // ============================================================
+  // DISPLAY SUGGESTIONS
+  // ============================================================
+
+  function displaySuggestions(
+    matches,
+    searchTerm
+  ) {
+
+    suggestionsBox.innerHTML = "";
+
+
+    if (matches.length === 0) {
+
+      suggestionsBox.innerHTML = `
+
+        <div class="no-suggestions">
+          No customers found
+        </div>
+
+      `;
+
+      suggestionsBox.style.display =
+        "block";
+
+      return;
+
+    }
+
+
+    /*
+      Limit autocomplete results so that
+      a very large dataset does not fill
+      the dropdown.
+    */
+
+    matches
+      .slice(0, 50)
+      .forEach(item => {
+
+        const div =
+          document.createElement("div");
+
+        div.className =
+          "suggestion-item";
+
+
+        const name =
+          item.customerName;
+
+        const account =
+          item.accountNumber;
+
+        const meter =
+          item.meterNumber;
+
+        const address =
+          item.correctAddress;
+
+
+        div.innerHTML = `
+
+          <div>
+
+            <span class="suggestion-main">
+
+              ${highlightText(
+                name,
+                searchTerm
+              )}
+
+            </span>
+
+            <span class="suggestion-sub">
+
+              Account:
+              ${highlightText(
+                account,
+                searchTerm
+              )}
+
+            </span>
+
+          </div>
+
+
+          <div class="suggestion-detail">
+
+            Meter:
+            ${highlightText(
+              meter,
+              searchTerm
+            )}
+
+            •
+            ${escapeHTML(
+              item.dtrName
+            )}
+
+            •
+            ${escapeHTML(
+              item.feederName
+            )}
+
+          </div>
+
+
+          <div class="suggestion-detail">
+
+            ${escapeHTML(
+              address
+            )}
+
+          </div>
+
+        `;
+
+
+        div.addEventListener(
+          "click",
+          () => selectCustomer(item)
+        );
+
+
+        suggestionsBox.appendChild(div);
+
+      });
+
+
+    suggestionsBox.style.display =
+      "block";
+
+  }
+
+
+  // ============================================================
+  // HIGHLIGHT SEARCH TEXT
+  // ============================================================
+
+  function highlightText(
+    text,
+    searchTerm
+  ) {
+
+    if (
+      !text ||
+      text === "N/A"
+    ) {
+
+      return "N/A";
+
+    }
+
+
+    if (!searchTerm) {
+
+      return escapeHTML(text);
+
+    }
+
+
+    const escapedTerm =
+      searchTerm.replace(
+        /[.*+?^${}()|[\]\\]/g,
+        "\\$&"
+      );
+
+
+    const regex =
+      new RegExp(
+        `(${escapedTerm})`,
+        "gi"
+      );
+
+
+    return escapeHTML(text)
+      .replace(
+        regex,
+        '<span class="highlight">$1</span>'
+      );
+
+  }
+
+
+  // ============================================================
+  // CREATE COPY BUTTON
+  // ============================================================
+
+  function createCopyButton(
+    value,
+    label
+  ) {
+
+    const button =
+      document.createElement("button");
+
+    button.className =
+      "copy-btn";
+
+    button.innerHTML =
+      getCopyIcon() +
+      "<span>Copy</span>";
+
+    button.title =
+      "Copy " + label;
+
+
+    button.addEventListener(
+      "click",
+      function(event) {
+
+        event.stopPropagation();
+
+        copyToClipboard(
+          value,
+          this
+        );
+
+      }
+    );
+
+
+    return button;
+
+  }
+
+
+  // ============================================================
+  // ADD DETAIL ROW
+  // ============================================================
+
+  function addDetailRow(
+    card,
+    label,
+    value,
+    copyLabel = label
+  ) {
+
+    const row =
+      document.createElement("div");
+
+    row.className =
+      "detail-row";
+
+
+    const labelElement =
+      document.createElement("span");
+
+    labelElement.className =
+      "label";
+
+    labelElement.textContent =
+      label;
+
+
+    const valueElement =
+      document.createElement("span");
+
+    valueElement.className =
+      "value";
+
+    valueElement.textContent =
+      value;
+
+
+    row.appendChild(
+      labelElement
+    );
+
+    row.appendChild(
+      valueElement
+    );
+
+
+    if (
+      value &&
+      value !== "N/A"
+    ) {
+
+      row.appendChild(
+        createCopyButton(
+          value,
+          copyLabel
+        )
+      );
+
+    }
+
+
+    card.appendChild(row);
+
+  }
+
+
+  // ============================================================
+  // SECTION TITLE
+  // ============================================================
+
+  function addSectionTitle(
+    card,
+    title
+  ) {
+
+    const section =
+      document.createElement("div");
+
+    section.className =
+      "section-title";
+
+    section.textContent =
+      title;
+
+    card.appendChild(section);
+
+  }
+
+
+  // ============================================================
+  // STATUS BADGE
+  // ============================================================
+
+  function createBadge(
+    value
+  ) {
+
+    const badge =
+      document.createElement("span");
+
+    badge.className =
+      "badge";
+
+
+    const lower =
+      normalize(value);
+
+
+    if (
+      lower === "active" ||
+      lower === "complete" ||
+      lower === "completed"
+    ) {
+
+      badge.classList.add(
+        lower === "active"
+          ? "badge-active"
+          : "badge-complete"
+      );
+
+    }
+
+    else if (
+      lower === "inactive"
+    ) {
+
+      badge.classList.add(
+        "badge-inactive"
+      );
+
+    }
+
+    else if (
+      lower === "corrected"
+    ) {
+
+      badge.classList.add(
+        "badge-corrected"
+      );
+
+    }
+
+    else if (
+      lower === "check"
+    ) {
+
+      badge.classList.add(
+        "badge-check"
+      );
+
+    }
+
+    else {
+
+      badge.classList.add(
+        "badge-none"
+      );
+
+    }
+
+
+    badge.textContent =
+      value;
+
+
+    return badge;
+
+  }
+
+
+  // ============================================================
+  // SELECT CUSTOMER
+  // ============================================================
+
+  function selectCustomer(item) {
+
+    selectedCustomer =
+      item;
+
+
+    suggestionsBox.style.display =
+      "none";
+
+
+    searchInput.value =
+      item.customerName !== "N/A"
+        ? item.customerName
+        : item.accountNumber;
+
+
+    welcomeMessage.classList.add(
+      "hidden"
+    );
+
+
+    detailView.style.display =
+      "block";
+
+
+    copyHint.style.display =
+      "block";
+
+
+    const card =
+      document.createElement("div");
+
+    card.className =
+      "detail-card";
+
+
+    // ========================================================
+    // HEADER
+    // ========================================================
+
+    const header =
+      document.createElement("div");
+
+    header.className =
+      "customer-header";
+
+
+    const headerLeft =
+      document.createElement("div");
+
+
+    const customerName =
+      document.createElement("div");
+
+    customerName.className =
+      "customer-name";
+
+    customerName.textContent =
+      item.customerName;
+
+
+    const accountNumber =
+      document.createElement("span");
+
+    accountNumber.className =
+      "account-number";
+
+    accountNumber.textContent =
+      "Account: " +
+      item.accountNumber;
+
+
+    headerLeft.appendChild(
+      customerName
+    );
+
+    headerLeft.appendChild(
+      accountNumber
+    );
+
+
+    const headerRight =
+      document.createElement("div");
+
+
+    if (
+
+      item.region !== "N/A"
+    ) {
+
+      const regionBadge =
+        createBadge(
+          item.region
+        );
+
+      regionBadge.classList.remove(
+        "badge-none"
+      );
+
+      regionBadge.classList.add(
+        "badge-region"
+      );
+
+      headerRight.appendChild(
+        regionBadge
+      );
+
+    }
+
+
+    if (
+      item.accountStatus !== "N/A"
+    ) {
+
+      headerRight.appendChild(
+        createBadge(
+          item.accountStatus
+        )
+      );
+
+    }
+
+
+    header.appendChild(
+      headerLeft
+    );
+
+    header.appendChild(
+      headerRight
+    );
+
+
+    card.appendChild(
+      header
+    );
+
+
+    // ========================================================
+    // CUSTOMER INFORMATION
+    // ========================================================
+
+    addSectionTitle(
+      card,
+      "Customer Information"
+    );
+
+
+    addDetailRow(
+      card,
+      "👤 Customer Name:",
+      item.customerName
+    );
+
+
+    addDetailRow(
+      card,
+      "🏠 Landlord Name:",
+      item.landlordName
+    );
+
+
+    addDetailRow(
+      card,
+      "📞 Customer Phone:",
+      item.customerPhone
+    );
+
+
+    addDetailRow(
+      card,
+      "✉️ Customer Email:",
+      item.customerEmail
+    );
+
+
+    addDetailRow(
+      card,
+      "📍 Address:",
+      item.correctAddress
+    );
+
+
+    addDetailRow(
+      card,
+      "👥 Customer Class:",
+      item.customerClass
+    );
+
+
+    addDetailRow(
+      card,
+      "🏗️ Build Type:",
+      item.buildType
+    );
+
+
+    addDetailRow(
+      card,
+      "🚪 Rooms:",
+      item.rooms
+    );
+
+
+    // ========================================================
+    // METER INFORMATION
+    // ========================================================
+
+    addSectionTitle(
+      card,
+      "Metering Information"
+    );
+
+
+    addDetailRow(
+      card,
+      "🔢 Account Number:",
+      item.accountNumber
+    );
+
+
+    addDetailRow(
+      card,
+      "⚡ Meter Number:",
+      item.meterNumber
+    );
+
+
+    addDetailRow(
+      card,
+      "💳 Product:",
+      item.product
+    );
+
+
+    addDetailRow(
+      card,
+      "📊 Account Status:",
+      item.accountStatus
+    );
+
+
+    addDetailRow(
+      card,
+      "🧾 Separation for Billing:",
+      item.separationForBilling
+    );
+
+
+    addDetailRow(
+      card,
+      "⚙️ Separation for Metering:",
+      item.separationForMetering
+    );
+
+
+    addDetailRow(
+      card,
+      "🔢 No. of Separation:",
+      item.noOfSeparation
+    );
+
+
+    addDetailRow(
+      card,
+      "🆕 No. of New:",
+      item.noOfNew
+    );
+
+
+    // ========================================================
+    // NETWORK INFORMATION
+    // ========================================================
+
+    addSectionTitle(
+      card,
+      "Network Information"
+    );
+
+
+    addDetailRow(
+      card,
+      "🌍 Region:",
+      item.region
+    );
+
+
+    addDetailRow(
+      card,
+      "⚡ Feeder ID:",
+      item.feederId
+    );
+
+
+    addDetailRow(
+      card,
+      "⚡ Feeder Name:",
+      item.feederName
+    );
+
+
+    addDetailRow(
+      card,
+      "🔌 DTR ID:",
+      item.dtrId
+    );
+
+
+    addDetailRow(
+      card,
+      "🔌 DTR Name:",
+      item.dtrName
+    );
+
+
+    addDetailRow(
+      card,
+      "🔧 Correct DTR ID:",
+      item.correctDtrId
+    );
+
+
+    addDetailRow(
+      card,
+      "🗼 Pole Number:",
+      item.poleNo
+    );
+
+
+    addDetailRow(
+      card,
+      "⬆️ Upriser:",
+      item.upriser
+    );
+
+
+    // ========================================================
+    // DATABASE INFORMATION
+    // ========================================================
+
+    addSectionTitle(
+      card,
+      "Database Information"
+    );
+
+
+    addDetailRow(
+      card,
+      "DB Feeder Name:",
+      item.dbFeederName
+    );
+
+
+    addDetailRow(
+      card,
+      "DB Feeder ID:",
+      item.dbFeederId
+    );
+
+
+    addDetailRow(
+      card,
+      "DB DTR Name:",
+      item.dbDtrName
+    );
+
+
+    addDetailRow(
+      card,
+      "DB DTR ID:",
+      item.dbDtrId
+    );
+
+
+    addDetailRow(
+      card,
+      "DB Product:",
+      item.dbProduct
+    );
+
+
+    addDetailRow(
+      card,
+      "DB Band:",
+      item.dbBand
+    );
+
+
+    // ========================================================
+    // QA INFORMATION
+    // ========================================================
+
+    addSectionTitle(
+      card,
+      "Quality Assurance"
+    );
+
+
+    addDetailRow(
+      card,
+      "Customer Name Check:",
+      item.custNameChk
+    );
+
+
+    addDetailRow(
+      card,
+      "Address Check:",
+      item.addressChk
+    );
+
+
+    addDetailRow(
+      card,
+      "Phone Check:",
+      item.phoneNoChk
+    );
+
+
+    addDetailRow(
+      card,
+      "Coordinate Check:",
+      item.coordinateChk
+    );
+
+
+    addDetailRow(
+      card,
+      "Account Number Check:",
+      item.accountNoChk
+    );
+
+
+    addDetailRow(
+      card,
+      "Overall QA:",
+      item.overallQA
+    );
+
+
+    addDetailRow(
+      card,
+      "User Status:",
+      item.userStatus
+    );
+
+
+    // ========================================================
+    // UPDATED INFORMATION
+    // ========================================================
+
+    addSectionTitle(
+      card,
+      "Updated Information"
+    );
+
+
+    addDetailRow(
+      card,
+      "Updated Name:",
+      item.updatedName
+    );
+
+
+    addDetailRow(
+      card,
+      "Updated Address:",
+      item.updatedAddress
+    );
+
+
+    addDetailRow(
+      card,
+      "Updated Phone:",
+      item.updatedPhoneNo
+    );
+
+
+    // ========================================================
+    // FIELD / PROCESS INFORMATION
+    // ========================================================
+
+    addSectionTitle(
+      card,
+      "Processing Information"
+    );
+
+
+    addDetailRow(
+      card,
+      "Captured By:",
+      item.userFName
+    );
+
+
+    addDetailRow(
+      card,
+      "User ID:",
+      item.userId
+    );
+
+
+    addDetailRow(
+      card,
+      "Department:",
+      item.departmentName
+    );
+
+
+    addDetailRow(
+      card,
+      "Date Captured:",
+      item.dateCaptured
+    );
+
+
+    addDetailRow(
+      card,
+      "Status:",
+      item.status
+    );
+
+
+    addDetailRow(
+      card,
+      "Processed:",
+      item.isProcessed
+    );
+
+
+    addDetailRow(
+      card,
+      "Remarks:",
+      item.remarks
+    );
+
+
+    addDetailRow(
+      card,
+      "Recommendation:",
+      item.recommendation
+    );
+
+
+    addDetailRow(
+      card,
+      "Infraction:",
+      item.infraction
+    );
+
+
+    // ========================================================
+    // LOCATION
+    // ========================================================
+
+    addSectionTitle(
+      card,
+      "Coordinates"
+    );
+
+
+    addDetailRow(
+      card,
+      "Latitude:",
+      item.latitude
+    );
+
+
+    addDetailRow(
+      card,
+      "Longitude:",
+      item.longitude
+    );
+
+
+    // ========================================================
+    // SHOW CARD
+    // ========================================================
+
+    detailView.innerHTML = "";
+
+    detailView.appendChild(
+      card
+    );
+
+
+    detailView.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
+
+  }
+
+
+  // ============================================================
+  // SEARCH INPUT
+  // ============================================================
+
+  let searchTimeout;
+
+
+  searchInput.addEventListener(
+    "input",
+    function() {
+
+      if (!isDataLoaded) {
+        return;
+      }
+
+
+      clearTimeout(
+        searchTimeout
+      );
+
+
+      const keyword =
+        this.value.trim();
+
+
+      if (!keyword) {
+
+        suggestionsBox.style.display =
+          "none";
+
+        detailView.style.display =
+          "none";
+
+        welcomeMessage.classList.remove(
+          "hidden"
+        );
+
+        copyHint.style.display =
+          "none";
+
+        return;
+
+      }
+
+
+      searchTimeout =
+        setTimeout(() => {
+
+          performSearch(
+            keyword
+          );
+
+        }, 250);
+
+    }
+  );
+
+
+  // ============================================================
+  // SEARCH FOCUS
+  // ============================================================
+
+  searchInput.addEventListener(
+    "focus",
+    function() {
+
+      if (
+        this.value.trim() &&
+        isDataLoaded
+      ) {
+
+        performSearch(
+          this.value.trim()
+        );
+
+      }
+
+    }
+  );
+
+
+  // ============================================================
+  // CLICK OUTSIDE
+  // ============================================================
+
+  document.addEventListener(
+    "click",
+    function(event) {
+
+      if (
+        !event.target.closest(
+          ".search-section"
+        )
+      ) {
+
+        suggestionsBox.style.display =
+          "none";
+
+      }
+
+    }
+  );
+
+
+  // ============================================================
+  // KEYBOARD
+  // ============================================================
+
+  searchInput.addEventListener(
+    "keydown",
+    function(event) {
+
+      if (
+        event.key === "Enter"
+      ) {
+
+        event.preventDefault();
+
+
+        const first =
+          suggestionsBox.querySelector(
+            ".suggestion-item"
+          );
+
+
+        if (first) {
+
+          first.click();
+
+        }
+
+      }
+
+
+      if (
+        event.key === "Escape"
+      ) {
+
+        suggestionsBox.style.display =
+          "none";
+
+        this.blur();
+
+      }
+
+    }
+  );
+
+
+  // ============================================================
+  // INITIALIZE
+  // ============================================================
+
+  loadCustomerData();
+
+
+  console.log(
+    "🔍 Customer Information Search loaded"
+  );
+
+</script>
+
+</body>
+</html>
